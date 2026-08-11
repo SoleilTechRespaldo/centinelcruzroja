@@ -44,3 +44,9 @@ body {
   font-weight: 600;
 }
 .link { color: var(--al-celeste-t); cursor: pointer; font-size: 12px; }
+
+// Acercar Quasar al mockup: tarjetas más suaves, tablas más limpias
+.q-card { border-radius: 12px; }
+.q-card--bordered { border-color: var(--c-border); }
+.q-table th, .q-markup-table th { color: var(--c-text2); font-weight: 500; font-size: 12px; }
+.q-markup-table tbody td { font-size: 13px; }

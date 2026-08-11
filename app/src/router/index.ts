@@ -11,8 +11,8 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('@/layouts/MainLayout.vue'),
     children: [
-      { path: '', redirect: '/dashboard' },
-      { path: 'dashboard', name: 'dashboard', component: () => import('@/features/dashboard/DashboardPage.vue') },
+      { path: '', redirect: '/estadisticas' },
+      { path: 'estadisticas', name: 'estadisticas', component: () => import('@/features/dashboard/DashboardPage.vue') },
       { path: 'incidents', name: 'incidents', component: () => import('@/features/incidents/IncidentsPage.vue') },
       { path: 'incidents/new', name: 'incident-new', component: () => import('@/features/incidents/NewIncidentPage.vue') },
       { path: 'incidents/:id', name: 'incident-detail', component: () => import('@/features/incidents/IncidentDetailPage.vue') },
@@ -21,13 +21,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'expediente', name: 'expediente', component: () => import('@/features/expediente/ExpedientePage.vue') },
       { path: 'map', name: 'map', component: () => import('@/features/map/MapPage.vue') },
       { path: 'cameras', name: 'cameras', component: () => import('@/features/cameras/CamerasPage.vue') },
-      { path: 'stats', name: 'stats', component: () => import('@/features/stats/StatsPage.vue') },
       { path: 'catalogs', name: 'catalogs', component: () => import('@/features/catalogs/CatalogsPage.vue') },
       { path: 'users', name: 'users', component: () => import('@/features/users/UsersPage.vue') },
       { path: 'states', name: 'states', component: () => import('@/features/misc/StatesPage.vue') },
     ],
   },
-  { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
+  { path: '/:pathMatch(.*)*', redirect: '/estadisticas' },
 ]
 
 const router = createRouter({
@@ -38,7 +37,7 @@ const router = createRouter({
 router.beforeEach((to) => {
   const session = useSessionStore()
   if (to.path !== '/login' && !session.isAuthenticated) return { path: '/login' }
-  if (to.path === '/login' && session.isAuthenticated) return { path: '/dashboard' }
+  if (to.path === '/login' && session.isAuthenticated) return { path: '/estadisticas' }
 })
 
 export default router

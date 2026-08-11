@@ -4,21 +4,24 @@ import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import BrandMark from '@/components/ui/BrandMark.vue'
 
+type NavItem = { section?: string; label?: string; to?: string; icon?: string }
+
 const drawer = ref(true)
 const router = useRouter()
 const session = useSessionStore()
 
-const nav = [
-  { label: 'Dashboard', to: '/dashboard', icon: 'dashboard' },
+const nav: NavItem[] = [
+  { section: 'Monitoreo' },
   { label: 'Incidentes', to: '/incidents', icon: 'warning_amber' },
-  { label: 'Expediente', to: '/expediente', icon: 'folder_open' },
   { label: 'Generar BIE', to: '/bie', icon: 'description' },
+  { label: 'Expediente', to: '/expediente', icon: 'folder_open' },
+  { section: 'Análisis' },
+  { label: 'Estadísticas', to: '/estadisticas', icon: 'insights' },
   { label: 'Mapa', to: '/map', icon: 'map' },
-  { label: 'Cámaras en vivo', to: '/cameras', icon: 'videocam' },
-  { label: 'Estadísticas', to: '/stats', icon: 'bar_chart' },
+  { label: 'Cámaras', to: '/cameras', icon: 'videocam' },
+  { section: 'Configuración' },
   { label: 'Catálogos', to: '/catalogs', icon: 'category' },
   { label: 'Usuarios', to: '/users', icon: 'group' },
-  { label: 'Estados UI', to: '/states', icon: 'dashboard_customize' },
 ]
 
 function logout() {
@@ -44,19 +47,15 @@ function logout() {
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" show-if-above :width="220" class="sidebar" bordered>
+    <q-drawer v-model="drawer" show-if-above :width="222" class="sidebar" bordered>
       <q-list padding>
-        <q-item
-          v-for="it in nav"
-          :key="it.to"
-          v-ripple
-          clickable
-          :to="it.to"
-          active-class="nav-active"
-        >
-          <q-item-section avatar><q-icon :name="it.icon" size="20px" /></q-item-section>
-          <q-item-section>{{ it.label }}</q-item-section>
-        </q-item>
+        <template v-for="(it, idx) in nav" :key="idx">
+          <div v-if="it.section" class="nav-section">{{ it.section }}</div>
+          <q-item v-else v-ripple clickable :to="it.to" active-class="nav-active">
+            <q-item-section avatar><q-icon :name="it.icon" size="20px" /></q-item-section>
+            <q-item-section>{{ it.label }}</q-item-section>
+          </q-item>
+        </template>
       </q-list>
     </q-drawer>
 
@@ -71,6 +70,7 @@ function logout() {
 .brand-name { font-weight: 600; font-size: 16px; }
 .brand-sub { color: #aeb4c0; font-size: 13px; font-weight: 400; }
 .region { color: #c9cdd4; font-size: 13px; }
-.sidebar :deep(.q-item) { border-radius: 8px; margin: 2px 8px; color: var(--c-text2); font-weight: 500; }
+.nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-muted); font-weight: 600; padding: 14px 16px 4px; }
+.sidebar :deep(.q-item) { border-radius: 8px; margin: 2px 8px; color: var(--c-text2); font-weight: 500; min-height: 42px; }
 .sidebar :deep(.nav-active) { color: var(--c-red); background: #fdecec; }
 </style>

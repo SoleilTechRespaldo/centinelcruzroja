@@ -11,7 +11,7 @@ const password = ref('claveDemo')
 
 function ingresar() {
   session.login(email.value)
-  router.push('/dashboard')
+  router.push('/estadisticas')
 }
 </script>
 
