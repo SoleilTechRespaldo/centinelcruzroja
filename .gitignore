@@ -1,0 +1,20 @@
+# Dependencias y builds
+node_modules/
+dist/
+dist-ssr/
+.quasar/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno (nunca commitear secretos)
+.env
+.env.local
+.env.*.local
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

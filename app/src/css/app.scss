@@ -1,0 +1,45 @@
+// Tokens del design system (Centinela) — solo modo claro
+:root {
+  --grafito: #1e222b;
+  --c-text: #17181a;
+  --c-text2: #5b6472;
+  --c-muted: #8a93a0;
+  --c-bg: #f5f6f8;
+  --c-surface: #ffffff;
+  --c-surface2: #f0f2f5;
+  --c-border: #e4e7ec;
+  --c-red: #e30613;
+
+  // Marca de Quasar (override de sus colores en runtime)
+  --q-primary: #e30613;
+  --q-secondary: #5b6472;
+  --q-accent: #1e222b;
+  --q-dark: #1e222b;
+  --q-dark-page: #1e222b;
+  --q-positive: #1f8a54;
+  --q-negative: #c1121f;
+  --q-info: #0ea5e9;
+  --q-warning: #e5a400;
+
+  // Escala de alertas: sólido / fondo / texto
+  --al-green: #1f8a54;   --al-green-bg: #e7f4ec;   --al-green-t: #14663c;
+  --al-celeste: #0ea5e9; --al-celeste-bg: #e0f2fe; --al-celeste-t: #075985;
+  --al-yellow: #e5a400;  --al-yellow-bg: #fbf0ce;  --al-yellow-t: #7a5a00;
+  --al-red: #c1121f;     --al-red-bg: #fadfe1;     --al-red-t: #7a0a12;
+}
+
+body {
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+.text-muted { color: var(--c-muted); }
+.sec-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--c-muted);
+  font-weight: 600;
+}

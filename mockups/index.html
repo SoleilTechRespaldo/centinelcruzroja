@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Centinela — Mockups</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --grafito:#1E222B; --text:#17181A; --text2:#5B6472; --muted:#8A93A0;
+    --bg:#F5F6F8; --surface:#fff; --surface2:#F0F2F5; --border:#E4E7EC; --border2:#CBD2DA;
+    --red:#E30613; --red-h:#C40510; --red-t:#FDECEC;
+    --g:#1F8A54; --g-b:#E7F4EC; --g-t:#14663C;
+    --y:#E5A400; --y-b:#FBF0CE; --y-t:#7A5A00;
+    --o:#E4661E; --o-b:#FBE6D5; --o-t:#8A3A10;
+    --c:#0EA5E9; --c-b:#E0F2FE; --c-t:#075985;
+    --r:#C1121F; --r-b:#FADFE1; --r-t:#7A0A12;
+    --info:#2F6FE0; --info-b:#E8F0FE; --info-t:#1E3A8A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',system-ui,'Segoe UI',Roboto,sans-serif;color:var(--text);background:var(--bg);font-size:15px;line-height:1.55}
+  .view{min-height:100vh}
+  h1,h2,h3{margin:0;font-weight:600}
+  a{cursor:pointer;text-decoration:none;color:inherit}
+  .muted{color:var(--text2)} .tiny{font-size:12px;color:var(--muted)}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border2);background:#fff;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+  .btn:hover{background:var(--surface2)}
+  .btn-primary{background:var(--red);border-color:var(--red);color:#fff}
+  .btn-primary:hover{background:var(--red-h)}
+  .btn-sm{height:30px;padding:0 10px;font-size:13px}
+  /* badges */
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .b-green{background:var(--g-b);color:var(--g-t)} .b-green .dot{background:var(--g)}
+  .b-yellow{background:var(--y-b);color:var(--y-t)} .b-yellow .dot{background:var(--y)}
+  .b-orange{background:var(--o-b);color:var(--o-t)} .b-orange .dot{background:var(--o)}
+  .b-celeste{background:var(--c-b);color:var(--c-t)} .b-celeste .dot{background:var(--c)}
+  .b-red{background:var(--r-b);color:var(--r-t)} .b-red .dot{background:var(--r)}
+  .b-gray{background:var(--surface2);color:var(--text2)} .b-gray .dot{background:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:12px;color:var(--text2)}
+  /* cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .metric .lbl{font-size:12px;color:var(--text2)} .metric .num{font-size:26px;font-weight:600;margin-top:2px}
+  .grid{display:grid;gap:12px}
+  /* topbar + shell */
+  .topbar{height:56px;background:var(--grafito);display:flex;align-items:center;gap:12px;padding:0 18px;color:#fff}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600}
+  .topbar .sep{color:#AEB4C0;font-weight:400;font-size:13px}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:#C9CDD4;font-size:13px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#33384a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;min-height:calc(100vh - 56px)}
+  .sidebar{width:210px;background:#fff;border-right:1px solid var(--border);padding:12px 10px;flex-shrink:0}
+  .navitem{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;color:var(--text2);font-weight:500;margin-bottom:2px;border-left:3px solid transparent}
+  .navitem:hover{background:var(--surface2)}
+  .navitem.active{background:var(--red-t);color:var(--red);border-left-color:var(--red)}
+  .content{flex:1;padding:22px 26px;min-width:0}
+  .page-h{display:flex;align-items:center;margin-bottom:18px;gap:12px}
+  .page-h h1{font-size:20px}
+  .page-h .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--text2);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px}
+  td{padding:11px 12px;border-bottom:1px solid var(--border)}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--surface2)}
+  .code{font-variant-numeric:tabular-nums;color:var(--text2);font-size:12px}
+  /* timeline */
+  .tl{position:relative;padding-left:20px}
+  .tl:before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--border)}
+  .tl-item{position:relative;padding:0 0 16px 0}
+  .tl-item:before{content:"";position:absolute;left:-18px;top:3px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--red)}
+  .tl-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  /* forms */
+  .field{margin-bottom:14px} .label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;font-weight:500}
+  .input,.textarea{width:100%;border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font:inherit;font-size:14px;background:#fff}
+  .textarea{min-height:70px;resize:vertical}
+  .input:focus,.textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 2px var(--red-t)}
+  .watermark{background:repeating-linear-gradient(45deg,#fafafa,#fafafa 10px,#f3f4f6 10px,#f3f4f6 20px);border:1px dashed var(--border2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2)}
+  .sec-title{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600;margin:0 0 10px}
+  .frame-cap{max-width:1120px;margin:0 auto 6px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body onload="show('login');applyTS()">
+
+<!-- ============ LOGIN ============ -->
+<div id="login" class="view" style="display:flex;align-items:center;justify-content:center;background:var(--bg)">
+  <div class="card" style="width:360px;text-align:center;padding:32px 28px">
+    <svg width="52" height="52" viewBox="0 0 64 64" style="margin-bottom:6px">
+      <circle cx="32" cy="14" r="4" fill="#E30613"/>
+      <line x1="25" y1="14" x2="21" y2="14" stroke="#E30613" stroke-width="2" stroke-linecap="round"/>
+      <line x1="39" y1="14" x2="43" y2="14" stroke="#E30613" stroke-width="2" stroke-linecap="round"/>
+      <rect x="15" y="20" width="6" height="7" fill="#1E222B"/><rect x="29" y="20" width="6" height="7" fill="#1E222B"/><rect x="43" y="20" width="6" height="7" fill="#1E222B"/>
+      <rect x="14" y="27" width="36" height="5" fill="#1E222B"/>
+      <polygon points="19,32 45,32 47,57 17,57" fill="#1E222B"/>
+      <path d="M27 57 L27 49 Q27 45 32 45 Q37 45 37 49 L37 57 Z" fill="#F5F6F8"/>
+    </svg>
+    <h1 style="font-size:22px">Centinela</h1>
+    <p class="tiny" style="margin:4px 0 20px">Monitoreo Regional · Región de Valparaíso</p>
+    <div style="text-align:left">
+      <div class="field"><label class="label">Correo</label><input class="input" value="operador@cruzroja.cl"></div>
+      <div class="field"><label class="label">Contraseña</label><input class="input" type="password" value="········"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="show('dashboard')">Ingresar</button>
+    <p class="tiny" style="margin-top:20px;line-height:1.5">Hecho por SoleilTech para<br>Cruz Roja Chilena — Comité Regional Valparaíso</p>
+  </div>
+</div>
+
+<!-- ============ SHELL ============ -->
+<div id="shell" class="view" style="display:none">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 64 64">
+        <rect x="15" y="20" width="6" height="7" fill="#fff"/><rect x="29" y="20" width="6" height="7" fill="#fff"/><rect x="43" y="20" width="6" height="7" fill="#fff"/>
+        <rect x="14" y="27" width="36" height="5" fill="#fff"/><polygon points="19,32 45,32 47,57 17,57" fill="#fff"/>
+        <path d="M27 57 L27 49 Q27 45 32 45 Q37 45 37 49 L37 57 Z" fill="#1E222B"/>
+        <circle cx="32" cy="14" r="4" fill="#E30613"/>
+        <line x1="25" y1="14" x2="21" y2="14" stroke="#E30613" stroke-width="2" stroke-linecap="round"/><line x1="39" y1="14" x2="43" y2="14" stroke="#E30613" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Centinela
+    </div>
+    <span class="sep">Sala de crisis</span>
+    <div class="right">
+      <span style="display:inline-flex;border:1px solid #3a4050;border-radius:8px;overflow:hidden" title="Tamaño de letra">
+        <a onclick="tscale(-1)" style="color:#C9CDD4;padding:2px 10px;font-size:12px">A−</a>
+        <a onclick="tscale(1)" style="color:#C9CDD4;padding:2px 10px;font-size:16px;border-left:1px solid #3a4050">A+</a>
+      </span>
+      <span>Región de Valparaíso</span>
+      <span class="avatar">NJ</span>
+      <a onclick="show('login')" style="color:#C9CDD4">Salir</a>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="sidebar">
+      <a class="navitem" data-view="dashboard" onclick="show('dashboard')">Dashboard</a>
+      <a class="navitem" data-view="incidents" onclick="show('incidents')">Incidentes</a>
+      <a class="navitem" data-view="detail" onclick="show('detail')">Ficha de incidente</a>
+      <a class="navitem" data-view="expediente" onclick="show('expediente')">Expediente</a>
+      <a class="navitem" data-view="bie" onclick="show('bie')">Generar BIE</a>
+      <a class="navitem" data-view="mapa" onclick="show('mapa')">Mapa</a>
+      <a class="navitem" data-view="camaras" onclick="show('camaras')">Cámaras en vivo</a>
+      <a class="navitem" data-view="estadisticas" onclick="show('estadisticas')">Estadísticas</a>
+      <div style="height:1px;background:var(--border);margin:10px 6px"></div>
+      <a class="navitem" data-view="catalogos" onclick="show('catalogos')">Catálogos</a>
+      <a class="navitem" data-view="usuarios" onclick="show('usuarios')">Usuarios</a>
+      <a class="navitem" data-view="estados" onclick="show('estados')">Estados UI</a>
+    </nav>
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section id="s-dashboard" class="screen">
+        <div class="page-h">
+          <h1>Panel de situación</h1>
+          <div class="right"><span class="tiny">Actualizado hace 3 min</span><button class="btn btn-sm">Actualizar</button></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px">
+          <div class="metric"><div class="lbl">Eventos activos</div><div class="num">3</div></div>
+          <div class="metric"><div class="lbl">Alerta roja</div><div class="num" style="color:var(--r)">1</div></div>
+          <div class="metric"><div class="lbl">Alerta amarilla</div><div class="num" style="color:var(--y-t)">2</div></div>
+          <div class="metric"><div class="lbl">Comunas afectadas</div><div class="num">7</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
+          <div class="metric"><div class="lbl">Personas afectadas</div><div class="num">2.350</div></div>
+          <div class="metric"><div class="lbl">Voluntarios desplegados</div><div class="num">72</div></div>
+          <div class="metric"><div class="lbl">Filiales activadas</div><div class="num">6</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1.6fr 1fr">
+          <div class="card">
+            <div class="sec-title">Incidentes activos</div>
+            <table>
+              <thead><tr><th>Código</th><th>Evento</th><th>SENAPRED</th><th>Cruz Roja</th><th>Comunas</th></tr></thead>
+              <tbody>
+                <tr onclick="show('detail')" style="cursor:pointer"><td class="code">2026-0015</td><td>Sistema frontal</td><td><span class="badge b-yellow"><span class="dot"></span>Amarilla</span></td><td><span class="badge b-yellow"><span class="dot"></span>Amarilla</span></td><td>5</td></tr>
+                <tr style="cursor:pointer"><td class="code">2026-0014</td><td>Incendio forestal</td><td><span class="badge b-red"><span class="dot"></span>Roja</span></td><td><span class="badge b-red"><span class="dot"></span>Roja</span></td><td>2</td></tr>
+                <tr style="cursor:pointer"><td class="code">2026-0013</td><td>Marejadas</td><td><span class="badge b-gray"><span class="dot"></span>ATP</span></td><td><span class="badge b-green"><span class="dot"></span>Verde</span></td><td>3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="sec-title">Comunas por alerta</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span class="badge b-red"><span class="dot"></span>Valparaíso</span>
+              <span class="badge b-celeste"><span class="dot"></span>Viña del Mar</span>
+              <span class="badge b-yellow"><span class="dot"></span>Quilpué</span>
+              <span class="badge b-yellow"><span class="dot"></span>Villa Alemana</span>
+              <span class="badge b-green"><span class="dot"></span>Concón</span>
+              <span class="badge b-green"><span class="dot"></span>Quintero</span>
+            </div>
+            <div class="watermark" style="margin-top:14px;text-align:center">Aquí irá el <b>mapa por comuna</b> (RF-28a)<br><span class="tiny">coloreado por alerta · descargable</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INCIDENTS LIST -->
+      <section id="s-incidents" class="screen" style="display:none">
+        <div class="page-h"><h1>Incidentes</h1><div class="right"><button class="btn btn-primary btn-sm" onclick="show('nuevo')">+ Nuevo incidente</button></div></div>
+        <div class="card" style="padding:12px 14px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="chip">Estado: Activos ▾</span><span class="chip">Tipo: Todos ▾</span><span class="chip">Comuna: Todas ▾</span><span class="chip">Alerta: Todas ▾</span>
+          <input class="input" placeholder="Buscar…" style="width:200px;height:32px;margin-left:auto">
+        </div>
+        <div class="card" style="padding:0">
+          <table>
+            <thead><tr><th>Código</th><th>Título</th><th>Tipo</th><th>Estado</th><th>SENAPRED</th><th>Cruz Roja</th><th>Inicio</th></tr></thead>
+            <tbody>
+              <tr onclick="show('detail')" style="cursor:pointer"><td class="code">2026-0015</td><td>Sistema frontal zona centro</td><td>Sistema frontal</td><td><span class="badge b-gray"><span class="dot"></span>Activo</span></td><td><span class="badge b-yellow"><span class="dot"></span>Amarilla</span></td><td><span class="badge b-yellow"><span class="dot"></span>Amarilla</span></td><td class="code">08/08 14:00</td></tr>
+              <tr style="cursor:pointer"><td class="code">2026-0014</td><td>Incendio sector Las Tablas</td><td>Incendio forestal</td><td><span class="badge b-gray"><span class="dot"></span>Activo</span></td><td><span class="badge b-red"><span class="dot"></span>Roja</span></td><td><span class="badge b-red"><span class="dot"></span>Roja</span></td><td class="code">07/08 11:20</td></tr>
+              <tr style="cursor:pointer"><td class="code">2026-0013</td><td>Marejadas litoral</td><td>Marejada</td><td><span class="badge b-gray"><span class="dot"></span>Activo</span></td><td><span class="badge b-gray"><span class="dot"></span>ATP</span></td><td><span class="badge b-green"><span class="dot"></span>Verde</span></td><td class="code">06/08 09:00</td></tr>
+              <tr style="cursor:pointer;color:var(--muted)"><td class="code">2026-0012</td><td>Corte de agua Quilpué</td><td>Corte de agua</td><td><span class="badge b-gray"><span class="dot"></span>Cerrado</span></td><td><span class="badge b-gray"><span class="dot"></span>—</span></td><td><span class="badge b-green"><span class="dot"></span>Verde</span></td><td class="code">02/08 18:30</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- INCIDENT DETAIL -->
+      <section id="s-detail" class="screen" style="display:none">
+        <div class="page-h">
+          <div>
+            <div class="tiny code">2026-0015 · Sistema frontal</div>
+            <h1>Sistema frontal zona centro</h1>
+          </div>
+          <div class="right">
+            <span class="badge b-yellow"><span class="dot"></span>SENAPRED: Amarilla</span>
+            <span class="badge b-yellow"><span class="dot"></span>Cruz Roja: Amarilla</span>
+            <button class="btn btn-primary btn-sm" onclick="show('bie')">Generar BIE</button>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:1.5fr 1fr">
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Descripción</div>
+              <p style="margin:0 0 12px">Sistema frontal afecta la zona centro de la región con precipitaciones intensas y viento. SENAPRED declaró Alerta Amarilla para 5 comunas.</p>
+              <div class="sec-title">Comunas afectadas</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <span class="chip">Valparaíso</span><span class="chip">Viña del Mar</span><span class="chip">Quilpué</span><span class="chip">Villa Alemana</span><span class="chip">Limache</span>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Cronología</div>
+              <div class="tl">
+                <div class="tl-item"><div class="tl-time">08/08 · 09:05</div>SENAPRED emite Alerta Temprana Preventiva. <span class="tiny">· SENAPRED</span></div>
+                <div class="tl-item"><div class="tl-time">08/08 · 10:15</div>DMC informa precipitaciones intensas. <span class="tiny">· DMC</span></div>
+                <div class="tl-item"><div class="tl-time">08/08 · 14:00</div>SENAPRED actualiza a Alerta Amarilla (5 comunas). <span class="tiny">· SENAPRED</span></div>
+                <div class="tl-item"><div class="tl-time">08/08 · 15:20</div>Cruz Roja activa 6 filiales. <span class="tiny">· Interno</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="sec-title">Evidencias</div>
+              <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))">
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden"><div style="height:70px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">imagen</div><div style="padding:6px 8px" class="tiny">Río Aconcagua · SENAPRED</div></div>
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden"><div style="height:70px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">PDF</div><div style="padding:6px 8px" class="tiny">Comunicado N°12 · SENAPRED</div></div>
+                <div style="border:1px dashed var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text2);min-height:100px;cursor:pointer">+ Capturar evidencia</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div style="display:flex;align-items:center"><div class="sec-title" style="margin:0">Situación actual</div><button class="btn btn-sm" style="margin-left:auto">Actualizar</button></div>
+              <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+                <div class="metric" style="border:0;background:var(--surface2)"><div class="lbl">Personas afectadas</div><div class="num" style="font-size:22px">2.350</div></div>
+                <div class="metric" style="border:0;background:var(--surface2)"><div class="lbl">Voluntarios</div><div class="num" style="font-size:22px">72</div></div>
+              </div>
+              <div class="sec-title" style="margin:16px 0 8px">Voluntarios por filial</div>
+              <table style="font-size:13px">
+                <tbody>
+                  <tr><td style="padding:6px 0">Valparaíso</td><td style="text-align:right;padding:6px 0" class="code">18</td></tr>
+                  <tr><td style="padding:6px 0">Viña del Mar</td><td style="text-align:right;padding:6px 0" class="code">16</td></tr>
+                  <tr><td style="padding:6px 0">Quilpué</td><td style="text-align:right;padding:6px 0" class="code">14</td></tr>
+                  <tr><td style="padding:6px 0">Villa Alemana</td><td style="text-align:right;padding:6px 0" class="code">12</td></tr>
+                  <tr><td style="padding:6px 0">Limache</td><td style="text-align:right;padding:6px 0" class="code">12</td></tr>
+                </tbody>
+              </table>
+              <p class="tiny" style="margin-top:8px">Cada actualización guarda un reporte nuevo → historial para comparar.</p>
+            </div>
+            <div class="card">
+              <div class="sec-title">Fuentes consultadas</div>
+              <div style="font-size:13px">
+                <div style="padding:7px 0;border-bottom:1px solid var(--border)">SENAPRED — Comunicado N°12 <span class="tiny">· 14:00</span></div>
+                <div style="padding:7px 0;border-bottom:1px solid var(--border)">DMC — Aviso meteorológico <span class="tiny">· 10:15</span></div>
+                <div style="padding:7px 0">Esval — Corte de suministro <span class="tiny">· 15:40</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GENERAR BIE -->
+      <section id="s-bie" class="screen" style="display:none">
+        <div class="page-h">
+          <div><div class="tiny code">2026-0015 · Sistema frontal</div><h1>Generar BIE — Monitoreo Regional</h1></div>
+          <div class="right"><span class="badge b-gray"><span class="dot"></span>Borrador · N°15 · v3</span></div>
+        </div>
+        <p class="tiny" style="margin:-6px 0 14px">Autollenado desde el incidente y las fuentes. Convenciones: <b>N/A</b> = no aplica · <b>En evaluación</b> = sin dato oficial aún. Nunca datos personales sensibles (regla dura).</p>
+        <div class="grid" style="grid-template-columns:1.15fr 1fr">
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Datos oficiales</div>
+              <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+                <div class="field" style="margin:0"><label class="label">N° BIE</label><input class="input" value="15"></div>
+                <div class="field" style="margin:0"><label class="label">Tipo de emergencia</label><input class="input" value="Evento Meteorológico"></div>
+                <div class="field" style="margin:0"><label class="label">Fecha / hora del evento</label><input class="input" value="08/08/2026 · 14:00"></div>
+                <div class="field" style="margin:0"><label class="label">Fecha / hora del reporte</label><input class="input" value="10/08/2026 · 16:22"></div>
+                <div class="field" style="margin:0"><label class="label">Alerta SENAPRED</label><input class="input" value="Amarilla (Regional Continental)"></div>
+                <div class="field" style="margin:0"><label class="label">Alerta Cruz Roja</label><input class="input" value="VERDE"></div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Afectación</div>
+              <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div class="field" style="margin:0"><label class="label">Afectados</label><input class="input" value="2.350"></div>
+                <div class="field" style="margin:0"><label class="label">Comunas</label><input class="input" value="5"></div>
+                <div class="field" style="margin:0"><label class="label">Viviendas</label><input class="input" value="2 (eval.)"></div>
+                <div class="field" style="margin:0"><label class="label">Heridos</label><input class="input" value="3"></div>
+                <div class="field" style="margin:0"><label class="label">Desplazados</label><input class="input" value="87"></div>
+                <div class="field" style="margin:0"><label class="label">Fallecidos</label><input class="input" value="0"></div>
+                <div class="field" style="margin:0"><label class="label">Damnificados</label><input class="input" value="0"></div>
+                <div class="field" style="margin:0"><label class="label">Albergues</label><input class="input" value="8"></div>
+                <div class="field" style="margin:0"><label class="label">Albergados</label><input class="input" value="64"></div>
+                <div class="field" style="margin:0"><label class="label">Agua</label><input class="input" value="La Calera: 700"></div>
+                <div class="field" style="margin:0"><label class="label">Eléctrico</label><input class="input" value="126.277 sin luz"></div>
+                <div class="field" style="margin:0"><label class="label">Rutas</label><input class="input" value="Ruta 5N km171"></div>
+                <div class="field" style="margin:0"><label class="label">Hospitales</label><input class="input" value="2"></div>
+                <div class="field" style="margin:0"><label class="label">Aeropuerto</label><input class="input" value="N/A"></div>
+                <div class="field" style="margin:0"><label class="label">Otras</label><input class="input" value="48 sitios telecom"></div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Descripción · 16 títulos</div>
+              <div style="font-size:13px">
+                <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex"><span>1. Síntesis de la jornada</span><a class="tiny" style="margin-left:auto;color:var(--info)">editar</a></div>
+                <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex"><span>2. Alerta vigente y novedad principal</span><a class="tiny" style="margin-left:auto;color:var(--info)">editar</a></div>
+                <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex"><span>4. Balance regional</span><a class="tiny" style="margin-left:auto;color:var(--info)">editar</a></div>
+                <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex"><span>13. Emergencias por provincia y comuna</span><a class="tiny" style="margin-left:auto;color:var(--info)">editar</a></div>
+                <div style="padding:7px 0;color:var(--muted)">+ 12 títulos más (salud, viviendas, eléctrica, agua, rutas, telecom, hidrología, educación, gobierno, proyección, fuentes…)</div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Cruz Roja: accionar y voluntariado</div>
+              <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div class="field" style="margin:0"><label class="label">Filiales</label><input class="input" value="Totalidad de la región"></div>
+                <div class="field" style="margin:0"><label class="label">Voluntarios</label><input class="input" value="72"></div>
+              </div>
+              <div class="field" style="margin:0 0 8px"><label class="label">Accionar (gestión · salud · comunicación · protección)</label><textarea class="textarea">Participación en COGRID y monitoreo; reposición de botiquines; difusión de autocuidado; RCF y resguardo de datos sensibles.</textarea></div>
+              <div class="field" style="margin:0"><label class="label">Reporte por filial</label><textarea class="textarea">Quintero: acceso inundado, cierre preventivo.
+Viña del Mar: voluntarios en albergues 2 Oriente y 11 Norte.</textarea></div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-title">Necesidades internas</div>
+              <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div class="field" style="margin:0"><label class="label">Gestión</label><input class="input" value="Kits, nylon…"></div>
+                <div class="field" style="margin:0"><label class="label">Salud</label><input class="input" value="Botiquines…"></div>
+                <div class="field" style="margin:0"><label class="label">Voluntariado</label><input class="input" value="Impermeables"></div>
+                <div class="field" style="margin:0"><label class="label">Logística</label><input class="input" value="Vehículo"></div>
+                <div class="field" style="margin:0"><label class="label">Albergues</label><input class="input" value="Kits seguros"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="sec-title">Cierre y firma</div>
+              <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+                <div class="field" style="margin:0"><label class="label">Sala de crisis</label><input class="input" value="Activada"></div>
+                <div class="field" style="margin:0"><label class="label">Telecomunicaciones</label><input class="input" value="Sin Activar"></div>
+                <div class="field" style="margin:0"><label class="label">Elaborado por</label><input class="input" value="Nicolás Jerez"></div>
+                <div class="field" style="margin:0"><label class="label">Autorizado por (fijo)</label><input class="input" value="Ive Manni" readonly style="background:var(--surface2)"></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-sm">Guardar borrador</button>
+                <button class="btn btn-sm">Enviar a aprobación</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div style="display:flex;align-items:center"><div class="sec-title" style="margin:0">Vista previa</div><div class="right" style="margin-left:auto;display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="show('preview')">Ver completo</button><button class="btn btn-sm">Word</button><button class="btn btn-sm">PDF</button></div></div>
+              <div class="watermark" style="margin:12px 0;text-align:center;font-weight:600">BORRADOR · APOYO, NO OFICIAL</div>
+              <div style="border:1px solid var(--border);border-radius:8px;padding:16px;font-size:13px;line-height:1.6;max-height:360px;overflow:auto">
+                <div style="text-align:center;font-weight:600;margin-bottom:8px">BIE N°15 — Monitoreo Regional<br><span class="tiny">Cruz Roja Chilena · Comité Regional Valparaíso</span></div>
+                <div><b>Tipo:</b> Evento Meteorológico &nbsp; <b>Inicio:</b> 08/08 14:00</div>
+                <div><b>Alerta SENAPRED:</b> Amarilla (Regional) &nbsp; <b>Cruz Roja:</b> VERDE</div>
+                <div style="margin-top:6px"><b>Afectación:</b> 2.350 afectados · 87 desplazados · 8 albergues (64) · 126.277 sin luz</div>
+                <div style="margin-top:6px"><b>Descripción:</b> Sistema frontal en las 7 provincias; SAE por crecida del Estero Marga Marga…</div>
+                <div style="margin-top:6px"><b>Cruz Roja:</b> Totalidad de filiales · 72 voluntarios · apoyo en albergues (Viña)</div>
+                <div style="margin-top:6px;color:var(--text2)">Fuentes: SENAPRED, DMC, DGA, SEC/Chilquinta, Esval, DIRECTEMAR, SUBTEL…</div>
+                <div style="margin-top:8px" class="tiny">Elaborado por Nicolás Jerez · Autorizado por Ive Manni</div>
+              </div>
+              <div class="sec-title" style="margin-top:16px">Versiones</div>
+              <div style="font-size:13px">
+                <div style="padding:6px 0;border-bottom:1px solid var(--border)">v3 · Borrador <span class="tiny">· hoy 16:10</span></div>
+                <div style="padding:6px 0;border-bottom:1px solid var(--border)">v2 · Aprobado <span class="tiny">· 09/08 12:00</span></div>
+                <div style="padding:6px 0">v1 · Exportado <span class="tiny">· 08/08 18:30</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NUEVO INCIDENTE -->
+      <section id="s-nuevo" class="screen" style="display:none">
+        <div class="page-h"><div><div class="tiny">Incidentes ›</div><h1>Nuevo incidente</h1></div></div>
+        <div class="card" style="max-width:780px">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+            <div class="field" style="margin:0"><label class="label">Título</label><input class="input" placeholder="Ej. Sistema frontal zona centro"></div>
+            <div class="field" style="margin:0"><label class="label">Tipo de evento</label><input class="input" value="Sistema frontal ▾"></div>
+            <div class="field" style="margin:0"><label class="label">Fecha / hora de inicio</label><input class="input" placeholder="dd/mm/aaaa · hh:mm"></div>
+            <div class="field" style="margin:0"><label class="label">Estado</label><input class="input" value="Monitoreo ▾"></div>
+            <div class="field" style="margin:0"><label class="label">Alerta SENAPRED</label><input class="input" value="Sin alerta ▾"></div>
+            <div class="field" style="margin:0"><label class="label">Alerta Cruz Roja</label><input class="input" value="Verde ▾"></div>
+          </div>
+          <div class="field" style="margin:14px 0 0"><label class="label">Comunas afectadas</label>
+            <div style="border:1px solid var(--border2);border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:6px">
+              <span class="chip">Valparaíso ✕</span><span class="chip">Viña del Mar ✕</span><span class="chip">Quilpué ✕</span>
+              <input class="input" placeholder="+ agregar comuna" style="border:0;flex:1;min-width:130px;height:28px;padding:4px">
+            </div>
+          </div>
+          <div class="field" style="margin:14px 0 0"><label class="label">Descripción</label><textarea class="textarea"></textarea></div>
+          <div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-primary btn-sm">Crear incidente</button><button class="btn btn-sm" onclick="show('incidents')">Cancelar</button></div>
+        </div>
+      </section>
+
+      <!-- EXPEDIENTE -->
+      <section id="s-expediente" class="screen" style="display:none">
+        <div class="page-h"><div><div class="tiny code">Expediente · 2026-0015</div><h1>Sistema frontal zona centro</h1></div><div class="right"><button class="btn btn-sm">Exportar expediente</button></div></div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-bottom:14px">
+          <div class="metric"><div class="lbl">Duración</div><div class="num" style="font-size:20px">3 días</div></div>
+          <div class="metric"><div class="lbl">BIE emitidos</div><div class="num" style="font-size:20px">3</div></div>
+          <div class="metric"><div class="lbl">Evidencias</div><div class="num" style="font-size:20px">14</div></div>
+          <div class="metric"><div class="lbl">Fuentes</div><div class="num" style="font-size:20px">9</div></div>
+          <div class="metric"><div class="lbl">Comunas</div><div class="num" style="font-size:20px">5</div></div>
+        </div>
+        <div class="card" style="margin-bottom:12px"><div class="sec-title">Resumen</div><p style="margin:0">Sistema frontal (08–11/08) con Alerta Amarilla en 5 comunas; 2.350 afectados, 72 voluntarios de 6 filiales. Evento cerrado el 11/08.</p></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div class="card"><div class="sec-title">Cronología completa</div>
+            <div class="tl">
+              <div class="tl-item"><div class="tl-time">08/08 · 09:05</div>ATP SENAPRED</div>
+              <div class="tl-item"><div class="tl-time">08/08 · 14:00</div>Alerta Amarilla (5 comunas)</div>
+              <div class="tl-item"><div class="tl-time">09/08 · 12:00</div>BIE v2 aprobado</div>
+              <div class="tl-item"><div class="tl-time">11/08 · 10:00</div>Cierre del evento</div>
+            </div>
+          </div>
+          <div class="card"><div class="sec-title">Conclusiones y lecciones aprendidas</div>
+            <textarea class="textarea" style="min-height:130px">Coordinación oportuna con COGRID. Reforzar stock de impermeables y botas. La filial Quintero requiere acceso alternativo ante inundación del ingreso.</textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- MAPA -->
+      <section id="s-mapa" class="screen" style="display:none">
+        <div class="page-h"><h1>Mapa por comuna</h1><div class="right"><button class="btn btn-sm" id="mapSizeBtn" onclick="toggleMapSize()">⤢ Ampliar</button><button class="btn btn-sm">Descargar PNG</button><button class="btn btn-sm">Descargar PDF</button></div></div>
+        <div class="grid" id="mapgrid" style="grid-template-columns:1.5fr 1fr">
+          <div class="card">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+              <span class="badge b-red"><span class="dot"></span>Roja</span><span class="badge b-celeste"><span class="dot"></span>Preventiva</span><span class="badge b-yellow"><span class="dot"></span>Amarilla</span><span class="badge b-green"><span class="dot"></span>Sin alerta</span>
+            </div>
+            <div id="lmap" style="height:340px;border-radius:8px;border:1px solid var(--border);z-index:0"></div>
+            <p class="tiny" style="margin-top:8px">Mapa real con <b>Leaflet + OpenStreetMap</b> (gratis, sin API key) · comunas coloreadas por alerta · apoyo, no oficial</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;align-items:center">
+              <span class="tiny" style="font-weight:600">Zonas estimadas:</span>
+              <span class="tiny" style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#E4661E;opacity:.45;border:1px solid #E4661E"></span>Incendio</span>
+              <span class="tiny" style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#1D4ED8;opacity:.4;border:1px solid #1D4ED8"></span>Inundación</span>
+              <span class="tiny" style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#92400E;opacity:.4;border:1px solid #92400E"></span>Remoción</span>
+              <span class="tiny" style="color:var(--text2)">· Lluvia: capa de radar</span>
+            </div>
+          </div>
+          <div class="card" id="comunaCard"><div class="sec-title">Comunas por alerta</div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+              <span class="badge b-red"><span class="dot"></span>Valparaíso</span>
+              <span class="badge b-celeste"><span class="dot"></span>Viña del Mar</span>
+              <span class="badge b-yellow"><span class="dot"></span>Quilpué</span>
+              <span class="badge b-yellow"><span class="dot"></span>Villa Alemana</span>
+              <span class="badge b-green"><span class="dot"></span>Concón</span>
+              <span class="badge b-green"><span class="dot"></span>Limache</span>
+              <span class="badge b-green"><span class="dot"></span>Quillota</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ESTADISTICAS -->
+      <section id="s-estadisticas" class="screen" style="display:none">
+        <div class="page-h"><h1>Estadísticas</h1><div class="right"><span class="chip">Año 2026 ▾</span></div></div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:14px">
+          <div class="metric"><div class="lbl">Eventos 2026</div><div class="num">42</div></div>
+          <div class="metric"><div class="lbl">Alertas rojas</div><div class="num" style="color:var(--r)">7</div></div>
+          <div class="metric"><div class="lbl">BIE emitidos</div><div class="num">156</div></div>
+          <div class="metric"><div class="lbl">Comuna + eventos</div><div class="num" style="font-size:17px">Valparaíso</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div class="card"><div class="sec-title">Eventos por tipo</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:118px;font-size:13px" class="muted">Sistema frontal</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:74%;background:var(--red);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">14</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:118px;font-size:13px" class="muted">Incendio forestal</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:48%;background:var(--red);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">9</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:118px;font-size:13px" class="muted">Marejadas</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:37%;background:var(--red);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">7</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:118px;font-size:13px" class="muted">Sismo</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:32%;background:var(--red);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">6</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:118px;font-size:13px" class="muted">Corte servicios</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:32%;background:var(--red);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">6</span></div>
+          </div>
+          <div class="card"><div class="sec-title">Eventos por mes</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:60px;font-size:13px" class="muted">Marzo</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:33%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">4</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:60px;font-size:13px" class="muted">Abril</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:25%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">3</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:60px;font-size:13px" class="muted">Mayo</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:42%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">5</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:60px;font-size:13px" class="muted">Junio</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:67%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">8</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:60px;font-size:13px" class="muted">Julio</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:100%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">12</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:60px;font-size:13px" class="muted">Agosto</span><div style="flex:1;background:var(--surface2);border-radius:4px;height:14px"><div style="width:83%;background:var(--grafito);height:14px;border-radius:4px"></div></div><span class="code" style="font-size:12px;width:20px;text-align:right">10</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATALOGOS -->
+      <section id="s-catalogos" class="screen" style="display:none">
+        <div class="page-h"><h1>Catálogos</h1><div class="right"><button class="btn btn-primary btn-sm">+ Agregar</button></div></div>
+        <div class="card" style="padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="chip" style="background:var(--red-t);color:var(--red);border-color:var(--red)">Filiales</span><span class="chip">Comunas</span><span class="chip">Tipos de evento</span><span class="chip">Fuentes</span>
+        </div>
+        <div class="card" style="padding:0"><table>
+          <thead><tr><th>Filial</th><th>Comuna</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Filial Valparaíso</td><td>Valparaíso</td><td><span class="badge b-green"><span class="dot"></span>Activa</span></td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Filial Viña del Mar</td><td>Viña del Mar</td><td><span class="badge b-green"><span class="dot"></span>Activa</span></td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Filial Quilpué</td><td>Quilpué</td><td><span class="badge b-green"><span class="dot"></span>Activa</span></td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Filial Quillota</td><td>Quillota</td><td><span class="badge b-gray"><span class="dot"></span>Inactiva</span></td><td class="tiny" style="color:var(--info)">editar</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <!-- USUARIOS -->
+      <section id="s-usuarios" class="screen" style="display:none">
+        <div class="page-h"><h1>Usuarios</h1><div class="right"><button class="btn btn-primary btn-sm">+ Invitar usuario</button></div></div>
+        <div class="card" style="padding:0"><table>
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último ingreso</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Nicolás Jerez</td><td>njerez@cruzroja.cl</td><td><span class="badge b-red"><span class="dot"></span>Admin</span></td><td><span class="badge b-green"><span class="dot"></span>Activo</span></td><td class="code">hoy 15:40</td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Ive Manni</td><td>imanni@cruzroja.cl</td><td><span class="badge b-orange"><span class="dot"></span>Coordinador</span></td><td><span class="badge b-green"><span class="dot"></span>Activo</span></td><td class="code">hoy 12:10</td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Operador Sala</td><td>sala@cruzroja.cl</td><td><span class="badge b-yellow"><span class="dot"></span>Operador</span></td><td><span class="badge b-green"><span class="dot"></span>Activo</span></td><td class="code">ayer 22:05</td><td class="tiny" style="color:var(--info)">editar</td></tr>
+            <tr><td>Consulta DEM</td><td>dem@cruzroja.cl</td><td><span class="badge b-gray"><span class="dot"></span>Consulta</span></td><td><span class="badge b-gray"><span class="dot"></span>Inactivo</span></td><td class="code">02/08</td><td class="tiny" style="color:var(--info)">editar</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <!-- ESTADOS -->
+      <section id="s-estados" class="screen" style="display:none">
+        <div class="page-h"><div><h1>Estados de las vistas</h1><div class="tiny">Patrones reutilizables: vacío · carga · error/offline</div></div></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="card"><div class="sec-title">Vacío</div>
+            <div style="text-align:center;padding:16px 8px">
+              <div style="font-size:15px;font-weight:500">Aún no hay incidentes</div>
+              <p class="tiny" style="margin:6px 0 12px">Crea el primero para empezar a monitorear.</p>
+              <button class="btn btn-primary btn-sm" onclick="show('nuevo')">+ Nuevo incidente</button>
+            </div>
+          </div>
+          <div class="card"><div class="sec-title">Cargando</div>
+            <div style="height:14px;background:var(--surface2);border-radius:6px;margin-bottom:8px"></div>
+            <div style="height:14px;width:80%;background:var(--surface2);border-radius:6px;margin-bottom:8px"></div>
+            <div style="height:14px;width:55%;background:var(--surface2);border-radius:6px;margin-bottom:14px"></div>
+            <div style="height:40px;background:var(--surface2);border-radius:8px"></div>
+          </div>
+          <div class="card"><div class="sec-title">Error / offline</div>
+            <div style="background:var(--r-b);color:var(--r-t);border-radius:8px;padding:11px;font-size:13px">No pudimos cargar los datos. <a style="color:var(--r-t);text-decoration:underline">Reintentar</a></div>
+            <div style="background:var(--y-b);color:var(--y-t);border-radius:8px;padding:11px;font-size:13px;margin-top:8px">Trabajando sin conexión. Los cambios se sincronizarán al reconectar.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAMARAS -->
+      <section id="s-camaras" class="screen" style="display:none">
+        <div class="page-h"><div><h1>Cámaras en vivo</h1><div class="tiny">Transmisiones curadas de YouTube por zona · embed oficial</div></div><div class="right"><button class="btn btn-primary btn-sm">+ Agregar cámara</button></div></div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="position:relative;background:#0b0b0b;height:150px;display:flex;align-items:center;justify-content:center;color:#8A93A0;font-size:13px">▶ transmisión en vivo (YouTube)
+              <span style="position:absolute;top:8px;left:8px;background:var(--r);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px">EN VIVO</span>
+            </div>
+            <div style="padding:10px 12px"><div style="font-weight:500">Bahía de Valparaíso</div><div class="tiny">Puerto · fuente pública YouTube</div></div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="position:relative;background:#0b0b0b;height:150px;display:flex;align-items:center;justify-content:center;color:#8A93A0;font-size:13px">▶ transmisión en vivo (YouTube)
+              <span style="position:absolute;top:8px;left:8px;background:var(--r);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px">EN VIVO</span>
+            </div>
+            <div style="padding:10px 12px"><div style="font-weight:500">Borde costero Viña del Mar</div><div class="tiny">Playa · fuente pública YouTube</div></div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="position:relative;background:#0b0b0b;height:150px;display:flex;align-items:center;justify-content:center;color:#8A93A0;font-size:13px">▶ sin señal
+              <span style="position:absolute;top:8px;left:8px;background:var(--muted);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px">OFFLINE</span>
+            </div>
+            <div style="padding:10px 12px"><div style="font-weight:500">Quintero — zona industrial</div><div class="tiny">Sin señal ahora · reintentar</div></div>
+          </div>
+          <div class="card" style="display:flex;align-items:center;justify-content:center;color:var(--text2);min-height:150px;border-style:dashed">+ Agregar cámara (link de YouTube)</div>
+        </div>
+        <p class="tiny" style="margin-top:12px">Catálogo curado por el operador. Descubrimiento opcional vía YouTube Data API (cuota gratuita). No se descargan ni redistribuyen los streams.</p>
+      </section>
+
+      <!-- VISTA PREVIA DOCUMENTO -->
+      <section id="s-preview" class="screen" style="display:none">
+        <div class="page-h"><div><div class="tiny code">Vista previa · BIE N°4</div><h1>Documento BIE</h1><div class="tiny">Al descargar, el Word/PDF usa tu plantilla oficial → logos y formato exactos</div></div>
+          <div class="right"><button class="btn btn-sm" onclick="show('bie')">← Volver</button><button class="btn btn-sm">Word</button><button class="btn btn-primary btn-sm">PDF</button></div></div>
+        <div style="background:var(--surface2);padding:20px;border-radius:12px;display:flex;justify-content:center">
+          <div style="background:#fff;max-width:820px;width:100%;box-shadow:0 1px 10px rgba(0,0,0,.12);padding:38px 44px;position:relative;font-size:13px;line-height:1.55;color:#1a1a1a">
+            <div style="position:absolute;top:14px;right:14px;background:var(--r-b);color:var(--r-t);font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px">BORRADOR · NO OFICIAL</div>
+            <div style="text-align:center;border-bottom:2px solid var(--grafito);padding-bottom:12px;margin-bottom:16px">
+              <div style="font-weight:600;color:var(--red);letter-spacing:.5px">CRUZ ROJA CHILENA</div>
+              <div class="tiny">Comité Regional Valparaíso</div>
+              <div style="font-size:15px;font-weight:600;margin-top:10px">Boletín de Información de Emergencia (BIE) — Monitoreo Regional</div>
+              <div class="tiny">N°4 · Evento Meteorológico | Región de Valparaíso | 17-07-2026 | 16:22 hrs.</div>
+            </div>
+
+            <div style="font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);padding-bottom:4px;margin:6px 0 10px">1. Datos generales</div>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:8px">
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500;width:34%">Tipo de emergencia</td><td style="border:1px solid #d9d9d9;padding:5px 9px">Evento Meteorológico</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Evento</td><td style="border:1px solid #d9d9d9;padding:5px 9px">Evento Meteorológico – Región de Valparaíso</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Fecha y hora del evento</td><td style="border:1px solid #d9d9d9;padding:5px 9px">13-07-2026 · 14:06 hrs.</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Fecha y hora del reporte</td><td style="border:1px solid #d9d9d9;padding:5px 9px">17-07-2026 · 16:22 hrs.</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Alerta Cruz Roja</td><td style="border:1px solid #d9d9d9;padding:5px 9px">VERDE</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Alerta SENAPRED</td><td style="border:1px solid #d9d9d9;padding:5px 9px">Amarilla (Regional Continental)</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Magnitud / Intensidad</td><td style="border:1px solid #d9d9d9;padding:5px 9px">N/A</td></tr>
+              <tr><td style="border:1px solid #d9d9d9;padding:5px 9px;background:#f3f4f6;font-weight:500">Afectación territorial</td><td style="border:1px solid #d9d9d9;padding:5px 9px">Regional (múltiples comunas)</td></tr>
+            </table>
+
+            <div style="font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);padding-bottom:4px;margin:16px 0 10px">2. Afectación</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12.5px;margin-bottom:8px">
+              <div><b>Afectados:</b> 90 est. (SENAPRED/SEREMI, 17/07)</div>
+              <div><b>Comunas:</b> al menos 26</div>
+              <div><b>Viviendas:</b> 2 con daños en evaluación</div>
+              <div><b>Heridos:</b> 3 (Algarrobo 1; Valparaíso 2)</div>
+              <div><b>Desplazados:</b> 87 (evacuados + albergados)</div>
+              <div><b>Albergues:</b> 8 · <b>Albergados:</b> 64</div>
+              <div><b>Fallecidos:</b> en evaluación</div>
+              <div><b>Damnificados:</b> 0 (SENAPRED N°178-H)</div>
+              <div><b>Eléctrico:</b> 126.277 sin suministro (SEC, 11:00)</div>
+              <div><b>Agua:</b> La Calera 700 sin agua (APR)</div>
+              <div><b>Rutas:</b> Ruta 5N km171 y Paso Los Libertadores cerrados</div>
+              <div><b>Hospitales:</b> 2 (Van Buren; San Camilo)</div>
+              <div><b>Aeropuerto:</b> N/A</div>
+              <div><b>Otras:</b> 48 sitios telecom caídos; clases suspendidas</div>
+            </div>
+
+            <div style="font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);padding-bottom:4px;margin:16px 0 10px">3. Descripción</div>
+            <p style="margin:0 0 7px"><b>1. SÍNTESIS DE LA JORNADA.</b> Sistema frontal que afecta a la región desde el 15/07, con viento y precipitaciones en las siete provincias; emergencias menores atendidas por recursos locales.</p>
+            <p style="margin:0 0 7px"><b>2. ALERTA VIGENTE Y NOVEDAD PRINCIPAL.</b> SENAPRED mantiene Alerta Amarilla (continental) desde el 14/07; a las 15:55 se activó SAE por crecida del Estero Marga Marga (Viña del Mar).</p>
+            <p style="margin:0 0 7px"><b>3. ALERTAMIENTOS Y AVISOS.</b> DMC alarma AAA4 por precipitaciones (17–19/07); DIRECTEMAR marejadas N°32; SERNAGEOMIN probabilidad alta de remoción; CONAF cierre de áreas protegidas.</p>
+            <p style="margin:0 0 7px"><b>4. BALANCE REGIONAL.</b> SENAPRED N°178-H (12:00): 64 albergados, 3 lesionados, 0 damnificados, 500 aislados (Petorca), 23 evacuados (Santo Domingo), 2 viviendas con daños.</p>
+            <p style="margin:0 0 7px"><b>5. SALUD Y HOSPITALES.</b> 2 establecimientos afectados: Hospital Van Buren (filtraciones) y San Camilo (drenaje del patio de ambulancias). Red asistencial operativa.</p>
+            <p style="margin:0 0 7px"><b>6. ESTABLECIMIENTOS EDUCACIONALES.</b> MINEDUC suspendió clases el 17/07 en la región; daños en colegios de Puchuncaví y Quintero.</p>
+            <p style="margin:0 0 7px"><b>7. VIVIENDAS AFECTADAS.</b> 2 viviendas con daños en evaluación; derrumbe en Subida Washington (Cerro O'Higgins) con 7 familias colindantes en riesgo.</p>
+            <p style="margin:0 0 7px"><b>8. SITUACIÓN ELÉCTRICA.</b> SEC (11:00): 126.277 clientes sin suministro; más afectadas Quilpué, Valparaíso, Viña y San Felipe. Chilquinta en reposición.</p>
+            <p style="margin:0 0 7px"><b>9. AGUA POTABLE.</b> La Calera (APR Pachacamita): 700 personas sin agua por corte eléctrico; Nogales operando con respaldo.</p>
+            <p style="margin:0 0 7px"><b>10. CONECTIVIDAD Y RUTAS.</b> Ruta 5 Norte km 171 y Paso Los Libertadores cerrados; Merval detenido; puertos con restricciones.</p>
+            <p style="margin:0 0 7px"><b>11. TELECOMUNICACIONES.</b> SUBTEL: 48 sitios caídos por cortes eléctricos; roaming de emergencia activado.</p>
+            <p style="margin:0 0 7px"><b>12. HIDROLOGÍA Y CAUCES.</b> DGA: Aconcagua en Chacabuquito 11–13 m³/s (umbral 150,7); Estero Marga Marga con alerta de crecida activa.</p>
+            <p style="margin:0 0 7px"><b>13. EMERGENCIAS POR PROVINCIA Y COMUNA.</b> Valparaíso: cortes y ráfagas de 104 km/h; Petorca: 500 aislados; San Antonio: 23 evacuados (Humedal El Yali); Los Andes: 97 cm de nieve en Lagunitas.</p>
+            <p style="margin:0 0 7px"><b>14. ACCIONES MUNICIPALES Y DE GOBIERNO.</b> COGRID en funcionamiento; Decreto de Emergencia Preventiva (13–21/07); cierres de Av. España y bordes costeros.</p>
+            <p style="margin:0 0 7px"><b>15. PROYECCIÓN DEL EVENTO.</b> Continuidad de precipitaciones y viento hasta el 19/07, con tormentas eléctricas; monitoreo de cauces por suelo saturado.</p>
+            <p style="margin:0 0 7px"><b>16. FUENTES CONSULTADAS.</b> SENAPRED, DMC, DGA, Vialidad-MOP, DIRECTEMAR, SERNAGEOMIN, CONAF, SEC/Chilquinta, Esval, SUBTEL, Delegación Presidencial, MINEDUC, MINSAL, EFE.</p>
+
+            <div style="font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);padding-bottom:4px;margin:16px 0 10px">4. Filiales y voluntariado</div>
+            <p style="margin:0 0 6px"><b>Filiales:</b> Totalidad de filiales de la región de Valparaíso · <b>Voluntarios:</b> al menos 50.</p>
+            <p style="margin:0 0 6px"><b>Actividades:</b> monitoreo de comunas y reporte al Comité Regional; apoyo en albergues (Viña del Mar); programa RCF; coordinación con los COGRID.</p>
+            <p style="margin:0 0 6px"><b>Accionar:</b> participación en COGRID (gestión); reposición de botiquines (salud); difusión de autocuidado (comunicación); RCF y resguardo de datos sensibles (protección).</p>
+            <p style="margin:0 0 6px"><b>Reporte por filial:</b> Quintero — acceso inundado, cierre preventivo. Villa Alemana — goteras, albergue habilitado sin personas. Limache — voluntariado disponible. Quillota — filial inundada, recursos disponibles. Viña del Mar — voluntarios trasladados a albergues 2 Oriente y 11 Norte.</p>
+
+            <div style="font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);padding-bottom:4px;margin:16px 0 10px">5. Necesidades internas</div>
+            <p style="margin:0 0 4px"><b>Gestión:</b> kits de alimentación e higiene, nylon, cuerdas, linternas, EPP. · <b>Salud:</b> botiquines impermeables, gasas, vendas, sueros.</p>
+            <p style="margin:0 0 4px"><b>Voluntariado:</b> abrigo institucional, impermeable logotipado, botas. · <b>Logística:</b> vehículo institucional. · <b>Albergues:</b> kits para espacios seguros.</p>
+
+            <div style="margin-top:22px;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px">
+              <p style="margin:0 0 6px"><b>Monitoreo y recopilación de información:</b> Ive Manni, Dayana Moreno, Kabriell Valencia, Sara Girbau, Evelyn Rozas, Nicolás Jerez</p>
+              <p style="margin:0 0 12px"><b>Coordinación Sala de Crisis:</b> Activada &nbsp;·&nbsp; <b>Telecomunicaciones:</b> Sin Activar &nbsp;·&nbsp; <b>N° BIE:</b> 4</p>
+              <div style="display:flex;justify-content:space-between">
+                <div><b>Elaborado por:</b> Nicolás Jerez<br><span class="tiny">Equipo de Monitoreo Regional</span></div>
+                <div style="text-align:right"><b>Autorizado por:</b> Ive Manni<br><span class="tiny">Directora Regional de Gestión del Riesgo</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  var TS=1.1;
+  function tscale(d){TS=Math.max(0.85,Math.min(1.6,Math.round((TS+d*0.1)*100)/100));applyTS();}
+  function applyTS(){document.body.style.zoom=TS;}
+  var lmap=null;
+  function initMap(){
+    if(typeof L==='undefined')return;
+    var el=document.getElementById('lmap'); if(!el)return;
+    if(lmap){setTimeout(function(){lmap.invalidateSize();},60);return;}
+    lmap=L.map('lmap').setView([-33.0,-71.5],9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(lmap);
+    var C=[['Valparaíso',-33.045,-71.62,'#C1121F','Roja'],['Viña del Mar',-33.02,-71.55,'#0EA5E9','Preventiva'],['Quilpué',-33.05,-71.44,'#E5A400','Amarilla'],['Villa Alemana',-33.04,-71.37,'#E5A400','Amarilla'],['Concón',-32.92,-71.52,'#1F8A54','Sin alerta'],['Quintero',-32.79,-71.53,'#1F8A54','Sin alerta'],['Quillota',-32.88,-71.25,'#1F8A54','Sin alerta']];
+    for(var k=0;k<C.length;k++){L.circleMarker([C[k][1],C[k][2]],{radius:11,color:C[k][3],fillColor:C[k][3],fillOpacity:0.65,weight:2}).addTo(lmap).bindPopup('<b>'+C[k][0]+'</b><br>Alerta: '+C[k][4]);}
+    L.polygon([[-33.06,-71.61],[-33.09,-71.57],[-33.05,-71.55],[-33.03,-71.59]],{color:'#E4661E',fillColor:'#E4661E',fillOpacity:0.35,weight:2}).addTo(lmap).bindPopup('<b>Zona estimada — Incendio</b><br>Aproximada · no oficial');
+    L.polygon([[-32.95,-71.55],[-32.93,-71.50],[-32.90,-71.53],[-32.92,-71.58]],{color:'#1D4ED8',fillColor:'#1D4ED8',fillOpacity:0.30,weight:2}).addTo(lmap).bindPopup('<b>Zona estimada — Inundación</b><br>Aproximada · no oficial');
+    setTimeout(function(){lmap.invalidateSize();},120);
+  }
+  var mapBig=false;
+  function toggleMapSize(){
+    mapBig=!mapBig;
+    var lm=document.getElementById('lmap'), grid=document.getElementById('mapgrid'), cc=document.getElementById('comunaCard'), btn=document.getElementById('mapSizeBtn');
+    if(mapBig){lm.style.height='80vh';grid.style.gridTemplateColumns='1fr';if(cc)cc.style.display='none';if(btn)btn.textContent='⤡ Reducir';}
+    else{lm.style.height='340px';grid.style.gridTemplateColumns='1.5fr 1fr';if(cc)cc.style.display='';if(btn)btn.textContent='⤢ Ampliar';}
+    if(lmap)setTimeout(function(){lmap.invalidateSize();},80);
+  }
+  function show(view){
+    var login=document.getElementById('login'), shell=document.getElementById('shell');
+    if(view==='login'){login.style.display='flex';shell.style.display='none';return;}
+    login.style.display='none';shell.style.display='block';
+    var scr=document.querySelectorAll('.screen');
+    for(var i=0;i<scr.length;i++)scr[i].style.display='none';
+    var el=document.getElementById('s-'+view); if(el)el.style.display='block';
+    var nav=document.querySelectorAll('.navitem');
+    for(var j=0;j<nav.length;j++)nav[j].classList.toggle('active', nav[j].getAttribute('data-view')===view);
+    if(view==='mapa')setTimeout(initMap,60);
+  }
+</script>
+</body>
+</html>
