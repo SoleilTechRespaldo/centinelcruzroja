@@ -9,7 +9,7 @@
 - **Stack:** PWA Quasar (Vue 3 + TS) + **backend Hono sobre Turso** (SQLite/libSQL,
   Drizzle) + R2 (archivos); Dexie offline; docxtemplater; ECharts. Detalle en docs/02-STACK.md.
 - **Inicio:** 2026-08-06 · **Última actualización:** 2026-08-06
-- **Fase actual:** 5 — Crear el proyecto local (scaffold Quasar) *(próxima)*
+- **Fase actual:** 12 — Desarrollo frontend (en curso, contra mocks)
 
 Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
@@ -17,19 +17,19 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
 ## ▶ PARA RETOMAR
 
-**Hecho:** Fases 1–4 + ERD (docs/05) + **mockups (14 pantallas)** aprobados.
-🚦G1 · 🚦G2 · **🚦G3 aprobada (2026-08-11)**. Mockup interactivo en mockups/index.html
-(mapa real gratis Leaflet+OSM con zonas de evento, cámaras, vista previa del BIE).
+**Hecho:** Fases 1–4 + ERD + mockups (🚦G1·G2·G3). **Frontend completo** en `app/`
+(Vite 8 + Vue 3 + TS + Quasar + PWA): **14 pantallas** navegables contra
+`DataService` (mock), con login+guard, mapa Leaflet real, generar BIE + vista previa.
+Compila limpio (vue-tsc). Dev: `cd app && npm run dev` (localhost:5173).
 
-**Identidad (provisional, pendiente evaluación final):** nombre **Centinela** +
-mark **torre con faro**.
+**Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
-**Próximo paso:** Fase 5 — **scaffold del proyecto Quasar** (Vue 3 + TS, PWA) +
-Git; luego Fase 12 — construir el frontend contra los mocks siguiendo los mockups.
+**Próximo paso:** Fase 12 — portar el **resto de pantallas** desde los mockups
+(nuevo incidente, ficha, generar BIE, expediente, mapa Leaflet, cámaras, estadísticas,
+catálogos, usuarios, estados) + la **capa DataService (mock)**.
 
-**Ruta prevista:** F5 scaffold + Git → F6 GitHub → F7 README → **F12 frontend
-(contra mocks)** → backend Hono/Turso (BD+API) → F13 integración → mejoras (RF-20,
-mapa avanzado…) → **RF-18 IA al final**.
+**Ruta prevista:** F12 resto de pantallas → F6/F7 GitHub+README (cuando autorices) →
+backend Hono/Turso → F13 integración → mejoras → **RF-18 IA al final**.
 
 ---
 
@@ -41,14 +41,14 @@ mapa avanzado…) → **RF-18 IA al final**.
 | 2 | Definición tecnológica | ✅ | 2026-08-06 |
 | 3 | Diseño visual (design system) | ✅ | 2026-08-06 |
 | 4 | Arquitectura del proyecto | ✅ | 2026-08-06 |
-| 5 | Crear el proyecto local | ☐ | |
+| 5 | Crear el proyecto local | ✅ | 2026-08-11 · Vite+Quasar+PWA en app/, git init + 1er commit |
 | 6 | Repositorio privado en GitHub | ☐ | |
 | 7 | Documentación inicial | ☐ | |
 | 8 | Checklist general | 🔄 | creado temprano como punto de retomo |
 | 9 | Diseño UX/UI (mockups) | ✅ | 2026-08-11 · 14 pantallas en mockups/index.html |
 | 10 | Diseño de base de datos | 🔄 | ERD en papel listo (docs/05); migraciones en etapa backend |
 | 11 | Desarrollo backend | ☐ | tras el frontend |
-| 12 | Desarrollo frontend | ☐ | **antes** del backend (frontend primero) |
+| 12 | Desarrollo frontend | 🔄 | **14 pantallas** contra mocks; faltan validaciones, captura de evidencia y a11y |
 | 13 | Integración | ☐ | |
 | 14 | Integraciones externas | ☐ | RF-20 fuentes; RF-18 IA al final |
 | 15 | Pruebas | ☐ | |
@@ -77,23 +77,22 @@ mapa avanzado…) → **RF-18 IA al final**.
 
 ## Frontend (MVP núcleo — RF-01..14)
 
-- [ ] Componentes base del design system (botón, input, tarjeta, tabla, modal, alerta, badge de alerta)
-- [ ] Layout general + navegación / menú
-- [ ] Login / recuperar contraseña
-- [ ] Dashboard mínimo (activos / por alerta / por comuna / última actualización)
-- [ ] Lista de incidentes (con filtros básicos)
-- [ ] Ficha de incidente (tipo + doble alerta SENAPRED/Cruz Roja + comunas)
-- [ ] Cronología del incidente (timeline append-only)
-- [ ] Evidencias del incidente (lista/galería + captura con un clic)
-- [ ] Ingesta manual (pegar/reenviar comunicado → fuente, con procedencia)
-- [ ] Generar BIE (armado + edición + exportar .docx) + flujo de aprobación (coordinador)
-- [ ] Historial de versiones de BIE
-- [ ] Gestión de usuarios (admin)
-- [ ] Validaciones de formularios
-- [ ] Estados de carga / error / vacío en todas las vistas
-- [ ] Responsive (móvil / tablet / escritorio)
-- [ ] Accesibilidad básica (contraste WCAG AA, foco, labels, alt)
-- [ ] Tema oscuro (según decisión pendiente)
+- [x] Componentes base (AlertBadge, BrandMark; más por venir)
+- [x] Layout general + navegación / menú (app shell grafito)
+- [x] Login + guard de sesión (recuperar contraseña: pendiente)
+- [x] Dashboard (activos / por alerta / por comuna) — vía DataService
+- [x] Lista de incidentes + Nuevo incidente (formulario)
+- [x] Ficha de incidente (doble alerta + comunas + cronología + evidencias + fuentes)
+- [x] Generar BIE (formulario completo) + vista previa del documento
+- [x] Historial de versiones de BIE (UI) + Expediente del evento
+- [x] Mapa Leaflet real (comunas + zonas estimadas + ampliar/reducir) [RF-28a]
+- [x] Cámaras en vivo (UI) · Estadísticas · Catálogos · Usuarios · Estados UI
+- [x] Estados de carga / error / vacío
+- [x] Responsive (Quasar grid)
+- [ ] Ingesta manual con procedencia (captura de evidencia) — pendiente
+- [ ] Validaciones de formularios — pendiente
+- [ ] Accesibilidad (WCAG AA, foco, labels, alt) — pendiente
+- ➖ Tema oscuro (N/A — solo claro)
 
 ### Frontend — Importante (Etapa 1.x)
 - [ ] Búsqueda y filtros avanzados (RF-15)

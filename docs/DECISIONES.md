@@ -3,6 +3,18 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-11 — Scaffold del frontend (Vite + Quasar plugin)
+- **Decisión:** el frontend se scaffoldeó con **Vite (Vue 3 + TS)** + **Quasar como
+  plugin** (`@quasar/vite-plugin`) en vez de la CLI de Quasar, porque la CLI es
+  interactiva y el entorno es no-interactivo. Mismo stack (Vue 3 + Quasar + TS +
+  Vite + PWA con `vite-plugin-pwa`).
+- **Marca:** los colores de Quasar se overridean con **variables CSS** (`--q-primary`
+  #E30613, etc.) en `app.scss` — más robusto que inyectar variables Sass.
+- **Ubicación:** frontend en `Sentinel/app/`; el backend irá en `Sentinel/server/`.
+  (Nota: actualizar el árbol de docs/04-ARQUITECTURA.md a esta estructura Vite.)
+- **Estado:** compila (build ok + PWA generada) y corre en dev; renderiza shell +
+  login + dashboard + incidentes con datos mock.
+
 ## 2026-08-10 — Estructura del BIE validada contra un BIE real (N°9)
 - **Contexto:** el usuario entregó un BIE real (`BIE_N9_22-07-2026`); se convirtió
   a PDF (Word COM) y se revisó completo.

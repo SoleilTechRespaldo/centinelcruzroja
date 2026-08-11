@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useSessionStore } from '@/stores/session'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -13,12 +14,31 @@ const routes: RouteRecordRaw[] = [
       { path: '', redirect: '/dashboard' },
       { path: 'dashboard', name: 'dashboard', component: () => import('@/features/dashboard/DashboardPage.vue') },
       { path: 'incidents', name: 'incidents', component: () => import('@/features/incidents/IncidentsPage.vue') },
+      { path: 'incidents/new', name: 'incident-new', component: () => import('@/features/incidents/NewIncidentPage.vue') },
+      { path: 'incidents/:id', name: 'incident-detail', component: () => import('@/features/incidents/IncidentDetailPage.vue') },
+      { path: 'bie', name: 'bie', component: () => import('@/features/bie/GenerateBiePage.vue') },
+      { path: 'bie/preview', name: 'bie-preview', component: () => import('@/features/bie/BiePreviewPage.vue') },
+      { path: 'expediente', name: 'expediente', component: () => import('@/features/expediente/ExpedientePage.vue') },
+      { path: 'map', name: 'map', component: () => import('@/features/map/MapPage.vue') },
+      { path: 'cameras', name: 'cameras', component: () => import('@/features/cameras/CamerasPage.vue') },
+      { path: 'stats', name: 'stats', component: () => import('@/features/stats/StatsPage.vue') },
+      { path: 'catalogs', name: 'catalogs', component: () => import('@/features/catalogs/CatalogsPage.vue') },
+      { path: 'users', name: 'users', component: () => import('@/features/users/UsersPage.vue') },
+      { path: 'states', name: 'states', component: () => import('@/features/misc/StatesPage.vue') },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+router.beforeEach((to) => {
+  const session = useSessionStore()
+  if (to.path !== '/login' && !session.isAuthenticated) return { path: '/login' }
+  if (to.path === '/login' && session.isAuthenticated) return { path: '/dashboard' }
+})
+
+export default router
