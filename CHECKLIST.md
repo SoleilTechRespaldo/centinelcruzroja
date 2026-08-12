@@ -17,24 +17,37 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
 ## ▶ PARA RETOMAR
 
-**Hecho:** Fases 1–4 + ERD + mockups (🚦G1·G2·G3). **Frontend completo** en `app/`
-(Vite 8 + Vue 3 + TS + Quasar + PWA): **14 pantallas** navegables contra
-`DataService` (mock), con login+guard, mapa Leaflet real, generar BIE + vista previa.
-Compila limpio (vue-tsc). Dev: `cd app && npm run dev` (localhost:5173).
-
-**Backend esqueleto** en `server/` (Hono + Drizzle): **schema de 14 tablas**
-(`src/db/schema.ts`), migración SQL generada (`drizzle/0000_misty_scorpion.sql`),
-cliente Turso diferido (`src/db/client.ts`) y rutas **stub** (`/health`, `/incidents`,
-`/auth`). Compila (`tsc --noEmit`) y levanta (probado con curl). Dev: `cd server && npm run dev`.
-**La BD Turso real se crea al final** — por eso las rutas responden stubs por ahora.
+**Hecho (al 2026-08-12):**
+- Fases 1–4 + ERD + mockups (🚦G1·G2·G3).
+- **Frontend** en `app/` (Vite 8 + Vue 3 + TS + Quasar + PWA): **14 pantallas** contra
+  `DataService` (mock), login+guard, mapa Leaflet real, generar BIE + vista previa.
+  Mejoras: **control A−/A+** de letra (persistente), **validación** en Nuevo incidente,
+  **a11y parcial** (aria-labels), skeleton/errores en la lista. Build limpio.
+  Dev: `cd app && npm run dev`.
+- **Backend** en `server/` (Hono + Drizzle): **schema de 14 tablas** + migración SQL
+  generada; rutas **stub** validadas con **zod** (400/201), errores/404, logger,
+  secure-headers, env validado, API bajo `/api`. `tsc` limpio. Dev: `cd server && npm run dev`.
+  **La BD Turso real se crea al FINAL** — por eso las rutas responden stubs.
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
-**Próximo paso:** frontend — validaciones de formularios, captura de evidencia y a11y;
-en paralelo, ir conectando rutas reales a medida que se cree la BD.
+### ✅ MAÑANA — lista por hacer (orden sugerido)
+1. **Validaciones del resto de formularios** — sobre todo **Generar BIE** (campos
+   obligatorios, alertas, comunas), con el mismo patrón `q-form` + reglas + `Notify`.
+2. **Accesibilidad (a11y) — completar:** foco visible, `alt` en imágenes/mapa, labels
+   en todos los campos, contraste AA y navegación por teclado.
+3. **Captura de evidencia con procedencia** — adjuntar imagen/PDF/enlace con fuente +
+   fecha en la ficha del incidente (ingesta manual).
+4. **Afinar calce con el mockup** en pantallas restantes (ficha, expediente, catálogos,
+   usuarios): tipografía, espaciados, badges.
+5. **(Cuando autorices) F6/F7:** repo privado en GitHub + README inicial.
+6. **Etapa final — Base de datos:** crear BD **Turso**, correr la migración, **seeders**
+   (comunas de Valparaíso, tipos de evento, fuentes oficiales, filiales) y conectar el
+   **ApiDataService** (reemplazar el mock) + auth real.
+7. **RF-18 (IA de apoyo)** — al final del todo.
 
-**Ruta prevista:** frontend (validaciones/a11y) → F6/F7 GitHub+README (cuando autorices) →
-crear BD Turso + migrar + seeders → conectar rutas → F13 integración → **RF-18 IA al final**.
+**Ruta prevista:** frontend (validaciones/a11y/evidencia) → F6/F7 GitHub+README →
+crear BD Turso + migrar + seeders → conectar rutas + auth → F13 integración → **RF-18 IA**.
 
 ---
 
