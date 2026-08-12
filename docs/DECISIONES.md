@@ -3,6 +3,24 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-12 — Pulido frontend: validación, accesibilidad, evidencia, calce (puntos 1–4)
+- **Validación (1):** `q-form greedy` + reglas en **Generar BIE** (datos oficiales), **Login**
+  (correo/clave) y en los **diálogos** de Evidencia, Catálogos y Usuarios. Botones no-submit
+  marcados `type="button"`. Verificado en navegador (BIE: vacío→error, relleno→pasa).
+- **Accesibilidad (2):** foco visible global (`:focus-visible`), `aria-label`/`role` en botones
+  de solo-ícono, mapa (`role="application"`) y cámaras (`role="img"`); acciones "editar"
+  pasaron de `<a>` a `<button>` (accesibles por teclado).
+- **Evidencia con procedencia (3):** diálogo en la ficha para adjuntar imagen/PDF/captura/
+  documento/**enlace** con **fuente** y **fecha** obligatorias; se agrega a la lista local.
+  Se extendió `EvidenceItem` (`kind` +`'link'`, `at?`, `url?`).
+- **Calce con el mockup (4):** Catálogos con **datos por pestaña** (filiales/comunas/tipos/
+  fuentes) + encabezado dinámico (verificado); Usuarios con diálogo "Invitar" validado;
+  `Notify` en botones antes inertes (exportar expediente, mapa PNG/PDF, agregar cámara).
+- **Verificado:** `vue-tsc` + build (PWA) limpios; navegador: validación de BIE, apertura del
+  diálogo de evidencia con sus campos de procedencia, y cambio de datos por pestaña en Catálogos.
+- **Nota:** seleccionar una opción de `q-select` por automatización es poco fiable (no es bug
+  del app); para el usuario real funciona igual que el `q-select` ya verificado en Nuevo incidente.
+
 ## 2026-08-12 — Mejora de frontend + endurecimiento del backend
 - **Frontend:**
   - **Control de tamaño de letra (A−/A+)** en el topbar (lo pedido antes): escala el

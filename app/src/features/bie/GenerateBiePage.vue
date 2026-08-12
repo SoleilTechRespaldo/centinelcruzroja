@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
+const $q = useQuasar()
 
 const datos = reactive({
   nbie: '15',
@@ -39,6 +41,27 @@ const reporteFilial = ref('Quintero: acceso inundado, cierre preventivo.\nViña 
 const sala = ref('Activada')
 const telecom = ref('Sin Activar')
 const elaborado = ref('Nicolás Jerez')
+
+// Validación
+const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
+
+function guardarBorrador() {
+  // Borrador: guardado permisivo (no exige el formulario completo).
+  $q.notify({ type: 'info', message: 'Borrador guardado', caption: `BIE N°${datos.nbie}`, icon: 'save' })
+}
+
+// Se dispara solo si el formulario valida (q-form @submit).
+function enviar() {
+  $q.notify({ type: 'positive', message: 'Enviado a aprobación', caption: `BIE N°${datos.nbie} · coordinador`, icon: 'send' })
+}
+
+function exportar(fmt: 'Word' | 'PDF') {
+  $q.notify({ type: 'ongoing', message: `Generando ${fmt}…`, timeout: 900 })
+}
+
+function editarTitulo(t: string) {
+  $q.notify({ type: 'info', message: 'Editar sección', caption: t })
+}
 </script>
 
 <template>
@@ -58,66 +81,70 @@ const elaborado = ref('Nicolás Jerez')
     <div class="row q-col-gutter-md">
       <!-- Formulario -->
       <div class="col-12 col-md-7">
-        <q-card flat bordered class="q-pa-md q-mb-md">
-          <div class="sec-title q-mb-sm">Datos oficiales</div>
-          <div class="row q-col-gutter-sm">
-            <q-input v-model="datos.nbie" label="N° BIE" outlined dense class="col-6" />
-            <q-input v-model="datos.tipo" label="Tipo de emergencia" outlined dense class="col-6" />
-            <q-input v-model="datos.fechaEvento" label="Fecha / hora del evento" outlined dense class="col-6" />
-            <q-input v-model="datos.fechaReporte" label="Fecha / hora del reporte" outlined dense class="col-6" />
-            <q-input v-model="datos.senapred" label="Alerta SENAPRED" outlined dense class="col-6" />
-            <q-input v-model="datos.cruzRoja" label="Alerta Cruz Roja" outlined dense class="col-6" />
-          </div>
-        </q-card>
+        <q-form greedy @submit.prevent="enviar">
+          <q-card flat bordered class="q-pa-md q-mb-md">
+            <div class="sec-title q-mb-sm">Datos oficiales</div>
+            <div class="row q-col-gutter-sm">
+              <q-input v-model="datos.nbie" label="N° BIE *" outlined dense class="col-6" :rules="[req]" />
+              <q-input v-model="datos.tipo" label="Tipo de emergencia *" outlined dense class="col-6" :rules="[req]" />
+              <q-input v-model="datos.fechaEvento" label="Fecha / hora del evento *" outlined dense class="col-6" :rules="[req]" />
+              <q-input v-model="datos.fechaReporte" label="Fecha / hora del reporte *" outlined dense class="col-6" :rules="[req]" />
+              <q-input v-model="datos.senapred" label="Alerta SENAPRED *" outlined dense class="col-6" :rules="[req]" />
+              <q-input v-model="datos.cruzRoja" label="Alerta Cruz Roja *" outlined dense class="col-6" :rules="[req]" />
+            </div>
+          </q-card>
 
-        <q-card flat bordered class="q-pa-md q-mb-md">
-          <div class="sec-title q-mb-sm">Afectación</div>
-          <div class="row q-col-gutter-sm">
-            <q-input v-for="(_v, k) in af" :key="k" v-model="af[k]" :label="k" outlined dense class="col-6 col-sm-4" />
-          </div>
-        </q-card>
+          <q-card flat bordered class="q-pa-md q-mb-md">
+            <div class="sec-title q-mb-sm">Afectación</div>
+            <div class="row q-col-gutter-sm">
+              <q-input v-for="(_v, k) in af" :key="k" v-model="af[k]" :label="k" outlined dense class="col-6 col-sm-4" />
+            </div>
+          </q-card>
 
-        <q-card flat bordered class="q-pa-md q-mb-md">
-          <div class="sec-title q-mb-sm">Descripción · 16 títulos</div>
-          <q-list separator dense>
-            <q-item v-for="t in titulos" :key="t">
-              <q-item-section>{{ t }}</q-item-section>
-              <q-item-section side><a class="link">editar</a></q-item-section>
-            </q-item>
-            <q-item><q-item-section class="text-muted text-caption">+ 11 títulos más (salud, viviendas, agua, rutas, telecom, hidrología, educación, gobierno, proyección, fuentes…)</q-item-section></q-item>
-          </q-list>
-        </q-card>
+          <q-card flat bordered class="q-pa-md q-mb-md">
+            <div class="sec-title q-mb-sm">Descripción · 16 títulos</div>
+            <q-list separator dense>
+              <q-item v-for="t in titulos" :key="t">
+                <q-item-section>{{ t }}</q-item-section>
+                <q-item-section side>
+                  <button type="button" class="link" @click="editarTitulo(t)">editar</button>
+                </q-item-section>
+              </q-item>
+              <q-item><q-item-section class="text-muted text-caption">+ 11 títulos más (salud, viviendas, agua, rutas, telecom, hidrología, educación, gobierno, proyección, fuentes…)</q-item-section></q-item>
+            </q-list>
+          </q-card>
 
-        <q-card flat bordered class="q-pa-md q-mb-md">
-          <div class="sec-title q-mb-sm">Cruz Roja: accionar y voluntariado</div>
-          <div class="row q-col-gutter-sm q-mb-sm">
-            <q-input v-model="filiales" label="Filiales" outlined dense class="col-8" />
-            <q-input v-model="voluntarios" label="Voluntarios" outlined dense class="col-4" />
-          </div>
-          <q-input v-model="accionar" label="Accionar (gestión · salud · comunicación · protección)" type="textarea" outlined class="q-mb-sm" />
-          <q-input v-model="reporteFilial" label="Reporte por filial" type="textarea" outlined />
-        </q-card>
+          <q-card flat bordered class="q-pa-md q-mb-md">
+            <div class="sec-title q-mb-sm">Cruz Roja: accionar y voluntariado</div>
+            <div class="row q-col-gutter-sm q-mb-sm">
+              <q-input v-model="filiales" label="Filiales" outlined dense class="col-8" />
+              <q-input v-model="voluntarios" label="Voluntarios" outlined dense class="col-4" />
+            </div>
+            <q-input v-model="accionar" label="Accionar (gestión · salud · comunicación · protección)" type="textarea" outlined autogrow class="q-mb-sm" />
+            <q-input v-model="reporteFilial" label="Reporte por filial" type="textarea" outlined autogrow />
+          </q-card>
 
-        <q-card flat bordered class="q-pa-md q-mb-md">
-          <div class="sec-title q-mb-sm">Necesidades internas</div>
-          <div class="row q-col-gutter-sm">
-            <q-input v-for="(_v, k) in nec" :key="k" v-model="nec[k]" :label="k" outlined dense class="col-6 col-sm-4" />
-          </div>
-        </q-card>
+          <q-card flat bordered class="q-pa-md q-mb-md">
+            <div class="sec-title q-mb-sm">Necesidades internas</div>
+            <div class="row q-col-gutter-sm">
+              <q-input v-for="(_v, k) in nec" :key="k" v-model="nec[k]" :label="k" outlined dense class="col-6 col-sm-4" />
+            </div>
+          </q-card>
 
-        <q-card flat bordered class="q-pa-md">
-          <div class="sec-title q-mb-sm">Cierre y firma</div>
-          <div class="row q-col-gutter-sm">
-            <q-input v-model="sala" label="Sala de crisis" outlined dense class="col-6" />
-            <q-input v-model="telecom" label="Telecomunicaciones" outlined dense class="col-6" />
-            <q-input v-model="elaborado" label="Elaborado por" outlined dense class="col-6" />
-            <q-input model-value="Ive Manni" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
-          </div>
-          <div class="q-mt-md">
-            <q-btn outline size="sm" label="Guardar borrador" />
-            <q-btn outline size="sm" label="Enviar a aprobación" class="q-ml-sm" />
-          </div>
-        </q-card>
+          <q-card flat bordered class="q-pa-md">
+            <div class="sec-title q-mb-sm">Cierre y firma</div>
+            <div class="row q-col-gutter-sm">
+              <q-input v-model="sala" label="Sala de crisis" outlined dense class="col-6" />
+              <q-input v-model="telecom" label="Telecomunicaciones" outlined dense class="col-6" />
+              <q-input v-model="elaborado" label="Elaborado por *" outlined dense class="col-6" :rules="[req]" />
+              <q-input model-value="Ive Manni" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
+            </div>
+            <div class="q-mt-md">
+              <q-btn type="button" outline size="sm" label="Guardar borrador" @click="guardarBorrador" />
+              <q-btn type="submit" color="primary" unelevated size="sm" label="Enviar a aprobación" class="q-ml-sm" />
+            </div>
+          </q-card>
+        </q-form>
       </div>
 
       <!-- Vista previa -->
@@ -127,8 +154,8 @@ const elaborado = ref('Nicolás Jerez')
             <div class="sec-title">Vista previa</div>
             <q-space />
             <q-btn color="primary" unelevated size="sm" label="Ver completo" @click="router.push('/bie/preview')" />
-            <q-btn outline size="sm" label="Word" class="q-ml-xs" />
-            <q-btn outline size="sm" label="PDF" class="q-ml-xs" />
+            <q-btn outline size="sm" label="Word" class="q-ml-xs" @click="exportar('Word')" />
+            <q-btn outline size="sm" label="PDF" class="q-ml-xs" @click="exportar('PDF')" />
           </div>
           <div class="watermark q-my-md">BORRADOR · APOYO, NO OFICIAL</div>
           <div class="mini-doc">
@@ -152,7 +179,6 @@ const elaborado = ref('Nicolás Jerez')
 </template>
 
 <style scoped>
-.link { color: var(--al-celeste-t); cursor: pointer; font-size: 12px; }
 .watermark {
   background: repeating-linear-gradient(45deg, #fafafa, #fafafa 10px, #f3f4f6 10px, #f3f4f6 20px);
   border: 1px dashed var(--c-border);

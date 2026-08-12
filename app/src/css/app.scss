@@ -45,7 +45,27 @@ body {
   color: var(--c-muted);
   font-weight: 600;
 }
-.link { color: var(--al-celeste-t); cursor: pointer; font-size: 12px; }
+.link {
+  color: var(--al-celeste-t);
+  cursor: pointer;
+  font-size: 12px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: none;
+}
+.link:hover { text-decoration: underline; }
+
+// Foco visible y consistente para accesibilidad (WCAG 2.4.7)
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+.link:focus-visible {
+  outline: 2px solid var(--al-celeste);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 // Acercar Quasar al mockup: tarjetas más suaves, tablas más limpias
 .q-card { border-radius: 12px; }

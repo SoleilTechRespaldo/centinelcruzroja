@@ -45,9 +45,11 @@ export interface TimelineItem {
 
 export interface EvidenceItem {
   id: string
-  kind: 'image' | 'pdf' | 'screenshot' | 'doc'
+  kind: 'image' | 'pdf' | 'screenshot' | 'doc' | 'link'
   caption: string
   source: string
+  at?: string
+  url?: string
 }
 
 export interface SourceItem {

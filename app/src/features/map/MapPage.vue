@@ -4,6 +4,12 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { AlertTone } from '@/types'
 import AlertBadge from '@/components/ui/AlertBadge.vue'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
+function exportar(fmt: 'PNG' | 'PDF') {
+  $q.notify({ type: 'ongoing', message: `Exportando mapa (${fmt})…`, timeout: 900 })
+}
 
 interface ComunaPoint { name: string; lat: number; lng: number; color: string; alert: string; tone: AlertTone }
 
@@ -52,8 +58,8 @@ async function toggleBig() {
       <div class="text-h6">Mapa por comuna</div>
       <q-space />
       <q-btn dense outline size="sm" :icon="big ? 'close_fullscreen' : 'open_in_full'" :label="big ? 'Reducir' : 'Ampliar'" @click="toggleBig" />
-      <q-btn dense outline size="sm" label="PNG" class="q-ml-sm" />
-      <q-btn dense outline size="sm" label="PDF" class="q-ml-sm" />
+      <q-btn dense outline size="sm" label="PNG" class="q-ml-sm" @click="exportar('PNG')" />
+      <q-btn dense outline size="sm" label="PDF" class="q-ml-sm" @click="exportar('PDF')" />
     </div>
 
     <div class="row q-col-gutter-md">
@@ -65,7 +71,7 @@ async function toggleBig() {
             <AlertBadge label="Amarilla" tone="yellow" />
             <AlertBadge label="Sin alerta" tone="green" />
           </div>
-          <div ref="mapEl" class="lmap" :style="{ height: big ? '78vh' : '380px' }" />
+          <div ref="mapEl" class="lmap" role="application" aria-label="Mapa de comunas de la Región de Valparaíso por nivel de alerta" :style="{ height: big ? '78vh' : '380px' }" />
           <div class="text-caption text-muted q-mt-sm">
             Mapa real con <b>Leaflet + OpenStreetMap</b> (gratis, sin API key) · comunas por alerta · apoyo, no oficial
           </div>

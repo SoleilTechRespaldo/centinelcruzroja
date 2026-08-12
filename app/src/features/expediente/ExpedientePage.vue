@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
+function exportar() {
+  $q.notify({ type: 'ongoing', message: 'Exportando expediente…', timeout: 900 })
+}
 
 const conclusiones = ref(
   'Coordinación oportuna con COGRID. Reforzar stock de impermeables y botas. La filial Quintero requiere acceso alternativo ante inundación del ingreso.',
@@ -28,7 +34,7 @@ const timeline = [
         <div class="text-h6">Sistema frontal zona centro</div>
       </div>
       <q-space />
-      <q-btn dense outline size="sm" label="Exportar expediente" />
+      <q-btn dense outline size="sm" label="Exportar expediente" @click="exportar" />
     </div>
 
     <div class="row q-col-gutter-sm q-mb-md">

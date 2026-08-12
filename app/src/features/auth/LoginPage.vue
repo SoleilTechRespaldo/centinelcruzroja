@@ -9,6 +9,9 @@ const session = useSessionStore()
 const email = ref('operador@cruzroja.cl')
 const password = ref('claveDemo')
 
+const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
+const isEmail = (v: string) => /.+@.+\..+/.test(v) || 'Correo inválido'
+
 function ingresar() {
   session.login(email.value)
   router.push('/estadisticas')
@@ -22,9 +25,9 @@ function ingresar() {
       <div class="text-h5 text-weight-bold q-mt-sm">Centinela</div>
       <div class="text-caption text-muted q-mb-md">Monitoreo Regional · Región de Valparaíso</div>
     </div>
-    <q-form @submit.prevent="ingresar">
-      <q-input v-model="email" label="Correo" type="email" outlined dense class="q-mb-sm" />
-      <q-input v-model="password" label="Contraseña" type="password" outlined dense class="q-mb-md" />
+    <q-form greedy @submit.prevent="ingresar">
+      <q-input v-model="email" label="Correo" type="email" outlined dense class="q-mb-sm" :rules="[req, isEmail]" />
+      <q-input v-model="password" label="Contraseña" type="password" outlined dense class="q-mb-md" :rules="[req]" />
       <q-btn type="submit" color="primary" unelevated class="full-width" label="Ingresar" />
     </q-form>
     <div class="text-caption text-muted text-center q-mt-lg">

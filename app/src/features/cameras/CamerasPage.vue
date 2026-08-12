@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
+function agregarCamara() {
+  $q.notify({ type: 'info', message: 'Agregar cámara', caption: 'Pega un enlace público de YouTube' })
+}
+
 const cams = [
   { zone: 'Bahía de Valparaíso', src: 'Puerto · fuente pública YouTube', live: true },
   { zone: 'Borde costero Viña del Mar', src: 'Playa · fuente pública YouTube', live: true },
@@ -14,13 +21,13 @@ const cams = [
         <div class="text-caption text-muted">Transmisiones curadas de YouTube por zona · embed oficial</div>
       </div>
       <q-space />
-      <q-btn color="primary" unelevated size="sm" icon="add" label="Agregar cámara" />
+      <q-btn color="primary" unelevated size="sm" icon="add" label="Agregar cámara" @click="agregarCamara" />
     </div>
 
     <div class="row q-col-gutter-md">
       <div v-for="c in cams" :key="c.zone" class="col-12 col-sm-6 col-md-4">
         <q-card flat bordered>
-          <div class="cam">
+          <div class="cam" role="img" :aria-label="c.live ? 'Transmisión en vivo — ' + c.zone : c.zone + ' — sin señal'">
             <q-badge :color="c.live ? 'negative' : 'grey'" class="cam-badge">{{ c.live ? 'EN VIVO' : 'OFFLINE' }}</q-badge>
             <span>{{ c.live ? '▶ transmisión en vivo (YouTube)' : '▶ sin señal' }}</span>
           </div>
@@ -31,7 +38,15 @@ const cams = [
         </q-card>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
-        <q-card flat bordered class="cam-add cursor-pointer">+ Agregar cámara (link de YouTube)</q-card>
+        <q-card
+          flat bordered
+          class="cam-add cursor-pointer"
+          role="button"
+          tabindex="0"
+          @click="agregarCamara"
+          @keydown.enter.prevent="agregarCamara"
+          @keydown.space.prevent="agregarCamara"
+        >+ Agregar cámara (link de YouTube)</q-card>
       </div>
     </div>
 
