@@ -3,6 +3,25 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-12 — Mejora de frontend + endurecimiento del backend
+- **Frontend:**
+  - **Control de tamaño de letra (A−/A+)** en el topbar (lo pedido antes): escala el
+    contenido, muestra el %, se recuerda en `localStorage`. Verificado en navegador
+    (100 %↔130 %, persistencia OK).
+  - **Validación de formularios** en Nuevo incidente (`q-form greedy` + reglas;
+    fecha/hora con `q-date`/`q-time`) + feedback con `Notify`. Enviar vacío bloquea y
+    marca 4 campos. Verificado en navegador.
+  - **Accesibilidad:** `aria-label` en botones de solo-ícono (menú, salir, A−/A+),
+    `role="group"` + `aria-live` en el control de letra.
+  - **Consistencia con el mockup:** estados de carga (skeleton) y error (banner +
+    reintentar) en la lista; tipografía base 15px; acento del menú activo (barra roja).
+- **Backend (sin crear la BD):** validación de entrada con **zod** (`@hono/zod-validator`
+  — 400 con detalle en entrada inválida, defaults al crear), **manejo de errores** global
+  + **404 JSON**, **logger** + **secure-headers**, **env validado** (zod), contrato tipado
+  compartido (`src/types.ts`), API versionada bajo **`/api`**, `.gitignore` propio del server.
+- **Verificado:** `tsc --noEmit` y `vue-tsc` + build (PWA) limpios; API probado con curl
+  (health, `/api/incidents`, POST inválido→400, válido→201, 404).
+
 ## 2026-08-12 — Esqueleto del backend + schema de BD (antes de crear la BD)
 - **Decisión (a pedido del usuario):** dejar primero el **esqueleto del backend** y
   el **schema de la base de datos** en `server/`, dejando la **creación real de la

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+# BD local de pruebas (Turso/libSQL)
+*.db
+*.db-journal
+*.sqlite
+
+# Entorno (secretos)
+.env
+.env.local
+.env.*.local

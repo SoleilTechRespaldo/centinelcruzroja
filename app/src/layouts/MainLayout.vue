@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import BrandMark from '@/components/ui/BrandMark.vue'
@@ -24,6 +24,24 @@ const nav: NavItem[] = [
   { label: 'Usuarios', to: '/users', icon: 'group' },
 ]
 
+// Tamaño de letra (A− / A+): escala el contenido y se recuerda entre sesiones.
+const ZOOM_KEY = 'centinela.zoom'
+const MIN = 0.85
+const MAX = 1.5
+const STEP = 0.1
+const zoom = ref(1)
+onMounted(() => {
+  const saved = Number(localStorage.getItem(ZOOM_KEY))
+  if (saved >= MIN && saved <= MAX) zoom.value = saved
+})
+const zoomPct = computed(() => Math.round(zoom.value * 100) + '%')
+const contentStyle = computed(() => ({ zoom: String(zoom.value) }))
+function bumpZoom(dir: number) {
+  const next = Math.min(MAX, Math.max(MIN, +(zoom.value + dir * STEP).toFixed(2)))
+  zoom.value = next
+  localStorage.setItem(ZOOM_KEY, String(next))
+}
+
 function logout() {
   session.logout()
   router.push('/login')
@@ -34,14 +52,22 @@ function logout() {
   <q-layout view="hHh Lpr lFf">
     <q-header class="topbar text-white">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" class="lt-md" @click="drawer = !drawer" />
+        <q-btn dense flat round icon="menu" class="lt-md" aria-label="Abrir o cerrar menú" @click="drawer = !drawer" />
         <BrandMark white :size="26" />
         <span class="brand-name q-ml-sm">Centinela</span>
         <span class="brand-sub q-ml-sm gt-xs">Sala de crisis</span>
         <q-space />
-        <span class="region q-mr-md gt-xs">Región de Valparaíso</span>
+
+        <!-- Tamaño de letra -->
+        <div class="tsize gt-xs" role="group" aria-label="Tamaño de letra">
+          <q-btn dense flat class="tsize-btn" label="A−" aria-label="Reducir tamaño de letra" :disable="zoom <= MIN" @click="bumpZoom(-1)" />
+          <span class="tsize-val" aria-live="polite">{{ zoomPct }}</span>
+          <q-btn dense flat class="tsize-btn tsize-plus" label="A+" aria-label="Aumentar tamaño de letra" :disable="zoom >= MAX" @click="bumpZoom(1)" />
+        </div>
+
+        <span class="region q-mx-md gt-sm">Región de Valparaíso</span>
         <q-avatar size="30px" color="grey-9" text-color="white">{{ session.initials }}</q-avatar>
-        <q-btn flat dense round icon="logout" class="q-ml-xs" @click="logout">
+        <q-btn flat dense round icon="logout" class="q-ml-xs" aria-label="Cerrar sesión" @click="logout">
           <q-tooltip>Salir</q-tooltip>
         </q-btn>
       </q-toolbar>
@@ -60,7 +86,9 @@ function logout() {
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <div class="content-zoom" :style="contentStyle">
+        <router-view />
+      </div>
     </q-page-container>
   </q-layout>
 </template>
@@ -72,5 +100,11 @@ function logout() {
 .region { color: #c9cdd4; font-size: 13px; }
 .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-muted); font-weight: 600; padding: 14px 16px 4px; }
 .sidebar :deep(.q-item) { border-radius: 8px; margin: 2px 8px; color: var(--c-text2); font-weight: 500; min-height: 42px; }
-.sidebar :deep(.nav-active) { color: var(--c-red); background: #fdecec; }
+.sidebar :deep(.nav-active) { color: var(--c-red); background: #fdecec; box-shadow: inset 3px 0 0 var(--c-red); }
+
+/* Control de tamaño de letra */
+.tsize { display: inline-flex; align-items: center; border: 1px solid #3a4050; border-radius: 8px; overflow: hidden; }
+.tsize-btn { color: #c9cdd4; min-height: 26px; padding: 0 9px; font-weight: 600; border-radius: 0; }
+.tsize-plus { border-left: 1px solid #3a4050; }
+.tsize-val { color: #c9cdd4; font-size: 11px; min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
 </style>

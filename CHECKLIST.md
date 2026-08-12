@@ -84,6 +84,7 @@ crear BD Turso + migrar + seeders → conectar rutas → F13 integración → **
 
 - [x] Componentes base (AlertBadge, BrandMark; más por venir)
 - [x] Layout general + navegación / menú (app shell grafito)
+- [x] Control de tamaño de letra (A−/A+) en el topbar, con persistencia (localStorage)
 - [x] Login + guard de sesión (recuperar contraseña: pendiente)
 - [x] Dashboard (activos / por alerta / por comuna) — vía DataService
 - [x] Lista de incidentes + Nuevo incidente (formulario)
@@ -95,8 +96,8 @@ crear BD Turso + migrar + seeders → conectar rutas → F13 integración → **
 - [x] Estados de carga / error / vacío
 - [x] Responsive (Quasar grid)
 - [ ] Ingesta manual con procedencia (captura de evidencia) — pendiente
-- [ ] Validaciones de formularios — pendiente
-- [ ] Accesibilidad (WCAG AA, foco, labels, alt) — pendiente
+- [ ] Validaciones de formularios — *parcial*: Nuevo incidente (q-form + reglas + Notify); faltan los demás
+- [ ] Accesibilidad (WCAG AA, foco, labels, alt) — *parcial*: aria-labels en topbar/acciones; falta el resto
 - ➖ Tema oscuro (N/A — solo claro)
 
 ### Frontend — Importante (Etapa 1.x)
@@ -112,6 +113,8 @@ crear BD Turso + migrar + seeders → conectar rutas → F13 integración → **
 > **Esqueleto listo (2026-08-12):** `server/` con Hono, schema Drizzle (14 tablas),
 > migración SQL generada y rutas *stub*. Compila (`tsc`) y levanta. La lógica real
 > (queries, auth, R2) se conecta cuando se cree la BD Turso — última etapa.
+> **Endurecido (mejora 2026-08-12):** validación de entrada zod (400 con detalle),
+> manejo de errores + 404 JSON, logger + secure-headers, env validado, API bajo `/api`.
 
 - [ ] Backend API (Hono) + cliente Turso (Drizzle) + almacenamiento R2
 - [ ] Autenticación (login, recuperación) — Better Auth / JWT en el backend
