@@ -8,8 +8,8 @@
   BIE para Cruz Roja Chilena — Región de Valparaíso.
 - **Stack:** PWA Quasar (Vue 3 + TS) + **backend Hono sobre Turso** (SQLite/libSQL,
   Drizzle) + R2 (archivos); Dexie offline; docxtemplater; ECharts. Detalle en docs/02-STACK.md.
-- **Inicio:** 2026-08-06 · **Última actualización:** 2026-08-06
-- **Fase actual:** 12 — Desarrollo frontend (en curso, contra mocks)
+- **Inicio:** 2026-08-06 · **Última actualización:** 2026-08-12
+- **Fase actual:** 12 — Frontend (en curso, contra mocks) · **11 backend esqueleto listo** (BD Turso al final)
 
 Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
@@ -22,14 +22,19 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 `DataService` (mock), con login+guard, mapa Leaflet real, generar BIE + vista previa.
 Compila limpio (vue-tsc). Dev: `cd app && npm run dev` (localhost:5173).
 
+**Backend esqueleto** en `server/` (Hono + Drizzle): **schema de 14 tablas**
+(`src/db/schema.ts`), migración SQL generada (`drizzle/0000_misty_scorpion.sql`),
+cliente Turso diferido (`src/db/client.ts`) y rutas **stub** (`/health`, `/incidents`,
+`/auth`). Compila (`tsc --noEmit`) y levanta (probado con curl). Dev: `cd server && npm run dev`.
+**La BD Turso real se crea al final** — por eso las rutas responden stubs por ahora.
+
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
-**Próximo paso:** Fase 12 — portar el **resto de pantallas** desde los mockups
-(nuevo incidente, ficha, generar BIE, expediente, mapa Leaflet, cámaras, estadísticas,
-catálogos, usuarios, estados) + la **capa DataService (mock)**.
+**Próximo paso:** frontend — validaciones de formularios, captura de evidencia y a11y;
+en paralelo, ir conectando rutas reales a medida que se cree la BD.
 
-**Ruta prevista:** F12 resto de pantallas → F6/F7 GitHub+README (cuando autorices) →
-backend Hono/Turso → F13 integración → mejoras → **RF-18 IA al final**.
+**Ruta prevista:** frontend (validaciones/a11y) → F6/F7 GitHub+README (cuando autorices) →
+crear BD Turso + migrar + seeders → conectar rutas → F13 integración → **RF-18 IA al final**.
 
 ---
 
@@ -46,8 +51,8 @@ backend Hono/Turso → F13 integración → mejoras → **RF-18 IA al final**.
 | 7 | Documentación inicial | ☐ | |
 | 8 | Checklist general | 🔄 | creado temprano como punto de retomo |
 | 9 | Diseño UX/UI (mockups) | ✅ | 2026-08-11 · 14 pantallas en mockups/index.html |
-| 10 | Diseño de base de datos | 🔄 | ERD en papel listo (docs/05); migraciones en etapa backend |
-| 11 | Desarrollo backend | ☐ | tras el frontend |
+| 10 | Diseño de base de datos | ✅ | ERD (docs/05) + **schema Drizzle** (14 tablas) + migración SQL generada |
+| 11 | Desarrollo backend | 🔄 | **esqueleto listo** (Hono + rutas stub + schema); lógica real tras crear la BD |
 | 12 | Desarrollo frontend | 🔄 | **14 pantallas** contra mocks; faltan validaciones, captura de evidencia y a11y |
 | 13 | Integración | ☐ | |
 | 14 | Integraciones externas | ☐ | RF-20 fuentes; RF-18 IA al final |
@@ -104,6 +109,10 @@ backend Hono/Turso → F13 integración → mejoras → **RF-18 IA al final**.
 
 ## Backend (tras el frontend — Hono + Turso)
 
+> **Esqueleto listo (2026-08-12):** `server/` con Hono, schema Drizzle (14 tablas),
+> migración SQL generada y rutas *stub*. Compila (`tsc`) y levanta. La lógica real
+> (queries, auth, R2) se conecta cuando se cree la BD Turso — última etapa.
+
 - [ ] Backend API (Hono) + cliente Turso (Drizzle) + almacenamiento R2
 - [ ] Autenticación (login, recuperación) — Better Auth / JWT en el backend
 - [ ] Autorización por rol admin/coordinador/operador/consulta — en el backend (por registro)
@@ -120,10 +129,10 @@ backend Hono/Turso → F13 integración → mejoras → **RF-18 IA al final**.
 ## Base de datos
 
 - [x] ERD "en papel" del Incidente (docs/05-BASE-DE-DATOS.md) — temprano
-- [ ] Tablas con tipos, PK/FK y restricciones
-- [ ] Relaciones (incidente↔comunas N-M, incidente↔fuentes, incidente↔evidencias, incidente↔BIE 1-N)
-- [ ] Índices para búsquedas (comuna, tipo, estado, fecha)
-- [ ] Migraciones (corren de cero sin errores)
+- [x] Tablas con tipos, PK/FK y restricciones — **schema Drizzle** (`server/src/db/schema.ts`)
+- [x] Relaciones (incidente↔comunas N-M, incidente↔fuentes, incidente↔evidencias, incidente↔BIE 1-N)
+- [x] Índices para búsquedas (comuna, tipo, estado, fecha)
+- [ ] Migraciones — SQL **generado** (`drizzle/0000_misty_scorpion.sql`); falta *correrlas* en Turso (etapa final)
 - [ ] Seeders: comunas de la Región de Valparaíso, tipos de evento, fuentes oficiales, filiales
 - [ ] Autorización por rol en el backend (SQLite no tiene RLS)
 - [ ] Normalización revisada (3FN)

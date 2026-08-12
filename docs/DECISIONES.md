@@ -3,6 +3,26 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-12 — Esqueleto del backend + schema de BD (antes de crear la BD)
+- **Decisión (a pedido del usuario):** dejar primero el **esqueleto del backend** y
+  el **schema de la base de datos** en `server/`, dejando la **creación real de la
+  BD Turso para el final**.
+- **Stack del server:** **Hono** (API) + **Drizzle ORM** sobre **libSQL/Turso**,
+  `@hono/node-server` para dev, ESM (`"type": "module"`) con **tsx**. TypeScript 7.
+- **Schema:** `src/db/schema.ts` con las **14 tablas** del ERD (users, regions,
+  comunas, event_types, source_orgs, incidents, incident_comunas [N-M],
+  incident_reports, sources, evidence, timeline_events, bie_templates, bie_versions,
+  audit_log): PK/FK, índices, `unixepoch()` en timestamps, booleanos como integer,
+  JSON en columnas de datos. **Migración generada** con `drizzle-kit generate`
+  (`drizzle/0000_misty_scorpion.sql`) — valida el schema **sin** conectar a ninguna BD.
+- **Cliente diferido:** `src/db/client.ts` lanza error explícito si falta
+  `TURSO_DATABASE_URL` ("la BD aún no se crea"). Las rutas (`/incidents`, `/auth`)
+  responden **stubs** hasta conectar la BD.
+- **Verificación:** `tsc --noEmit` limpio y el server levanta (curl a `/health`,
+  `/incidents`, `/auth/login` OK).
+- **Secretos:** `.env.example` documentado (Turso, AUTH_SECRET, R2, ANTHROPIC);
+  `.env` y `node_modules` ignorados por git.
+
 ## 2026-08-11 — Scaffold del frontend (Vite + Quasar plugin)
 - **Decisión:** el frontend se scaffoldeó con **Vite (Vue 3 + TS)** + **Quasar como
   plugin** (`@quasar/vite-plugin`) en vez de la CLI de Quasar, porque la CLI es
