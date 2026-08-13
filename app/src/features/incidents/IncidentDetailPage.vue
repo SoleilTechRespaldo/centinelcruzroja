@@ -81,7 +81,7 @@ function actualizar() {
             <AlertBadge :tone="senapredBadge(inc.alertSenapred).tone" :label="'SENAPRED: ' + senapredBadge(inc.alertSenapred).label" />
             <AlertBadge :tone="cruzRojaBadge(inc.alertCruzRoja).tone" :label="'Cruz Roja: ' + cruzRojaBadge(inc.alertCruzRoja).label" />
           </div>
-          <q-btn color="primary" unelevated size="sm" label="Generar BIE" @click="router.push('/bie')" />
+          <q-btn color="primary" unelevated size="sm" label="Generar BIE" @click="router.push({ path: '/bie', query: { incident: inc.id } })" />
         </div>
       </div>
 

@@ -68,3 +68,35 @@ export interface IncidentDetail extends IncidentSummary {
   evidence: EvidenceItem[]
   sources: SourceItem[]
 }
+
+// Borrador del BIE autollenado desde un incidente y sus fuentes. Es el contrato
+// que hoy sirve el mock y que mañana llenará el backend (autollenado + RF-20).
+export interface BieDraft {
+  incidentId: string
+  incidentCode: string
+  incidentTitle: string
+  datos: {
+    nbie: string
+    tipo: string
+    fechaEvento: string
+    fechaReporte: string
+    senapred: string
+    cruzRoja: string
+  }
+  afectacion: Record<string, string>
+  titulos: string[]
+  cruzRoja: {
+    filiales: string
+    voluntarios: string
+    accionar: string
+    reporteFilial: string
+  }
+  necesidades: Record<string, string>
+  cierre: {
+    sala: string
+    telecom: string
+    elaborado: string
+    autorizado: string
+  }
+  fuentes: string[]
+}

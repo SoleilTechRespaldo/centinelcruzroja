@@ -23,7 +23,8 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   `DataService` (mock), login+guard, mapa Leaflet real, generar BIE + vista previa.
   Mejoras: **control A−/A+** de letra (persistente); **validación** en Nuevo incidente,
   Generar BIE, Login y diálogos; **captura de evidencia** con procedencia; **a11y**
-  (foco visible + aria-labels/roles); catálogos por pestaña; skeleton/errores. Build limpio.
+  (foco visible + aria-labels/roles); catálogos por pestaña; **BIE autollenado desde el
+  incidente** (`getBieDraft`); skeleton/errores. Build limpio.
   Dev: `cd app && npm run dev`.
 - **Backend** en `server/` (Hono + Drizzle): **schema de 14 tablas** + migración SQL
   generada; rutas **stub** validadas con **zod** (400/201), errores/404, logger,
@@ -102,7 +103,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Dashboard (activos / por alerta / por comuna) — vía DataService
 - [x] Lista de incidentes + Nuevo incidente (formulario)
 - [x] Ficha de incidente (doble alerta + comunas + cronología + evidencias + fuentes)
-- [x] Generar BIE (formulario completo) + vista previa del documento
+- [x] Generar BIE + vista previa — **autollenado desde el incidente** (`getBieDraft`, mock)
 - [x] Historial de versiones de BIE (UI) + Expediente del evento
 - [x] Mapa Leaflet real (comunas + zonas estimadas + ampliar/reducir) [RF-28a]
 - [x] Cámaras en vivo (UI) · Estadísticas · Catálogos · Usuarios · Estados UI

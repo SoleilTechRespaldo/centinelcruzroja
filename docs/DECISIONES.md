@@ -3,6 +3,19 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-12 — BIE autollenado desde el incidente (contrato DataService)
+- **Qué:** Generar BIE y su vista previa ahora se **autollenan desde el incidente** (por
+  `?incident=<id>`, o el primer activo por defecto), no desde datos fijos.
+- **Cómo:** nuevo `DataService.getBieDraft(incidentId): BieDraft` — el mock lo **deriva del
+  incidente** (alertas, comunas, personas, voluntarios/filiales, fuentes); lo que el modelo
+  aún no tiene queda **"En evaluación"**. Es la **misma costura** que llenará el backend
+  (autollenado real + RF-20). Tipo `BieDraft` en `types/index.ts`.
+- **UX honesta:** aviso "Autollenado desde el incidente … · sin fuentes en vivo aún"; en la
+  vista previa, encabezado + datos generales dinámicos y nota "cuerpo de ejemplo".
+- **Verificado (navegador):** ficha i15 → Generar BIE → `/bie?incident=i15` con N°15, Sistema
+  frontal, Amarilla/AMARILLA, 2.350 afectados, 5 comunas, 72 voluntarios, fuentes SENAPRED/
+  DMC/Esval; "Ver completo" hereda el encabezado. `vue-tsc` + build (PWA) limpios.
+
 ## 2026-08-12 — Pulido frontend: validación, accesibilidad, evidencia, calce (puntos 1–4)
 - **Validación (1):** `q-form greedy` + reglas en **Generar BIE** (datos oficiales), **Login**
   (correo/clave) y en los **diálogos** de Evidencia, Catálogos y Usuarios. Botones no-submit

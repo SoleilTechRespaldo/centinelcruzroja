@@ -1,66 +1,93 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { useData } from '@/services/data'
+import { useSessionStore } from '@/stores/session'
+import type { BieDraft } from '@/types'
 
+const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
+const data = useData()
+const session = useSessionStore()
 
-const datos = reactive({
-  nbie: '15',
-  tipo: 'Evento Meteorológico',
-  fechaEvento: '08/08/2026 · 14:00',
-  fechaReporte: '10/08/2026 · 16:22',
-  senapred: 'Amarilla (Regional Continental)',
-  cruzRoja: 'VERDE',
-})
+const loading = ref(true)
+const notFound = ref(false)
 
-const af = reactive<Record<string, string>>({
-  Afectados: '2.350', Comunas: '5', Viviendas: '2 (eval.)', Heridos: '3', Desplazados: '87',
-  Fallecidos: '0', Damnificados: '0', Albergues: '8', Albergados: '64', Agua: 'La Calera 700',
-  'Eléctrico': '126.277 sin luz', Rutas: 'Ruta 5N km171', Hospitales: '2', Aeropuerto: 'N/A', Otras: '48 sitios telecom',
-})
-
-const nec = reactive<Record<string, string>>({
-  'Gestión': 'Kits, nylon, linternas…', Salud: 'Botiquines, gasas…', Voluntariado: 'Impermeables, botas',
-  'Logística': 'Vehículo institucional', Albergues: 'Kits espacios seguros',
-})
-
-const titulos = [
-  '1. Síntesis de la jornada',
-  '2. Alerta vigente y novedad principal',
-  '4. Balance regional',
-  '8. Situación eléctrica',
-  '13. Emergencias por provincia y comuna',
-]
-
-const filiales = ref('Totalidad de la región')
-const voluntarios = ref('72')
-const accionar = ref('Participación en COGRID y monitoreo; reposición de botiquines; difusión de autocuidado; RCF y resguardo de datos sensibles.')
-const reporteFilial = ref('Quintero: acceso inundado, cierre preventivo.\nViña del Mar: voluntarios en albergues 2 Oriente y 11 Norte.')
-const sala = ref('Activada')
-const telecom = ref('Sin Activar')
-const elaborado = ref('Nicolás Jerez')
+const incidentCode = ref('')
+const incidentTitle = ref('')
+const datos = reactive({ nbie: '', tipo: '', fechaEvento: '', fechaReporte: '', senapred: '', cruzRoja: '' })
+const af = reactive<Record<string, string>>({})
+const nec = reactive<Record<string, string>>({})
+const titulos = ref<string[]>([])
+const fuentes = ref<string[]>([])
+const filiales = ref('')
+const voluntarios = ref('')
+const accionar = ref('')
+const reporteFilial = ref('')
+const sala = ref('')
+const telecom = ref('')
+const elaborado = ref('')
+const autorizado = ref('Ive Manni')
 
 // Validación
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
 
-function guardarBorrador() {
-  // Borrador: guardado permisivo (no exige el formulario completo).
-  $q.notify({ type: 'info', message: 'Borrador guardado', caption: `BIE N°${datos.nbie}`, icon: 'save' })
+function replaceRecord(target: Record<string, string>, next: Record<string, string>) {
+  Object.keys(target).forEach((k) => delete target[k])
+  Object.assign(target, next)
 }
 
-// Se dispara solo si el formulario valida (q-form @submit).
+function applyDraft(d: BieDraft) {
+  incidentCode.value = d.incidentCode
+  incidentTitle.value = d.incidentTitle
+  Object.assign(datos, d.datos)
+  replaceRecord(af, d.afectacion)
+  replaceRecord(nec, d.necesidades)
+  titulos.value = d.titulos
+  fuentes.value = d.fuentes
+  filiales.value = d.cruzRoja.filiales
+  voluntarios.value = d.cruzRoja.voluntarios
+  accionar.value = d.cruzRoja.accionar
+  reporteFilial.value = d.cruzRoja.reporteFilial
+  sala.value = d.cierre.sala
+  telecom.value = d.cierre.telecom
+  elaborado.value = session.displayName || d.cierre.elaborado
+  autorizado.value = d.cierre.autorizado
+}
+
+async function load() {
+  loading.value = true
+  notFound.value = false
+  const id = String(route.query.incident ?? '')
+  let draft = id ? await data.getBieDraft(id) : undefined
+  if (!draft) {
+    // Sin incidente indicado: toma el primero activo (o el primero de la lista).
+    const list = await data.listIncidents()
+    const first = list.find((i) => i.status === 'active') ?? list[0]
+    if (first) draft = await data.getBieDraft(first.id)
+  }
+  if (draft) applyDraft(draft)
+  else notFound.value = true
+  loading.value = false
+}
+onMounted(load)
+
+function guardarBorrador() {
+  $q.notify({ type: 'info', message: 'Borrador guardado', caption: `BIE N°${datos.nbie}`, icon: 'save' })
+}
 function enviar() {
   $q.notify({ type: 'positive', message: 'Enviado a aprobación', caption: `BIE N°${datos.nbie} · coordinador`, icon: 'send' })
 }
-
 function exportar(fmt: 'Word' | 'PDF') {
   $q.notify({ type: 'ongoing', message: `Generando ${fmt}…`, timeout: 900 })
 }
-
 function editarTitulo(t: string) {
   $q.notify({ type: 'info', message: 'Editar sección', caption: t })
+}
+function verCompleto() {
+  router.push({ path: '/bie/preview', query: route.query.incident ? { incident: String(route.query.incident) } : {} })
 }
 </script>
 
@@ -68,17 +95,36 @@ function editarTitulo(t: string) {
   <q-page class="q-pa-lg">
     <div class="row items-start q-mb-xs">
       <div>
-        <div class="text-caption tabular text-muted">2026-0015 · Sistema frontal</div>
+        <div class="text-caption tabular text-muted">{{ incidentCode || '—' }} · {{ incidentTitle }}</div>
         <div class="text-h6">Generar BIE — Monitoreo Regional</div>
       </div>
       <q-space />
-      <q-badge color="grey-4" text-color="grey-9" class="q-pa-sm">Borrador · N°15 · v3</q-badge>
-    </div>
-    <div class="text-caption text-muted q-mb-md">
-      Autollenado desde el incidente y las fuentes. <b>N/A</b> = no aplica · <b>En evaluación</b> = sin dato oficial. Nunca datos personales sensibles.
+      <q-badge v-if="!loading && !notFound" color="grey-4" text-color="grey-9" class="q-pa-sm">Borrador · N°{{ datos.nbie }}</q-badge>
     </div>
 
-    <div class="row q-col-gutter-md">
+    <q-banner v-if="!loading && !notFound" dense rounded class="autofill-note q-mb-md">
+      <template #avatar><q-icon name="auto_awesome" color="primary" /></template>
+      Autollenado desde el incidente <b>{{ incidentCode }}</b> y sus fuentes registradas.
+      <b>N/A</b> = no aplica · <b>En evaluación</b> = sin dato aún.
+      <span class="text-muted">Sin conexión a fuentes en vivo todavía (RF-20, etapa backend).</span>
+    </q-banner>
+
+    <!-- Carga -->
+    <div v-if="loading" class="row q-col-gutter-md">
+      <div class="col-12 col-md-7 q-gutter-sm">
+        <q-skeleton height="120px" /><q-skeleton height="180px" /><q-skeleton height="140px" />
+      </div>
+      <div class="col-12 col-md-5"><q-skeleton height="300px" /></div>
+    </div>
+
+    <!-- Sin incidente -->
+    <div v-else-if="notFound" class="column items-center q-pa-xl text-center">
+      <q-icon name="search_off" size="40px" color="grey-6" />
+      <div class="text-subtitle1 q-mt-sm">No hay un incidente para generar el BIE</div>
+      <q-btn flat color="primary" label="Ir a incidentes" @click="router.push('/incidents')" />
+    </div>
+
+    <div v-else class="row q-col-gutter-md">
       <!-- Formulario -->
       <div class="col-12 col-md-7">
         <q-form greedy @submit.prevent="enviar">
@@ -110,7 +156,6 @@ function editarTitulo(t: string) {
                   <button type="button" class="link" @click="editarTitulo(t)">editar</button>
                 </q-item-section>
               </q-item>
-              <q-item><q-item-section class="text-muted text-caption">+ 11 títulos más (salud, viviendas, agua, rutas, telecom, hidrología, educación, gobierno, proyección, fuentes…)</q-item-section></q-item>
             </q-list>
           </q-card>
 
@@ -137,7 +182,7 @@ function editarTitulo(t: string) {
               <q-input v-model="sala" label="Sala de crisis" outlined dense class="col-6" />
               <q-input v-model="telecom" label="Telecomunicaciones" outlined dense class="col-6" />
               <q-input v-model="elaborado" label="Elaborado por *" outlined dense class="col-6" :rules="[req]" />
-              <q-input model-value="Ive Manni" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
+              <q-input v-model="autorizado" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
             </div>
             <div class="q-mt-md">
               <q-btn type="button" outline size="sm" label="Guardar borrador" @click="guardarBorrador" />
@@ -153,18 +198,18 @@ function editarTitulo(t: string) {
           <div class="row items-center">
             <div class="sec-title">Vista previa</div>
             <q-space />
-            <q-btn color="primary" unelevated size="sm" label="Ver completo" @click="router.push('/bie/preview')" />
+            <q-btn color="primary" unelevated size="sm" label="Ver completo" @click="verCompleto" />
             <q-btn outline size="sm" label="Word" class="q-ml-xs" @click="exportar('Word')" />
             <q-btn outline size="sm" label="PDF" class="q-ml-xs" @click="exportar('PDF')" />
           </div>
           <div class="watermark q-my-md">BORRADOR · APOYO, NO OFICIAL</div>
           <div class="mini-doc">
-            <div class="text-center text-weight-bold q-mb-xs">BIE N°15 — Monitoreo Regional<br /><span class="text-caption text-muted">Cruz Roja Chilena · Comité Regional Valparaíso</span></div>
-            <div><b>Tipo:</b> Evento Meteorológico &nbsp; <b>Inicio:</b> 08/08 14:00</div>
-            <div><b>Alerta SENAPRED:</b> Amarilla &nbsp; <b>Cruz Roja:</b> VERDE</div>
-            <div class="q-mt-xs"><b>Afectación:</b> 2.350 afectados · 87 desplazados · 8 albergues (64) · 126.277 sin luz</div>
-            <div class="q-mt-xs"><b>Cruz Roja:</b> Totalidad de filiales · 72 voluntarios</div>
-            <div class="q-mt-xs text-muted">Fuentes: SENAPRED, DMC, DGA, SEC, Esval, SUBTEL…</div>
+            <div class="text-center text-weight-bold q-mb-xs">BIE N°{{ datos.nbie }} — Monitoreo Regional<br /><span class="text-caption text-muted">Cruz Roja Chilena · Comité Regional Valparaíso</span></div>
+            <div><b>Tipo:</b> {{ datos.tipo }} &nbsp; <b>Inicio:</b> {{ datos.fechaEvento }}</div>
+            <div><b>Alerta SENAPRED:</b> {{ datos.senapred }} &nbsp; <b>Cruz Roja:</b> {{ datos.cruzRoja }}</div>
+            <div class="q-mt-xs"><b>Afectación:</b> {{ af.Afectados }} afectados · {{ af.Comunas }} comunas · {{ af.Albergues }} albergues</div>
+            <div class="q-mt-xs"><b>Cruz Roja:</b> {{ filiales }} · {{ voluntarios }} voluntarios</div>
+            <div class="q-mt-xs text-muted">Fuentes: {{ fuentes.length ? fuentes.join(', ') : '—' }}</div>
           </div>
           <div class="sec-title q-mt-md q-mb-xs">Versiones</div>
           <q-list separator dense>
@@ -179,6 +224,7 @@ function editarTitulo(t: string) {
 </template>
 
 <style scoped>
+.autofill-note { background: #eef4ff; border: 1px solid #d5e2fb; color: var(--c-text2); font-size: 13px; }
 .watermark {
   background: repeating-linear-gradient(45deg, #fafafa, #fafafa 10px, #f3f4f6 10px, #f3f4f6 20px);
   border: 1px dashed var(--c-border);
