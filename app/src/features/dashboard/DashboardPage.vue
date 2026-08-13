@@ -37,7 +37,7 @@ const porMes = [
 <template>
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Estadísticas</div>
+      <h1 class="text-h6">Estadísticas</h1>
       <q-space />
       <span v-if="dash" class="text-caption text-muted q-mr-sm">Actualizado {{ dash.updatedAgo }}</span>
       <q-btn dense outline size="sm" label="Actualizar" :loading="loading" @click="load" />
@@ -66,7 +66,7 @@ const porMes = [
         <div class="col-12 col-md-8">
           <q-card flat bordered class="q-pa-md">
             <div class="sec-title q-mb-sm">Incidentes activos</div>
-            <q-markup-table flat>
+            <q-markup-table flat tabindex="0" aria-label="Incidentes activos">
               <thead>
                 <tr>
                   <th class="text-left">Código</th>

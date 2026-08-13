@@ -43,13 +43,13 @@ function editar(u: User) {
 <template>
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Usuarios</div>
+      <h1 class="text-h6">Usuarios</h1>
       <q-space />
       <q-btn color="primary" unelevated size="sm" icon="add" label="Invitar usuario" @click="openInvite" />
     </div>
 
     <q-card flat bordered>
-      <q-markup-table flat>
+      <q-markup-table flat tabindex="0" aria-label="Usuarios">
         <thead>
           <tr>
             <th class="text-left">Nombre</th>
@@ -57,7 +57,7 @@ function editar(u: User) {
             <th class="text-left">Rol</th>
             <th class="text-left">Estado</th>
             <th class="text-left">Último ingreso</th>
-            <th></th>
+            <th><span class="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
@@ -74,7 +74,7 @@ function editar(u: User) {
     </q-card>
 
     <!-- Diálogo: invitar usuario -->
-    <q-dialog v-model="showInvite">
+    <q-dialog v-model="showInvite" aria-label="Invitar usuario">
       <q-card style="min-width: 360px; max-width: 92vw">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-subtitle1">Invitar usuario</div>

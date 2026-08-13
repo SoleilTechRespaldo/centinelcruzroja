@@ -73,7 +73,7 @@ function actualizar() {
       <div class="row items-start q-mb-md">
         <div>
           <div class="text-caption tabular text-muted">{{ inc.code }} · {{ inc.eventType }}</div>
-          <div class="text-h6">{{ inc.title }}</div>
+          <h1 class="text-h6">{{ inc.title }}</h1>
         </div>
         <q-space />
         <div class="column items-end q-gutter-xs">
@@ -98,12 +98,12 @@ function actualizar() {
 
           <q-card flat bordered class="q-pa-md q-mb-md">
             <div class="sec-title q-mb-sm">Cronología</div>
-            <q-timeline color="negative">
-              <q-timeline-entry v-for="(t, idx) in inc.timeline" :key="idx" :subtitle="t.at">
-                {{ t.text }}
-                <span v-if="t.source" class="text-caption text-muted">· {{ t.source }}</span>
-              </q-timeline-entry>
-            </q-timeline>
+            <ol class="tl">
+              <li v-for="(t, idx) in inc.timeline" :key="idx" class="tl-item">
+                <div class="tl-time tabular">{{ t.at }}</div>
+                <div>{{ t.text }}<span v-if="t.source" class="text-caption text-muted"> · {{ t.source }}</span></div>
+              </li>
+            </ol>
           </q-card>
 
           <q-card flat bordered class="q-pa-md">
@@ -161,7 +161,7 @@ function actualizar() {
               </div>
             </div>
             <div class="sec-title q-mt-md q-mb-xs">Voluntarios por filial</div>
-            <q-markup-table flat dense>
+            <q-markup-table flat dense tabindex="0" aria-label="Voluntarios por filial">
               <tbody>
                 <tr v-for="f in inc.voluntariosPorFilial" :key="f.filial">
                   <td>{{ f.filial }}</td>
@@ -186,7 +186,7 @@ function actualizar() {
     </template>
 
     <!-- Diálogo: capturar evidencia con procedencia -->
-    <q-dialog v-model="showAdd">
+    <q-dialog v-model="showAdd" aria-label="Capturar evidencia">
       <q-card style="min-width: 360px; max-width: 92vw">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-subtitle1">Capturar evidencia</div>

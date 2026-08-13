@@ -74,7 +74,7 @@ function logout() {
     </q-header>
 
     <q-drawer v-model="drawer" show-if-above :width="222" class="sidebar" bordered>
-      <q-list padding>
+      <nav class="q-pa-sm" aria-label="Navegación principal">
         <template v-for="(it, idx) in nav" :key="idx">
           <div v-if="it.section" class="nav-section">{{ it.section }}</div>
           <q-item v-else v-ripple clickable :to="it.to" active-class="nav-active">
@@ -82,7 +82,7 @@ function logout() {
             <q-item-section>{{ it.label }}</q-item-section>
           </q-item>
         </template>
-      </q-list>
+      </nav>
     </q-drawer>
 
     <q-page-container>

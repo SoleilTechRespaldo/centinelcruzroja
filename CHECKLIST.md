@@ -33,21 +33,23 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
-### ✔ Hecho (puntos 1–4, 2026-08-12)
+### ✔ Hecho (2026-08-12)
 1. **Validaciones** — Nuevo incidente, **Generar BIE**, Login y diálogos (Evidencia/Catálogos/Usuarios).
-2. **Accesibilidad** — foco visible + `aria-label`/roles (topbar, mapa, cámaras); acciones "editar" como botones (teclado).
+2. **Accesibilidad — auditada con axe-core: 0 violaciones WCAG AA** en todas las pantallas
+   (contraste, `<h1>` + timeline semántico, landmarks, labels de diálogos/campos, foco visible, tablas navegables).
 3. **Captura de evidencia con procedencia** — diálogo validado en la ficha (tipo · fuente · fecha · archivo/enlace).
 4. **Calce con el mockup** — Catálogos con datos por pestaña; feedback (`Notify`) en botones antes inertes.
+5. **BIE autollenado desde el incidente** (`getBieDraft`, mock).
 
 ### ▶ Pendiente (orden sugerido)
-5. **Auditoría a11y final** — contraste AA + prueba con lector de pantalla y teclado.
 6. **(Cuando autorices) F6/F7:** repo privado en GitHub + README inicial.
 7. **Etapa final — Base de datos:** crear BD **Turso**, migración, **seeders** (comunas de
    Valparaíso, tipos de evento, fuentes oficiales, filiales) y conectar el **ApiDataService**
    (reemplazar el mock) + auth real.
 8. **RF-18 (IA de apoyo)** — al final del todo.
+9. *(opcional)* prueba manual con lector de pantalla (NVDA/VoiceOver) — lo automatizado ya está limpio.
 
-**Ruta prevista:** auditoría a11y → F6/F7 GitHub+README → crear BD Turso + migrar + seeders
+**Ruta prevista:** F6/F7 GitHub+README → crear BD Turso + migrar + seeders
 → conectar rutas + auth → F13 integración → **RF-18 IA**.
 
 ---
@@ -111,7 +113,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Responsive (Quasar grid)
 - [x] Ingesta manual con procedencia (captura de evidencia) — diálogo validado (tipo · fuente · fecha · archivo/enlace)
 - [x] Validaciones de formularios — Nuevo incidente, Generar BIE, Login y diálogos (Evidencia/Catálogos/Usuarios)
-- [ ] Accesibilidad (WCAG AA) — *avanzada*: foco visible + aria-labels/roles (topbar, mapa, cámaras, acciones); falta auditoría de contraste + lectores
+- [x] Accesibilidad (WCAG AA) — **auditoría axe-core: 0 violaciones AA** (contraste, headings, landmarks, labels, foco, tablas); pendiente prueba manual con lector de pantalla
 - ➖ Tema oscuro (N/A — solo claro)
 
 ### Frontend — Importante (Etapa 1.x)

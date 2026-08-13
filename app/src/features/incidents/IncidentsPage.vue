@@ -29,7 +29,7 @@ onMounted(load)
 <template>
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Incidentes</div>
+      <h1 class="text-h6">Incidentes</h1>
       <q-space />
       <q-btn color="primary" unelevated size="sm" icon="add" label="Nuevo incidente" @click="router.push('/incidents/new')" />
     </div>
@@ -40,7 +40,7 @@ onMounted(load)
     </q-banner>
 
     <q-card flat bordered>
-      <q-markup-table flat>
+      <q-markup-table flat tabindex="0" aria-label="Lista de incidentes">
         <thead>
           <tr>
             <th class="text-left">Código</th>

@@ -31,7 +31,7 @@ const timeline = [
     <div class="row items-start q-mb-md">
       <div>
         <div class="text-caption tabular text-muted">Expediente · 2026-0015</div>
-        <div class="text-h6">Sistema frontal zona centro</div>
+        <h1 class="text-h6">Sistema frontal zona centro</h1>
       </div>
       <q-space />
       <q-btn dense outline size="sm" label="Exportar expediente" @click="exportar" />
@@ -55,15 +55,18 @@ const timeline = [
       <div class="col-12 col-md-6">
         <q-card flat bordered class="q-pa-md">
           <div class="sec-title q-mb-sm">Cronología completa</div>
-          <q-timeline color="negative">
-            <q-timeline-entry v-for="(t, i) in timeline" :key="i" :subtitle="t.at">{{ t.text }}</q-timeline-entry>
-          </q-timeline>
+          <ol class="tl">
+            <li v-for="(t, i) in timeline" :key="i" class="tl-item">
+              <div class="tl-time tabular">{{ t.at }}</div>
+              <div>{{ t.text }}</div>
+            </li>
+          </ol>
         </q-card>
       </div>
       <div class="col-12 col-md-6">
         <q-card flat bordered class="q-pa-md">
           <div class="sec-title q-mb-sm">Conclusiones y lecciones aprendidas</div>
-          <q-input v-model="conclusiones" type="textarea" outlined autogrow />
+          <q-input v-model="conclusiones" type="textarea" outlined autogrow aria-label="Conclusiones y lecciones aprendidas" />
         </q-card>
       </div>
     </div>

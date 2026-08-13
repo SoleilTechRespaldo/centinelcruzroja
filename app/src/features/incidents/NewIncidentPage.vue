@@ -42,7 +42,7 @@ function crear() {
     <div class="text-caption text-muted">
       <span class="link" @click="router.push('/incidents')">Incidentes</span> ›
     </div>
-    <div class="text-h6 q-mb-md">Nuevo incidente</div>
+    <h1 class="text-h6 q-mb-md">Nuevo incidente</h1>
 
     <q-form greedy @submit.prevent="crear">
       <q-card flat bordered class="q-pa-lg" style="max-width: 800px">

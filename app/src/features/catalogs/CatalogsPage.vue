@@ -70,7 +70,7 @@ function editar(it: CatItem) {
 <template>
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Catálogos</div>
+      <h1 class="text-h6">Catálogos</h1>
       <q-space />
       <q-btn color="primary" unelevated size="sm" icon="add" label="Agregar" @click="openAdd" />
     </div>
@@ -83,13 +83,13 @@ function editar(it: CatItem) {
     </q-tabs>
 
     <q-card flat bordered>
-      <q-markup-table flat>
+      <q-markup-table flat tabindex="0" :aria-label="`Catálogo: ${tab}`">
         <thead>
           <tr>
             <th class="text-left">Nombre</th>
             <th class="text-left">{{ current.metaLabel }}</th>
             <th class="text-left">Estado</th>
-            <th></th>
+            <th><span class="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
@@ -104,7 +104,7 @@ function editar(it: CatItem) {
     </q-card>
 
     <!-- Diálogo: agregar registro -->
-    <q-dialog v-model="showAdd">
+    <q-dialog v-model="showAdd" aria-label="Agregar registro al catálogo">
       <q-card style="min-width: 340px; max-width: 92vw">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-subtitle1">Agregar a {{ tab }}</div>
@@ -125,3 +125,9 @@ function editar(it: CatItem) {
     </q-dialog>
   </q-page>
 </template>
+
+<style scoped>
+/* Pestañas inactivas con contraste AA (WCAG 1.4.3) */
+:deep(.q-tab--inactive) { opacity: 1; }
+:deep(.q-tab--inactive .q-tab__label) { color: var(--c-text2); }
+</style>

@@ -22,7 +22,7 @@ function ingresar() {
   <q-card flat bordered class="login-card">
     <div class="text-center">
       <BrandMark :size="52" />
-      <div class="text-h5 text-weight-bold q-mt-sm">Centinela</div>
+      <h1 class="text-h5 text-weight-bold q-mt-sm">Centinela</h1>
       <div class="text-caption text-muted q-mb-md">Monitoreo Regional · Región de Valparaíso</div>
     </div>
     <q-form greedy @submit.prevent="ingresar">

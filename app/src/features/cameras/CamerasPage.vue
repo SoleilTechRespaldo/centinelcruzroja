@@ -17,7 +17,7 @@ const cams = [
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
       <div>
-        <div class="text-h6">Cámaras en vivo</div>
+        <h1 class="text-h6">Cámaras en vivo</h1>
         <div class="text-caption text-muted">Transmisiones curadas de YouTube por zona · embed oficial</div>
       </div>
       <q-space />

@@ -98,7 +98,7 @@ function exportar(fmt: 'Word' | 'PDF') {
     <div class="row items-start q-mb-md">
       <div>
         <div class="text-caption tabular text-muted">Vista previa · BIE N°{{ d.nbie }}</div>
-        <div class="text-h6">Documento BIE</div>
+        <h1 class="text-h6">Documento BIE</h1>
         <div class="text-caption text-muted">Al descargar, el Word/PDF usa tu plantilla oficial → logos y formato exactos</div>
       </div>
       <q-space />

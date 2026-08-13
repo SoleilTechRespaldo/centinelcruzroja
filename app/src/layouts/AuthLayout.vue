@@ -1,7 +1,7 @@
 <template>
-  <div class="auth-wrap">
+  <main class="auth-wrap">
     <router-view />
-  </div>
+  </main>
 </template>
 
 <style scoped>

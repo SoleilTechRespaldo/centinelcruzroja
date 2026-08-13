@@ -96,7 +96,7 @@ function verCompleto() {
     <div class="row items-start q-mb-xs">
       <div>
         <div class="text-caption tabular text-muted">{{ incidentCode || '—' }} · {{ incidentTitle }}</div>
-        <div class="text-h6">Generar BIE — Monitoreo Regional</div>
+        <h1 class="text-h6">Generar BIE — Monitoreo Regional</h1>
       </div>
       <q-space />
       <q-badge v-if="!loading && !notFound" color="grey-4" text-color="grey-9" class="q-pa-sm">Borrador · N°{{ datos.nbie }}</q-badge>

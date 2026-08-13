@@ -3,6 +3,23 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-12 — Auditoría de accesibilidad (axe-core) → 0 violaciones AA
+- **Método:** axe-core 4.10 inyectado en la app corriendo; barrido de todas las pantallas
+  (login, estadísticas, incidentes, ficha, generar BIE, vista previa, mapa, cámaras, catálogos,
+  usuarios, expediente) + diálogos, con reglas WCAG 2.0/2.1 A/AA + best-practice.
+- **Corregido:**
+  - **Contraste (1.4.3):** `--c-muted` #8a93a0 (2.9–3.1:1) → **#646d7b** (≥4.6:1); pestañas
+    inactivas de Catálogos (#777778) → `--c-text2`.
+  - **Estructura:** `<html lang="es">` + `<title>` real; un **`<h1>`** por pantalla; menú como
+    **`<nav>`** (antes `role="list"` con hijos inválidos); **`<main>`** en el layout de login.
+  - **Timeline:** `q-timeline` → **lista semántica `<ol>`** (elimina headings vacíos y saltos de nivel).
+  - **Nombres accesibles:** `aria-label` en los diálogos (role=dialog), en el textarea del
+    expediente y en el `<th>` de acciones (`sr-only`); tablas con `tabindex`+`aria-label` (scroll por teclado).
+- **Falso positivo verificado:** axe marca por contraste el botón de envío dentro de un diálogo;
+  los colores computados reales son **`#e30613` + blanco = 4.88:1 (cumple AA)** — axe compone mal
+  el backdrop del modal como fondo del botón.
+- **Pendiente (opcional):** prueba manual con lector de pantalla; lo automatizado está limpio.
+
 ## 2026-08-12 — BIE autollenado desde el incidente (contrato DataService)
 - **Qué:** Generar BIE y su vista previa ahora se **autollenan desde el incidente** (por
   `?incident=<id>`, o el primer activo por defecto), no desde datos fijos.

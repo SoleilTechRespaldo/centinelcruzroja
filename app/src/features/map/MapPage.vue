@@ -55,7 +55,7 @@ async function toggleBig() {
 <template>
   <q-page class="q-pa-lg">
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Mapa por comuna</div>
+      <h1 class="text-h6">Mapa por comuna</h1>
       <q-space />
       <q-btn dense outline size="sm" :icon="big ? 'close_fullscreen' : 'open_in_full'" :label="big ? 'Reducir' : 'Ampliar'" @click="toggleBig" />
       <q-btn dense outline size="sm" label="PNG" class="q-ml-sm" @click="exportar('PNG')" />
