@@ -2,9 +2,17 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { useData } from '@/services/data'
+import { ApiError } from '@/services/api'
+import type { IncidentStatus, AlertSenapred, AlertCruzRoja } from '@/types'
 
 const router = useRouter()
 const $q = useQuasar()
+const data = useData()
+
+const estadoMap: Record<string, IncidentStatus> = { Monitoreo: 'monitoring', Activo: 'active', Cerrado: 'closed' }
+const senapredMap: Record<string, AlertSenapred> = { 'Sin alerta': 'none', 'Temprana Preventiva': 'atp', Amarilla: 'yellow', Roja: 'red' }
+const cruzRojaMap: Record<string, AlertCruzRoja> = { Verde: 'green', Amarilla: 'yellow', Roja: 'red' }
 
 const titulo = ref('')
 const tipo = ref<string | null>(null)
@@ -16,7 +24,7 @@ const descripcion = ref('')
 const comunas = ref<string[]>([])
 const saving = ref(false)
 
-const tipos = ['Sistema frontal', 'Incendio forestal', 'Sismo', 'Marejada', 'Aluvión / remoción', 'Corte eléctrico', 'Corte de agua']
+const tipos = ['Sistema frontal', 'Incendio forestal', 'Sismo', 'Marejada', 'Aluvión / remoción en masa', 'Corte eléctrico', 'Corte de agua']
 const estados = ['Monitoreo', 'Activo', 'Cerrado']
 const senapredOpts = ['Sin alerta', 'Temprana Preventiva', 'Amarilla', 'Roja']
 const crOpts = ['Verde', 'Amarilla', 'Roja']
@@ -26,14 +34,26 @@ const comunasOpts = ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana'
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
 const reqComunas = (v: string[]) => (v && v.length > 0) || 'Selecciona al menos una comuna'
 
-function crear() {
+async function crear() {
   saving.value = true
-  // Demo: sin backend aún. Simula el guardado y avisa.
-  setTimeout(() => {
-    saving.value = false
-    $q.notify({ type: 'positive', message: 'Incidente creado', caption: titulo.value, icon: 'check_circle' })
+  try {
+    const res = await data.createIncident({
+      title: titulo.value,
+      eventType: tipo.value ?? '',
+      startedAt: inicio.value,
+      status: estadoMap[estado.value] ?? 'monitoring',
+      alertSenapred: senapredMap[senapred.value] ?? 'none',
+      alertCruzRoja: cruzRojaMap[cruzRoja.value] ?? 'green',
+      comunas: comunas.value,
+      description: descripcion.value,
+    })
+    $q.notify({ type: 'positive', message: 'Incidente creado', caption: res.code, icon: 'check_circle' })
     router.push('/incidents')
-  }, 300)
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo crear el incidente' })
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 

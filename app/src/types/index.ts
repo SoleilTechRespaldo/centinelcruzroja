@@ -99,3 +99,15 @@ export interface BieDraft {
   }
   fuentes: string[]
 }
+
+// Entrada para crear un incidente (valores ya mapeados a los enums del dominio).
+export interface NewIncidentInput {
+  title: string
+  eventType: string
+  startedAt: string
+  status: IncidentStatus
+  alertSenapred: AlertSenapred
+  alertCruzRoja: AlertCruzRoja
+  comunas: string[]
+  description: string
+}

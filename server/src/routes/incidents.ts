@@ -1,20 +1,26 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { createIncidentSchema } from '../types'
+import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
+import { listSummaries, getDetail, createIncident } from '../services/incidents'
 
-// Rutas de incidentes. La entrada se valida con zod; la persistencia real llega
-// cuando se cree la BD Turso (por ahora responden stubs).
-const r = new Hono()
+// Cualquier usuario autenticado puede LEER; crear requiere operator/coordinator/admin.
+const r = new Hono<HonoEnv>()
+r.use('*', authMiddleware)
 
-r.get('/', (c) => c.json({ items: [], note: 'stub — BD no creada aún' }))
-r.get('/:id', (c) => c.json({ id: c.req.param('id'), note: 'stub' }))
+r.get('/', async (c) => c.json({ items: await listSummaries() }))
 
-r.post('/', zValidator('json', createIncidentSchema), (c) => {
-  const incident = c.req.valid('json')
-  return c.json(
-    { ok: true, note: 'stub — entrada validada; falta persistir (BD al final)', incident },
-    201,
-  )
+r.get('/:id', async (c) => {
+  const inc = await getDetail(c.req.param('id'))
+  if (!inc) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(inc)
+})
+
+r.post('/', requireRole('operator', 'coordinator', 'admin'), zValidator('json', createIncidentSchema), async (c) => {
+  const body = c.req.valid('json')
+  const user = c.get('user')
+  const created = await createIncident(body, user.id)
+  return c.json(created, 201)
 })
 
 export default r

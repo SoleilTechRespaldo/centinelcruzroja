@@ -3,6 +3,24 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-14 — Incidentes de punta a punta (frontend ↔ backend real)
+- **Backend:** capa de consultas `src/services/incidents.ts` (Drizzle) — `listSummaries`
+  (con comunas por join N:M), `getDetail` (comunas, último reporte, cronología con fuente,
+  fuentes, evidencias), `getDashboard` (agrega activos/alertas/comunas/personas/voluntarios +
+  comunas por alerta) y `createIncident` (resuelve tipo/comunas por nombre, código correlativo,
+  requiere operator/coordinator/admin). Rutas: `GET/POST /api/incidents`, `GET /api/incidents/:id`,
+  `GET /api/dashboard`; fechas formateadas en `lib/format.ts`. **Seed** con 4 incidentes de ejemplo.
+- **Frontend:** `ApiDataService` (`services/data/api.ts`) implementa la interfaz `DataService`
+  usando la capa `api` (JWT); la fábrica ahora usa el API por defecto (`VITE_DATA_SOURCE=mock`
+  fuerza el mock). `buildBieDraft` se extrajo a `services/data/bieDraft.ts` (lo comparten mock y api).
+  **Nuevo incidente** mapea etiquetas→enums y persiste con `createIncident`.
+- **Verificado (navegador, front+back):** dashboard con métricas reales (3 activos, 6 comunas,
+  2.590 personas); lista (5) con comunas; detalle de i15 (2.350 personas, 72 voluntarios, 4 hitos,
+  2 evidencias, fuentes, 5 filiales); **BIE autollenado** (N°15, Sistema frontal, Amarilla). Crear
+  probado por curl (aparece en la lista real). Permisos: consulta lee, no crea (403). Builds limpios.
+- **Nota:** el código correlativo del create usa máx+1 (2026-00XX). Persistir la captura de evidencia
+  y la generación real del `.docx` del BIE quedan pendientes.
+
 ## 2026-08-14 — Frontend conectado al backend: login real + gestión de usuarios
 - **Capa API:** `app/src/services/api.ts` — cliente `fetch` a `VITE_API_URL` (default
   `http://localhost:8787`), guarda el **JWT** en `localStorage`, lo manda como Bearer y traduce

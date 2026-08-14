@@ -31,10 +31,10 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   4 usuarios por rol); **login (scrypt + JWT)** y **gestión de usuarios por rol** (401/403). `tsc` limpio.
   Setup: `cd server && npm run db:setup && npm run dev`. **Turso se conecta al final** (2 variables).
   Usuarios sembrados (clave `centinela1234`): njerez=admin · imanni=coordinator · operador · consulta.
-- **Frontend ↔ backend conectados (login + Usuarios):** `src/services/api.ts` (JWT en localStorage),
-  `session` real, LoginPage y **Usuarios** contra el API (listar/crear/editar rol/activar); **menú con
-  gating por rol** (Usuarios solo admin) + 403 del backend. Verificado en navegador. Dashboard/
-  incidentes/BIE **siguen en mock** (próximo wire).
+- **Frontend ↔ backend conectados:** `src/services/api.ts` (JWT en localStorage), `session` real, y el
+  **`ApiDataService`** reemplazó al mock — **login, Usuarios (gating por rol), dashboard, incidentes
+  (lista/detalle/crear) y BIE autollenado** leen del backend. Verificado en navegador. Falta persistir
+  la captura de evidencia y la generación/aprobación del BIE (`.docx`).
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
@@ -73,9 +73,9 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 | 8 | Checklist general | 🔄 | creado temprano como punto de retomo |
 | 9 | Diseño UX/UI (mockups) | ✅ | 2026-08-11 · 14 pantallas en mockups/index.html |
 | 10 | Diseño de base de datos | ✅ | ERD (docs/05) + **schema Drizzle** (14 tablas) + migración SQL generada |
-| 11 | Desarrollo backend | 🔄 | **BD local + auth + usuarios por rol** OK (curl); faltan incidentes/BIE/evidencias/R2 |
-| 12 | Desarrollo frontend | 🔄 | **14 pantallas** contra mocks; faltan validaciones, captura de evidencia y a11y |
-| 13 | Integración | ☐ | |
+| 11 | Desarrollo backend | 🔄 | BD + auth + usuarios + **incidentes/dashboard/crear** OK; faltan BIE(docx)/evidencias/R2/Turso |
+| 12 | Desarrollo frontend | 🔄 | 14 pantallas; validaciones + a11y (0 AA) listos; **conectado al backend** (login/usuarios/incidentes/BIE) |
+| 13 | Integración | 🔄 | frontend↔backend real (JWT, roles, incidentes/dashboard/BIE); falta persistir evidencia + BIE docx |
 | 14 | Integraciones externas | ☐ | RF-20 fuentes; RF-18 IA al final |
 | 15 | Pruebas | ☐ | |
 | 16 | Optimización | ☐ | |
@@ -143,14 +143,14 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Backend API (Hono) + cliente **SQLite local** (Drizzle) — R2 en etapa posterior
 - [x] Autenticación (login) — **JWT + scrypt** en el backend (recuperación: el admin fija la clave)
 - [x] Autorización por rol admin/coordinador/operador/consulta — en el backend (401/403 por endpoint)
-- [ ] Incidentes (CRUD)
-- [ ] Comunas afectadas (relación)
+- [ ] Incidentes (CRUD) — **lista / detalle / crear** listos; falta editar/cerrar
+- [x] Comunas afectadas (relación N:M) — seed + join en lista/detalle
 - [ ] Fuentes + procedencia (fuente + URL + timestamp)
 - [ ] Evidencias (Storage)
 - [ ] Cronología (append-only)
 - [ ] BIE + versiones
 - [x] Bitácora / auditoría (append-only) — login + altas/cambios de usuario (faltan incidentes/BIE)
-- [ ] Reemplazar el mock por el cliente api — **login + Usuarios ya conectados** (`api.ts` + `session` real); faltan dashboard/incidentes/BIE
+- [x] Reemplazar el mock por el cliente api — **ApiDataService** conectado (dashboard, incidentes, detalle, crear, BIE, usuarios); misma interfaz
 - [ ] Generación del .docx (docxtemplater) desde el incidente
 
 ## Base de datos
