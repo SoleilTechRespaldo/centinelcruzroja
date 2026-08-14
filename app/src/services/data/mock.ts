@@ -52,7 +52,7 @@ function buildBieDraft(summary: IncidentSummary, detail?: IncidentDetail): BieDr
     },
     afectacion: {
       Afectados: detail?.personasAfectadas ?? PENDIENTE,
-      Comunas: String(summary.comunasCount),
+      Comunas: String(summary.comunas.length),
       Viviendas: PENDIENTE,
       Heridos: PENDIENTE,
       Desplazados: PENDIENTE,

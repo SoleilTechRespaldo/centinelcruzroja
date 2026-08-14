@@ -14,9 +14,9 @@ export const dashboard: DashboardData = {
     { label: 'Filiales activadas', value: '6' },
   ],
   activeIncidents: [
-    { id: 'i15', code: '2026-0015', title: 'Sistema frontal zona centro', eventType: 'Sistema frontal', status: 'active', alertSenapred: 'yellow', alertCruzRoja: 'yellow', comunasCount: 5, startedAt: '08/08 14:00' },
-    { id: 'i14', code: '2026-0014', title: 'Incendio sector Las Tablas', eventType: 'Incendio forestal', status: 'active', alertSenapred: 'red', alertCruzRoja: 'red', comunasCount: 2, startedAt: '07/08 11:20' },
-    { id: 'i13', code: '2026-0013', title: 'Marejadas litoral', eventType: 'Marejada', status: 'active', alertSenapred: 'atp', alertCruzRoja: 'green', comunasCount: 3, startedAt: '06/08 09:00' },
+    { id: 'i15', code: '2026-0015', title: 'Sistema frontal zona centro', eventType: 'Sistema frontal', status: 'active', alertSenapred: 'yellow', alertCruzRoja: 'yellow', comunas: ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana', 'Limache'], startedAt: '08/08 14:00' },
+    { id: 'i14', code: '2026-0014', title: 'Incendio sector Las Tablas', eventType: 'Incendio forestal', status: 'active', alertSenapred: 'red', alertCruzRoja: 'red', comunas: ['Viña del Mar', 'Quilpué'], startedAt: '07/08 11:20' },
+    { id: 'i13', code: '2026-0013', title: 'Marejadas litoral', eventType: 'Marejada', status: 'active', alertSenapred: 'atp', alertCruzRoja: 'green', comunas: ['Valparaíso', 'Viña del Mar', 'Concón'], startedAt: '06/08 09:00' },
   ],
   comunasByAlert: [
     { name: 'Valparaíso', tone: 'red' },
@@ -30,17 +30,16 @@ export const dashboard: DashboardData = {
 }
 
 export const incidents: IncidentSummary[] = [
-  { id: 'i15', code: '2026-0015', title: 'Sistema frontal zona centro', eventType: 'Sistema frontal', status: 'active', alertSenapred: 'yellow', alertCruzRoja: 'yellow', comunasCount: 5, startedAt: '08/08 14:00' },
-  { id: 'i14', code: '2026-0014', title: 'Incendio sector Las Tablas', eventType: 'Incendio forestal', status: 'active', alertSenapred: 'red', alertCruzRoja: 'red', comunasCount: 2, startedAt: '07/08 11:20' },
-  { id: 'i13', code: '2026-0013', title: 'Marejadas litoral', eventType: 'Marejada', status: 'active', alertSenapred: 'atp', alertCruzRoja: 'green', comunasCount: 3, startedAt: '06/08 09:00' },
-  { id: 'i12', code: '2026-0012', title: 'Corte de agua Quilpué', eventType: 'Corte de agua', status: 'closed', alertSenapred: 'none', alertCruzRoja: 'green', comunasCount: 1, startedAt: '02/08 18:30' },
+  { id: 'i15', code: '2026-0015', title: 'Sistema frontal zona centro', eventType: 'Sistema frontal', status: 'active', alertSenapred: 'yellow', alertCruzRoja: 'yellow', comunas: ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana', 'Limache'], startedAt: '08/08 14:00' },
+  { id: 'i14', code: '2026-0014', title: 'Incendio sector Las Tablas', eventType: 'Incendio forestal', status: 'active', alertSenapred: 'red', alertCruzRoja: 'red', comunas: ['Viña del Mar', 'Quilpué'], startedAt: '07/08 11:20' },
+  { id: 'i13', code: '2026-0013', title: 'Marejadas litoral', eventType: 'Marejada', status: 'active', alertSenapred: 'atp', alertCruzRoja: 'green', comunas: ['Valparaíso', 'Viña del Mar', 'Concón'], startedAt: '06/08 09:00' },
+  { id: 'i12', code: '2026-0012', title: 'Corte de agua Quilpué', eventType: 'Corte de agua', status: 'closed', alertSenapred: 'none', alertCruzRoja: 'green', comunas: ['Quilpué'], startedAt: '02/08 18:30' },
 ]
 
 const detail15: IncidentDetail = {
   ...incidents[0],
   description:
     'Sistema frontal afecta la zona centro de la región con precipitaciones intensas y viento. SENAPRED declaró Alerta Amarilla para 5 comunas.',
-  comunas: ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana', 'Limache'],
   personasAfectadas: '2.350',
   voluntarios: 72,
   voluntariosPorFilial: [

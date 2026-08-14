@@ -82,7 +82,10 @@ const porMes = [
                   <td>{{ i.eventType }}</td>
                   <td><AlertBadge v-bind="senapredBadge(i.alertSenapred)" /></td>
                   <td><AlertBadge v-bind="cruzRojaBadge(i.alertCruzRoja)" /></td>
-                  <td>{{ i.comunasCount }}</td>
+                  <td>
+                    <span class="tabular text-weight-medium">{{ i.comunas.length }}</span>
+                    <span class="text-caption text-muted q-ml-xs">{{ i.comunas.join(', ') }}</span>
+                  </td>
                 </tr>
               </tbody>
             </q-markup-table>

@@ -20,7 +20,7 @@ export interface IncidentSummary {
   status: IncidentStatus
   alertSenapred: AlertSenapred
   alertCruzRoja: AlertCruzRoja
-  comunasCount: number
+  comunas: string[] // nombres de las comunas dentro de la alerta (el conteo = comunas.length)
   startedAt: string
 }
 
@@ -60,7 +60,6 @@ export interface SourceItem {
 
 export interface IncidentDetail extends IncidentSummary {
   description: string
-  comunas: string[]
   personasAfectadas: string
   voluntarios: number
   voluntariosPorFilial: { filial: string; n: number }[]
