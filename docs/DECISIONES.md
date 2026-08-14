@@ -3,6 +3,25 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-14 — Frontend conectado al backend: login real + gestión de usuarios
+- **Capa API:** `app/src/services/api.ts` — cliente `fetch` a `VITE_API_URL` (default
+  `http://localhost:8787`), guarda el **JWT** en `localStorage`, lo manda como Bearer y traduce
+  los códigos de error a mensajes en español. `ApiError` con status/code.
+- **Sesión real:** `stores/session.ts` reescrito — `login(email, password)` pega al backend,
+  guarda token + usuario, **persiste** y `restore()` al recargar (llamado en `main.ts` antes de montar).
+  Expone `role`/`isAdmin` además de displayName/initials.
+- **Login:** `LoginPage` hace login real (loading + banner de error). Prefill de dev con njerez.
+- **Usuarios:** `UsersPage` contra el API — listar, **invitar** (correo+rol+clave inicial), **editar
+  rol** y **activar/desactivar**; skeleton/errores; no permite editarse a uno mismo.
+- **Permisos en la UI:** el menú **oculta "Usuarios"** a quien no es admin (`adminOnly` + `isAdmin`);
+  el topbar muestra nombre + rol. La autorización real la impone el backend (401/403).
+- **Verificado en navegador (front+back corriendo):** login admin→JWT+topbar; Usuarios lista real (5);
+  **editar → PATCH** (Sara→Inactivo); login `consulta`→ **sin "Usuarios" en el menú** y `/users`→**403**
+  con aviso y sin datos. `vue-tsc` + build (PWA) limpios.
+- **Nota:** el `q-select` no se puede accionar por automatización (limitación conocida); la **creación**
+  por la UI quedó validada hasta el selector, y el endpoint `POST /users` está probado por curl.
+- **Pendiente:** conectar dashboard/incidentes/BIE (`ApiDataService` reemplazando el mock).
+
 ## 2026-08-14 — Backend en local: BD SQLite + auth por rol + gestión de usuarios
 - **Sin cuenta Turso todavía:** el backend corre sobre un **archivo SQLite local** (`file:local.db`)
   con el mismo cliente libSQL. `db:setup` aplica la migración y **siembra** 38 comunas de Valparaíso,

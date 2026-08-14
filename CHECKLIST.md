@@ -17,7 +17,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
 ## ▶ PARA RETOMAR
 
-**Hecho (al 2026-08-12):**
+**Hecho (al 2026-08-14):**
 - Fases 1–4 + ERD + mockups (🚦G1·G2·G3).
 - **Frontend** en `app/` (Vite 8 + Vue 3 + TS + Quasar + PWA): **14 pantallas** contra
   `DataService` (mock), login+guard, mapa Leaflet real, generar BIE + vista previa.
@@ -31,6 +31,10 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   4 usuarios por rol); **login (scrypt + JWT)** y **gestión de usuarios por rol** (401/403). `tsc` limpio.
   Setup: `cd server && npm run db:setup && npm run dev`. **Turso se conecta al final** (2 variables).
   Usuarios sembrados (clave `centinela1234`): njerez=admin · imanni=coordinator · operador · consulta.
+- **Frontend ↔ backend conectados (login + Usuarios):** `src/services/api.ts` (JWT en localStorage),
+  `session` real, LoginPage y **Usuarios** contra el API (listar/crear/editar rol/activar); **menú con
+  gating por rol** (Usuarios solo admin) + 403 del backend. Verificado en navegador. Dashboard/
+  incidentes/BIE **siguen en mock** (próximo wire).
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
@@ -102,7 +106,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Componentes base (AlertBadge, BrandMark; más por venir)
 - [x] Layout general + navegación / menú (app shell grafito)
 - [x] Control de tamaño de letra (A−/A+) en el topbar, con persistencia (localStorage)
-- [x] Login + guard de sesión (recuperar contraseña: pendiente)
+- [x] Login + guard de sesión — **real contra el backend (JWT + scrypt)**, sesión persistente; el admin fija/resetea la clave
 - [x] Dashboard (activos / por alerta / por comuna) — vía DataService
 - [x] Lista de incidentes + Nuevo incidente (formulario)
 - [x] Ficha de incidente (doble alerta + comunas + cronología + evidencias + fuentes)
@@ -146,7 +150,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [ ] Cronología (append-only)
 - [ ] BIE + versiones
 - [x] Bitácora / auditoría (append-only) — login + altas/cambios de usuario (faltan incidentes/BIE)
-- [ ] Reemplazar el mock por el cliente api (HTTP al backend), misma interfaz
+- [ ] Reemplazar el mock por el cliente api — **login + Usuarios ya conectados** (`api.ts` + `session` real); faltan dashboard/incidentes/BIE
 - [ ] Generación del .docx (docxtemplater) desde el incidente
 
 ## Base de datos

@@ -1,42 +1,106 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { api, ApiError } from '@/services/api'
+import { useSessionStore } from '@/stores/session'
 import AlertBadge from '@/components/ui/AlertBadge.vue'
-import type { AlertTone } from '@/types'
+import type { AlertTone, Role } from '@/types'
 
-interface User { name: string; email: string; role: string; tone: AlertTone; active: boolean; last: string }
+interface ApiUser {
+  id: string
+  email: string
+  displayName: string
+  role: Role
+  isActive: boolean
+  lastLoginAt: number | null
+  createdAt: number
+}
 
 const $q = useQuasar()
-const users = ref<User[]>([
-  { name: 'Nicolás Jerez', email: 'njerez@cruzroja.cl', role: 'Admin', tone: 'red', active: true, last: 'hoy 15:40' },
-  { name: 'Ive Manni', email: 'imanni@cruzroja.cl', role: 'Coordinador', tone: 'celeste', active: true, last: 'hoy 12:10' },
-  { name: 'Operador Sala', email: 'sala@cruzroja.cl', role: 'Operador', tone: 'yellow', active: true, last: 'ayer 22:05' },
-  { name: 'Consulta DEM', email: 'dem@cruzroja.cl', role: 'Consulta', tone: 'gray', active: false, last: '02/08' },
-])
+const session = useSessionStore()
 
-const roles = ['Admin', 'Coordinador', 'Operador', 'Consulta']
-const roleTone: Record<string, AlertTone> = { Admin: 'red', Coordinador: 'celeste', Operador: 'yellow', Consulta: 'gray' }
+const roles: Role[] = ['admin', 'coordinator', 'operator', 'consulta']
+const roleLabel: Record<Role, string> = { admin: 'Admin', coordinator: 'Coordinador', operator: 'Operador', consulta: 'Consulta' }
+const roleTone: Record<Role, AlertTone> = { admin: 'red', coordinator: 'celeste', operator: 'yellow', consulta: 'gray' }
+const roleOptions = roles.map((r) => ({ label: roleLabel[r], value: r }))
 
-// Invitar
-const showInvite = ref(false)
-const nuevo = reactive<{ name: string; email: string; role: string | null }>({ name: '', email: '', role: null })
+function fmtDate(unix: number | null): string {
+  if (!unix) return 'nunca'
+  return new Date(unix * 1000).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+const users = ref<ApiUser[]>([])
+const loading = ref(true)
+const error = ref('')
+
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await api.get<{ items: ApiUser[] }>('/users')
+    users.value = res.items
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : 'No se pudieron cargar los usuarios.'
+  } finally {
+    loading.value = false
+  }
+}
+onMounted(load)
+
+// --- Reglas ---
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
 const isEmail = (v: string) => /.+@.+\..+/.test(v) || 'Correo inválido'
+const minPass = (v: string) => String(v ?? '').length >= 8 || 'Mínimo 8 caracteres'
+const saving = ref(false)
 
+// --- Invitar (crear) ---
+const showInvite = ref(false)
+const nuevo = reactive<{ displayName: string; email: string; role: Role | null; password: string }>({ displayName: '', email: '', role: null, password: '' })
 function openInvite() {
-  nuevo.name = ''
+  nuevo.displayName = ''
   nuevo.email = ''
   nuevo.role = null
+  nuevo.password = ''
   showInvite.value = true
 }
-function invitar() {
-  const role = nuevo.role ?? 'Consulta'
-  users.value.push({ name: nuevo.name, email: nuevo.email, role, tone: roleTone[role] ?? 'gray', active: true, last: 'nunca' })
-  $q.notify({ type: 'positive', message: 'Invitación enviada', caption: `${nuevo.name} · ${role}`, icon: 'mail' })
-  showInvite.value = false
+async function invitar() {
+  saving.value = true
+  try {
+    await api.post('/users', { displayName: nuevo.displayName, email: nuevo.email, role: nuevo.role, password: nuevo.password })
+    $q.notify({ type: 'positive', message: 'Usuario agregado', caption: nuevo.email, icon: 'person_add' })
+    showInvite.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo agregar el usuario' })
+  } finally {
+    saving.value = false
+  }
 }
-function editar(u: User) {
-  $q.notify({ type: 'info', message: 'Editar usuario', caption: u.name })
+
+// --- Editar (rol + activo) ---
+const showEdit = ref(false)
+const editing = ref<ApiUser | null>(null)
+const editRole = ref<Role>('consulta')
+const editActive = ref(true)
+function openEdit(u: ApiUser) {
+  editing.value = u
+  editRole.value = u.role
+  editActive.value = u.isActive
+  showEdit.value = true
+}
+async function guardarEdit() {
+  if (!editing.value) return
+  saving.value = true
+  try {
+    await api.patch(`/users/${editing.value.id}`, { role: editRole.value, isActive: editActive.value })
+    $q.notify({ type: 'positive', message: 'Usuario actualizado', caption: editing.value.email })
+    showEdit.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo actualizar' })
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -46,6 +110,15 @@ function editar(u: User) {
       <h1 class="text-h6">Usuarios</h1>
       <q-space />
       <q-btn color="primary" unelevated size="sm" icon="add" label="Invitar usuario" @click="openInvite" />
+    </div>
+
+    <q-banner v-if="error" rounded class="bg-red-1 text-red-9 q-mb-md">
+      {{ error }}
+      <template #action><q-btn flat label="Reintentar" @click="load" /></template>
+    </q-banner>
+
+    <div class="text-caption text-muted q-mb-sm">
+      No hay auto-registro: el administrador agrega usuarios por correo y les asigna un rol.
     </div>
 
     <q-card flat bordered>
@@ -61,37 +134,76 @@ function editar(u: User) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="u in users" :key="u.email">
-            <td>{{ u.name }}</td>
-            <td>{{ u.email }}</td>
-            <td><AlertBadge :label="u.role" :tone="u.tone" /></td>
-            <td><AlertBadge :label="u.active ? 'Activo' : 'Inactivo'" :tone="u.active ? 'green' : 'gray'" /></td>
-            <td class="tabular text-muted">{{ u.last }}</td>
-            <td><button type="button" class="link" @click="editar(u)">editar</button></td>
-          </tr>
+          <template v-if="loading">
+            <tr v-for="n in 4" :key="n"><td v-for="c in 6" :key="c"><q-skeleton type="text" /></td></tr>
+          </template>
+          <template v-else>
+            <tr v-for="u in users" :key="u.id">
+              <td>{{ u.displayName }}</td>
+              <td>{{ u.email }}</td>
+              <td><AlertBadge :label="roleLabel[u.role]" :tone="roleTone[u.role]" /></td>
+              <td><AlertBadge :label="u.isActive ? 'Activo' : 'Inactivo'" :tone="u.isActive ? 'green' : 'gray'" /></td>
+              <td class="tabular text-muted">{{ fmtDate(u.lastLoginAt) }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="link"
+                  :disabled="u.id === session.user?.id"
+                  :title="u.id === session.user?.id ? 'No puedes editarte a ti mismo' : ''"
+                  @click="openEdit(u)"
+                >
+                  editar
+                </button>
+              </td>
+            </tr>
+            <tr v-if="users.length === 0">
+              <td colspan="6" class="text-center text-muted q-pa-lg">Aún no hay usuarios.</td>
+            </tr>
+          </template>
         </tbody>
       </q-markup-table>
     </q-card>
 
-    <!-- Diálogo: invitar usuario -->
+    <!-- Invitar usuario -->
     <q-dialog v-model="showInvite" aria-label="Invitar usuario">
       <q-card style="min-width: 360px; max-width: 92vw">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-subtitle1">Invitar usuario</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
         </q-card-section>
         <q-form greedy @submit.prevent="invitar">
           <q-card-section class="q-gutter-sm">
-            <q-input v-model="nuevo.name" label="Nombre *" outlined dense :rules="[req]" autofocus />
+            <q-input v-model="nuevo.displayName" label="Nombre *" outlined dense :rules="[req]" autofocus />
             <q-input v-model="nuevo.email" label="Correo *" type="email" outlined dense :rules="[req, isEmail]" />
-            <q-select v-model="nuevo.role" :options="roles" label="Rol *" outlined dense :rules="[req]" />
+            <q-select v-model="nuevo.role" :options="roleOptions" label="Rol *" outlined dense emit-value map-options :rules="[req]" />
+            <q-input v-model="nuevo.password" label="Clave inicial *" type="text" outlined dense :rules="[req, minPass]" hint="Se la entregas al usuario; luego la puede cambiar." />
           </q-card-section>
           <q-card-actions align="right" class="q-pr-md q-pb-md">
             <q-btn type="button" flat label="Cancelar" v-close-popup />
-            <q-btn type="submit" color="primary" unelevated label="Enviar invitación" />
+            <q-btn type="submit" color="primary" unelevated label="Agregar usuario" :loading="saving" />
           </q-card-actions>
         </q-form>
+      </q-card>
+    </q-dialog>
+
+    <!-- Editar usuario -->
+    <q-dialog v-model="showEdit" aria-label="Editar usuario">
+      <q-card style="min-width: 340px; max-width: 92vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-subtitle1">Editar usuario</div>
+          <q-space />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+          <div class="text-body2">{{ editing?.displayName }} <span class="text-muted">· {{ editing?.email }}</span></div>
+          <q-select v-model="editRole" :options="roleOptions" label="Rol" outlined dense emit-value map-options />
+          <q-toggle v-model="editActive" :label="editActive ? 'Activo (puede ingresar)' : 'Inactivo (no puede ingresar)'" />
+        </q-card-section>
+        <q-card-actions align="right" class="q-pr-md q-pb-md">
+          <q-btn type="button" flat label="Cancelar" v-close-popup />
+          <q-btn type="button" color="primary" unelevated label="Guardar" :loading="saving" @click="guardarEdit" />
+        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
