@@ -26,10 +26,11 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   (foco visible + aria-labels/roles); catálogos por pestaña; **BIE autollenado desde el
   incidente** (`getBieDraft`); skeleton/errores. Build limpio.
   Dev: `cd app && npm run dev`.
-- **Backend** en `server/` (Hono + Drizzle): **schema de 14 tablas** + migración SQL
-  generada; rutas **stub** validadas con **zod** (400/201), errores/404, logger,
-  secure-headers, env validado, API bajo `/api`. `tsc` limpio. Dev: `cd server && npm run dev`.
-  **La BD Turso real se crea al FINAL** — por eso las rutas responden stubs.
+- **Backend** en `server/` (Hono + Drizzle) **corriendo sobre SQLite local** (`file:local.db`,
+  sin cuenta Turso): 14 tablas; `db:setup` = migración + seeders (38 comunas, 10 tipos, 15 fuentes,
+  4 usuarios por rol); **login (scrypt + JWT)** y **gestión de usuarios por rol** (401/403). `tsc` limpio.
+  Setup: `cd server && npm run db:setup && npm run dev`. **Turso se conecta al final** (2 variables).
+  Usuarios sembrados (clave `centinela1234`): njerez=admin · imanni=coordinator · operador · consulta.
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
@@ -68,7 +69,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 | 8 | Checklist general | 🔄 | creado temprano como punto de retomo |
 | 9 | Diseño UX/UI (mockups) | ✅ | 2026-08-11 · 14 pantallas en mockups/index.html |
 | 10 | Diseño de base de datos | ✅ | ERD (docs/05) + **schema Drizzle** (14 tablas) + migración SQL generada |
-| 11 | Desarrollo backend | 🔄 | **esqueleto listo** (Hono + rutas stub + schema); lógica real tras crear la BD |
+| 11 | Desarrollo backend | 🔄 | **BD local + auth + usuarios por rol** OK (curl); faltan incidentes/BIE/evidencias/R2 |
 | 12 | Desarrollo frontend | 🔄 | **14 pantallas** contra mocks; faltan validaciones, captura de evidencia y a11y |
 | 13 | Integración | ☐ | |
 | 14 | Integraciones externas | ☐ | RF-20 fuentes; RF-18 IA al final |
@@ -131,17 +132,20 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 > (queries, auth, R2) se conecta cuando se cree la BD Turso — última etapa.
 > **Endurecido (mejora 2026-08-12):** validación de entrada zod (400 con detalle),
 > manejo de errores + 404 JSON, logger + secure-headers, env validado, API bajo `/api`.
+> **BD + auth EN LOCAL (2026-08-14):** corre sobre **SQLite local** (`file:local.db`, sin cuenta
+> Turso); `db:setup` = migración + seeders; **login (scrypt + JWT)** y **gestión de usuarios por
+> rol** (401/403) funcionando (probado con curl). Turso se conecta al final (2 variables, sin tocar código).
 
-- [ ] Backend API (Hono) + cliente Turso (Drizzle) + almacenamiento R2
-- [ ] Autenticación (login, recuperación) — Better Auth / JWT en el backend
-- [ ] Autorización por rol admin/coordinador/operador/consulta — en el backend (por registro)
+- [x] Backend API (Hono) + cliente **SQLite local** (Drizzle) — R2 en etapa posterior
+- [x] Autenticación (login) — **JWT + scrypt** en el backend (recuperación: el admin fija la clave)
+- [x] Autorización por rol admin/coordinador/operador/consulta — en el backend (401/403 por endpoint)
 - [ ] Incidentes (CRUD)
 - [ ] Comunas afectadas (relación)
 - [ ] Fuentes + procedencia (fuente + URL + timestamp)
 - [ ] Evidencias (Storage)
 - [ ] Cronología (append-only)
 - [ ] BIE + versiones
-- [ ] Bitácora / auditoría (append-only)
+- [x] Bitácora / auditoría (append-only) — login + altas/cambios de usuario (faltan incidentes/BIE)
 - [ ] Reemplazar el mock por el cliente api (HTTP al backend), misma interfaz
 - [ ] Generación del .docx (docxtemplater) desde el incidente
 
@@ -151,15 +155,15 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Tablas con tipos, PK/FK y restricciones — **schema Drizzle** (`server/src/db/schema.ts`)
 - [x] Relaciones (incidente↔comunas N-M, incidente↔fuentes, incidente↔evidencias, incidente↔BIE 1-N)
 - [x] Índices para búsquedas (comuna, tipo, estado, fecha)
-- [ ] Migraciones — SQL **generado** (`drizzle/0000_misty_scorpion.sql`); falta *correrlas* en Turso (etapa final)
-- [ ] Seeders: comunas de la Región de Valparaíso, tipos de evento, fuentes oficiales, filiales
-- [ ] Autorización por rol en el backend (SQLite no tiene RLS)
+- [x] Migraciones — corren de cero sin errores (`db:setup` sobre SQLite local; Turso usa las mismas)
+- [x] Seeders: **38 comunas** de Valparaíso, 10 tipos de evento, 15 fuentes oficiales, 4 usuarios por rol
+- [x] Autorización por rol en el backend (SQLite no tiene RLS) — verificada (401/403)
 - [ ] Normalización revisada (3FN)
 
 ## Seguridad
 
-- [ ] Contraseñas con hash (Supabase Auth)
-- [ ] Sesiones/JWT configurados (expiración, refresh)
+- [x] Contraseñas con hash (**scrypt**, nativo de Node; sin auto-registro)
+- [x] Sesiones/JWT configurados (expiración 8h) — *refresh token pendiente*
 - [ ] Roles y permisos verificados por RLS (servidor) en cada tabla
 - [ ] Protección SQL Injection (cliente parametrizado, sin SQL concatenado)
 - [ ] Protección XSS (escape de contenido de usuario)

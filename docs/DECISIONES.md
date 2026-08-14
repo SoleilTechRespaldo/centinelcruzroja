@@ -3,6 +3,22 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-14 — Backend en local: BD SQLite + auth por rol + gestión de usuarios
+- **Sin cuenta Turso todavía:** el backend corre sobre un **archivo SQLite local** (`file:local.db`)
+  con el mismo cliente libSQL. `db:setup` aplica la migración y **siembra** 38 comunas de Valparaíso,
+  10 tipos de evento, 15 fuentes oficiales y 4 usuarios por rol. Conectar Turso al final = cambiar
+  **2 variables** de entorno (el código no cambia).
+- **Auth sin dependencias nuevas:** contraseñas con **scrypt** (`node:crypto`) y sesiones con **JWT**
+  (`hono/jwt`, HS256, 8 h). `AUTH_SECRET` en env (default de dev; producción define uno propio).
+- **Usuarios por invitación (no auto-registro):** solo **admin** gestiona `/api/users`: listar, crear
+  (correo + rol + **clave inicial**, opción a), cambiar rol, activar/desactivar, resetear clave. Un
+  admin no puede cambiar su propio rol/estado (evita quedarse sin admin).
+- **Roles:** consulta (lee) · operator (crea/edita) · coordinator (aprueba BIE) · admin (gestiona).
+  Autorización **en el backend** (SQLite no tiene RLS): `authMiddleware` + `requireRole`.
+- **Bitácora:** `audit_log` registra login y altas/cambios de usuario (append-only).
+- **Verificado (curl):** login→JWT; `/me`; listar/crear usuarios; **401 sin token, 403 si no es admin**;
+  clave incorrecta→401; login del usuario recién creado→200. `tsc` limpio.
+
 ## 2026-08-12 — Auditoría de accesibilidad (axe-core) → 0 violaciones AA
 - **Método:** axe-core 4.10 inyectado en la app corriendo; barrido de todas las pantallas
   (login, estadísticas, incidentes, ficha, generar BIE, vista previa, mapa, cámaras, catálogos,
