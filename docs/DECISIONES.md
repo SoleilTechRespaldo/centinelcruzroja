@@ -3,6 +3,21 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-14 — BIE rellena el MAESTRO OFICIAL (fidelidad de estructura y estética)
+- **Cambio:** el `.docx` del BIE se genera **rellenando `server/assets/BIE FORMATO.docx`** (el maestro
+  oficial, con logos y formato), no construyéndolo a mano. Se **portó a Node** la lógica del script de
+  la skill `monitoreo-bie-valparaiso` (`pizzip` + `@xmldom/xmldom`, en `lib/bieDocx.ts`): por cada
+  celda-etiqueta de las tablas escribe el valor en la celda de la derecha; la Descripción usa los **16
+  títulos oficiales** y el bloque "ACCIONES DE CRUZ ROJA CHILENA" se agrega bajo su encabezado.
+- **Maestro bundleado** en `server/assets/` (la app queda autocontenida; no depende de la ruta de la
+  skill). Se quitó la dependencia `docx` (ya no se arma el documento a mano).
+- **16 títulos corregidos** en `app/.../bieDraft.ts` — antes tenían nombres inventados; ahora son los
+  del formato oficial (MAYÚSCULAS): SÍNTESIS DE LA JORNADA … FUENTES CONSULTADAS.
+- **Verificado:** `POST /bie/docx` → 200, **~3,1 MB** (con logos), firma `PK`; `document.xml` (113 KB)
+  con campos rellenados (tipo, afectados, eléctrico, los 16 títulos, filiales, firma). `tsc` + build limpios.
+- **Pendiente:** mapear más campos oficiales (magnitud, cr_gestión/salud/comunicación/protección por
+  separado, cuerpos de cada título de la Descripción); PDF (conversor); `monitoreo_equipo` real.
+
 ## 2026-08-14 — Evidencia persistida + generación real del BIE (.docx)
 - **Evidencia:** columna `source_text` (procedencia) en `evidence` (migración **0001**); `POST
   /api/incidents/:id/evidence` (operator+) persiste tipo/descripción/**fuente**/fecha + enlace o

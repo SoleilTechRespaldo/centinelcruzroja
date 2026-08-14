@@ -5,23 +5,24 @@ import { senapredBadge, cruzRojaBadge } from '@/utils/alerts'
 // queda "En evaluación"). Lo usan tanto el mock como el ApiDataService.
 const PENDIENTE = 'En evaluación'
 
+// Los 16 títulos uniformes de la Descripción, según el formato oficial del BIE.
 const TITULOS_BIE = [
-  '1. Síntesis de la jornada',
-  '2. Alerta vigente y novedad principal',
-  '3. Situación meteorológica',
-  '4. Balance regional',
-  '5. Salud',
-  '6. Viviendas',
-  '7. Agua potable',
-  '8. Situación eléctrica',
-  '9. Rutas y conectividad',
-  '10. Telecomunicaciones',
-  '11. Hidrología',
-  '12. Educación',
-  '13. Emergencias por provincia y comuna',
-  '14. Gobierno y coordinación',
-  '15. Proyección',
-  '16. Fuentes',
+  '1. SÍNTESIS DE LA JORNADA',
+  '2. ALERTA VIGENTE Y NOVEDAD PRINCIPAL',
+  '3. ALERTAMIENTOS Y AVISOS',
+  '4. BALANCE REGIONAL',
+  '5. SALUD Y HOSPITALES',
+  '6. ESTABLECIMIENTOS EDUCACIONALES',
+  '7. VIVIENDAS AFECTADAS',
+  '8. SITUACIÓN ELÉCTRICA',
+  '9. AGUA POTABLE',
+  '10. CONECTIVIDAD Y RUTAS',
+  '11. TELECOMUNICACIONES',
+  '12. HIDROLOGÍA Y CAUCES',
+  '13. EMERGENCIAS POR PROVINCIA Y COMUNA',
+  '14. ACCIONES MUNICIPALES Y DE GOBIERNO',
+  '15. PROYECCIÓN DEL EVENTO',
+  '16. FUENTES CONSULTADAS',
 ]
 
 export function buildBieDraft(d: IncidentDetail): BieDraft {

@@ -34,7 +34,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - **Frontend ↔ backend conectados:** `src/services/api.ts` (JWT en localStorage), `session` real, y el
   **`ApiDataService`** reemplazó al mock — **login, Usuarios (gating por rol), dashboard, incidentes
   (lista/detalle/crear) y BIE autollenado** leen del backend. **Evidencia con procedencia persiste**
-  (`POST /:id/evidence`) y el **BIE se descarga como `.docx` real** (librería `docx`). Verificado en
+  (`POST /:id/evidence`) y el **BIE se descarga rellenando el maestro oficial** (`.docx` con logos/formato). Verificado en
   navegador. Falta: archivo real de evidencia (R2), versiones/aprobación del BIE y el PDF (conversor).
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
@@ -149,7 +149,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [ ] Fuentes + procedencia (fuente + URL + timestamp)
 - [ ] Evidencias — **metadatos con procedencia persisten** (`POST /:id/evidence`); falta el archivo real (R2)
 - [ ] Cronología (append-only)
-- [ ] BIE — **generación del `.docx`** lista (librería `docx`); faltan versiones/aprobación (`bie_versions`) y PDF
+- [ ] BIE — **`.docx` rellena el maestro oficial** (`assets/BIE FORMATO.docx`, logos/formato); faltan versiones/aprobación y PDF
 - [x] Bitácora / auditoría (append-only) — login + altas/cambios de usuario (faltan incidentes/BIE)
 - [x] Reemplazar el mock por el cliente api — **ApiDataService** conectado (dashboard, incidentes, detalle, crear, BIE, usuarios); misma interfaz
 - [ ] Generación del .docx (docxtemplater) desde el incidente
