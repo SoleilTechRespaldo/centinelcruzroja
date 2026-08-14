@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useData } from '@/services/data'
+import { ApiError } from '@/services/api'
 import type { IncidentDetail, EvidenceItem } from '@/types'
 import { senapredBadge, cruzRojaBadge } from '@/utils/alerts'
 import AlertBadge from '@/components/ui/AlertBadge.vue'
@@ -14,10 +15,14 @@ const data = useData()
 const inc = ref<IncidentDetail | null>(null)
 const loading = ref(true)
 const evidence = ref<EvidenceItem[]>([])
+const saving = ref(false)
 
-onMounted(async () => {
+async function load() {
   inc.value = (await data.getIncident(String(route.params.id))) ?? null
   evidence.value = inc.value ? [...inc.value.evidence] : []
+}
+onMounted(async () => {
+  await load()
   loading.value = false
 })
 
@@ -37,18 +42,27 @@ function openAdd() {
   showAdd.value = true
 }
 
-function agregarEvidencia() {
+async function agregarEvidencia() {
+  if (!inc.value) return
   const kind = kindMap[ev.tipo ?? ''] ?? 'doc'
-  evidence.value.unshift({
-    id: 'e' + Date.now(),
-    kind,
-    caption: ev.caption,
-    source: ev.source,
-    at: ev.at,
-    url: ev.tipo === 'Enlace' ? ev.url : ev.file?.name,
-  })
-  $q.notify({ type: 'positive', message: 'Evidencia agregada', caption: `${ev.caption} · ${ev.source}`, icon: 'check_circle' })
-  showAdd.value = false
+  saving.value = true
+  try {
+    await data.addEvidence(inc.value.id, {
+      kind,
+      caption: ev.caption,
+      source: ev.source,
+      at: ev.at,
+      url: ev.tipo === 'Enlace' ? ev.url : undefined,
+      fileName: ev.tipo !== 'Enlace' ? ev.file?.name : undefined,
+    })
+    $q.notify({ type: 'positive', message: 'Evidencia agregada', caption: `${ev.caption} · ${ev.source}`, icon: 'check_circle' })
+    showAdd.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo guardar la evidencia' })
+  } finally {
+    saving.value = false
+  }
 }
 
 function actualizar() {
@@ -223,7 +237,7 @@ function actualizar() {
           </q-card-section>
           <q-card-actions align="right" class="q-pr-md q-pb-md">
             <q-btn type="button" flat label="Cancelar" v-close-popup />
-            <q-btn type="submit" color="primary" unelevated label="Agregar" />
+            <q-btn type="submit" color="primary" unelevated label="Agregar" :loading="saving" />
           </q-card-actions>
         </q-form>
       </q-card>

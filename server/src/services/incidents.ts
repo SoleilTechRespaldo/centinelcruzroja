@@ -2,7 +2,7 @@ import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
-import type { CreateIncidentInput } from '../types'
+import type { CreateIncidentInput, AddEvidenceInput } from '../types'
 
 const {
   incidents, incidentComunas, comunas, eventTypes, incidentReports,
@@ -113,7 +113,7 @@ export async function getDetail(id: string) {
     voluntarios: rep?.voluntarios ?? 0,
     voluntariosPorFilial: vpf,
     timeline: tl.map((t) => ({ at: fmtTimeline(t.happenedAt), text: t.description, source: t.org ?? undefined })),
-    evidence: evs.map((e) => ({ id: e.id, kind: e.kind, caption: e.caption ?? '', source: e.fileName ?? '', at: fmtTime(e.capturedAt), url: e.url ?? undefined })),
+    evidence: evs.map((e) => ({ id: e.id, kind: e.kind, caption: e.caption ?? '', source: e.sourceText ?? '', at: fmtTime(e.capturedAt), url: e.url ?? undefined })),
     sources: srcs.map((s) => ({ org: s.org ?? '—', title: s.title ?? '', at: fmtTime(s.capturedAt) })),
   }
 }
@@ -199,4 +199,17 @@ export async function createIncident(input: CreateIncidentInput, userId: string)
     }
   }
   return { id, code }
+}
+
+// --- Agregar evidencia (con procedencia). El archivo real (R2) es etapa posterior. ---
+export async function addEvidence(incidentId: string, input: AddEvidenceInput, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
+  if (!exists[0]) return undefined
+  const id = randomUUID()
+  const capturedAt = parseDate(input.at) ?? Math.floor(Date.now() / 1000)
+  await db.insert(evidence).values({
+    id, incidentId, kind: input.kind, caption: input.caption, sourceText: input.source,
+    url: input.url, fileName: input.fileName, capturedAt, createdBy: userId,
+  })
+  return { id }
 }

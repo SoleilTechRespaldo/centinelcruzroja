@@ -33,8 +33,9 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   Usuarios sembrados (clave `centinela1234`): njerez=admin · imanni=coordinator · operador · consulta.
 - **Frontend ↔ backend conectados:** `src/services/api.ts` (JWT en localStorage), `session` real, y el
   **`ApiDataService`** reemplazó al mock — **login, Usuarios (gating por rol), dashboard, incidentes
-  (lista/detalle/crear) y BIE autollenado** leen del backend. Verificado en navegador. Falta persistir
-  la captura de evidencia y la generación/aprobación del BIE (`.docx`).
+  (lista/detalle/crear) y BIE autollenado** leen del backend. **Evidencia con procedencia persiste**
+  (`POST /:id/evidence`) y el **BIE se descarga como `.docx` real** (librería `docx`). Verificado en
+  navegador. Falta: archivo real de evidencia (R2), versiones/aprobación del BIE y el PDF (conversor).
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
@@ -73,9 +74,9 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 | 8 | Checklist general | 🔄 | creado temprano como punto de retomo |
 | 9 | Diseño UX/UI (mockups) | ✅ | 2026-08-11 · 14 pantallas en mockups/index.html |
 | 10 | Diseño de base de datos | ✅ | ERD (docs/05) + **schema Drizzle** (14 tablas) + migración SQL generada |
-| 11 | Desarrollo backend | 🔄 | BD + auth + usuarios + **incidentes/dashboard/crear** OK; faltan BIE(docx)/evidencias/R2/Turso |
+| 11 | Desarrollo backend | 🔄 | BD+auth+usuarios+incidentes+dashboard + **evidencia** + **BIE .docx** OK; faltan R2/versiones-BIE/PDF/Turso |
 | 12 | Desarrollo frontend | 🔄 | 14 pantallas; validaciones + a11y (0 AA) listos; **conectado al backend** (login/usuarios/incidentes/BIE) |
-| 13 | Integración | 🔄 | frontend↔backend real (JWT, roles, incidentes/dashboard/BIE); falta persistir evidencia + BIE docx |
+| 13 | Integración | 🔄 | frontend↔backend real (JWT, roles, incidentes, evidencia, BIE .docx); falta R2 + versiones/aprobación BIE |
 | 14 | Integraciones externas | ☐ | RF-20 fuentes; RF-18 IA al final |
 | 15 | Pruebas | ☐ | |
 | 16 | Optimización | ☐ | |
@@ -116,7 +117,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Cámaras en vivo (UI) · Estadísticas · Catálogos · Usuarios · Estados UI
 - [x] Estados de carga / error / vacío
 - [x] Responsive (Quasar grid)
-- [x] Ingesta manual con procedencia (captura de evidencia) — diálogo validado (tipo · fuente · fecha · archivo/enlace)
+- [x] Ingesta manual con procedencia (captura de evidencia) — diálogo validado + **persiste en la BD** (`POST /:id/evidence`)
 - [x] Validaciones de formularios — Nuevo incidente, Generar BIE, Login y diálogos (Evidencia/Catálogos/Usuarios)
 - [x] Accesibilidad (WCAG AA) — **auditoría axe-core: 0 violaciones AA** (contraste, headings, landmarks, labels, foco, tablas); pendiente prueba manual con lector de pantalla
 - ➖ Tema oscuro (N/A — solo claro)
@@ -146,9 +147,9 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [ ] Incidentes (CRUD) — **lista / detalle / crear** listos; falta editar/cerrar
 - [x] Comunas afectadas (relación N:M) — seed + join en lista/detalle
 - [ ] Fuentes + procedencia (fuente + URL + timestamp)
-- [ ] Evidencias (Storage)
+- [ ] Evidencias — **metadatos con procedencia persisten** (`POST /:id/evidence`); falta el archivo real (R2)
 - [ ] Cronología (append-only)
-- [ ] BIE + versiones
+- [ ] BIE — **generación del `.docx`** lista (librería `docx`); faltan versiones/aprobación (`bie_versions`) y PDF
 - [x] Bitácora / auditoría (append-only) — login + altas/cambios de usuario (faltan incidentes/BIE)
 - [x] Reemplazar el mock por el cliente api — **ApiDataService** conectado (dashboard, incidentes, detalle, crear, BIE, usuarios); misma interfaz
 - [ ] Generación del .docx (docxtemplater) desde el incidente

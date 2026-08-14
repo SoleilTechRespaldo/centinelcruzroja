@@ -1,5 +1,5 @@
 import type { DataService } from './DataService'
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput } from '@/types'
+import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput } from '@/types'
 import * as db from './mockDb'
 import { buildBieDraft } from './bieDraft'
 
@@ -40,5 +40,15 @@ export class MockDataService implements DataService {
       comunas: input.comunas, startedAt: input.startedAt,
     })
     return { id, code }
+  }
+
+  async addEvidence(incidentId: string, input: EvidenceInput): Promise<{ id: string }> {
+    await delay()
+    const id = 'e' + db.incidents.length + Math.floor(performance.now())
+    const detail = db.details[incidentId]
+    if (detail) {
+      detail.evidence.unshift({ id, kind: input.kind, caption: input.caption, source: input.source, at: input.at, url: input.url })
+    }
+    return { id }
   }
 }

@@ -12,7 +12,7 @@ const roleEnum = ['admin', 'coordinator', 'operator', 'consulta'] as const
 const statusEnum = ['monitoring', 'active', 'closed'] as const
 const alertSenapredEnum = ['none', 'atp', 'yellow', 'red'] as const
 const alertCruzRojaEnum = ['green', 'yellow', 'red'] as const
-const evidenceKindEnum = ['image', 'pdf', 'screenshot', 'doc'] as const
+const evidenceKindEnum = ['image', 'pdf', 'screenshot', 'doc', 'link'] as const
 const timelineTypeEnum = ['alert_change', 'source', 'note', 'action'] as const
 const bieStatusEnum = ['draft', 'approved', 'exported'] as const
 
@@ -125,6 +125,7 @@ export const evidence = sqliteTable('evidence', {
   mimeType: text('mime_type'),
   sizeBytes: integer('size_bytes'),
   caption: text('caption'),
+  sourceText: text('source_text'), // procedencia libre (ej. "SENAPRED", "Terreno · voluntario")
   url: text('url'),
   capturedAt: integer('captured_at').notNull().default(now),
   createdBy: text('created_by').references(() => users.id),

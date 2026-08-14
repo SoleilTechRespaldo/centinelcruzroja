@@ -3,6 +3,22 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-08-14 — Evidencia persistida + generación real del BIE (.docx)
+- **Evidencia:** columna `source_text` (procedencia) en `evidence` (migración **0001**); `POST
+  /api/incidents/:id/evidence` (operator+) persiste tipo/descripción/**fuente**/fecha + enlace o
+  nombre de archivo; la ficha llama `addEvidence` y recarga. El **archivo real** (subida a R2) queda
+  para después — por ahora se guardan metadatos + enlace.
+- **BIE `.docx` real:** librería **`docx`** (`lib/bieDocx.ts`) construye el documento (encabezado
+  Cruz Roja, datos generales, afectación, 16 títulos, filiales/accionar, necesidades, fuentes, firma).
+  `POST /api/incidents/:id/bie/docx` recibe el borrador del formulario y devuelve el `.docx`; el botón
+  **Word** lo descarga (`api.postBlob` → blob → `<a download>`). **PDF** pendiente (requiere conversor
+  tipo LibreOffice) — por ahora avisa exportar desde el `.docx`.
+- **No es la plantilla oficial con logos:** eso se hará con **docxtemplater** sobre el master
+  `BIE FORMATO.docx` cuando esté; el generado ahora es real y estructurado.
+- **Verificado:** curl (evidencia 201 + aparece en el detalle con su fuente; docx 200 ~9,9 KB con
+  firma ZIP `PK`; consulta→403 al capturar); navegador (evidencia persiste y se ve en la ficha; botón
+  **Word** descarga el `.docx`, POST 200). `tsc` + `vue-tsc`/build limpios.
+
 ## 2026-08-14 — Incidentes de punta a punta (frontend ↔ backend real)
 - **Backend:** capa de consultas `src/services/incidents.ts` (Drizzle) — `listSummaries`
   (con comunas por join N:M), `getDetail` (comunas, último reporte, cronología con fuente,

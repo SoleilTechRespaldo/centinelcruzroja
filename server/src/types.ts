@@ -37,3 +37,15 @@ export const createIncidentSchema = z.object({
 })
 
 export type CreateIncidentInput = z.infer<typeof createIncidentSchema>
+
+// Captura de evidencia con procedencia (archivo real a R2 en etapa posterior).
+export const addEvidenceSchema = z.object({
+  kind: z.enum(['image', 'pdf', 'screenshot', 'doc', 'link']),
+  caption: z.string().trim().min(1),
+  source: z.string().trim().min(1),
+  at: z.string().trim().min(1),
+  url: z.string().optional(),
+  fileName: z.string().optional(),
+})
+
+export type AddEvidenceInput = z.infer<typeof addEvidenceSchema>

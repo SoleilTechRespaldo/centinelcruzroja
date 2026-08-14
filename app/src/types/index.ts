@@ -111,3 +111,13 @@ export interface NewIncidentInput {
   comunas: string[]
   description: string
 }
+
+// Entrada para capturar evidencia con procedencia.
+export interface EvidenceInput {
+  kind: EvidenceItem['kind']
+  caption: string
+  source: string
+  at: string
+  url?: string
+  fileName?: string
+}

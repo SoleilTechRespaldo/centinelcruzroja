@@ -1,5 +1,5 @@
 import type { DataService } from './DataService'
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput } from '@/types'
+import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput } from '@/types'
 import { api, ApiError } from '@/services/api'
 import { buildBieDraft } from './bieDraft'
 
@@ -30,5 +30,9 @@ export class ApiDataService implements DataService {
 
   createIncident(input: NewIncidentInput): Promise<{ id: string; code: string }> {
     return api.post<{ id: string; code: string }>('/incidents', input)
+  }
+
+  addEvidence(incidentId: string, input: EvidenceInput): Promise<{ id: string }> {
+    return api.post<{ id: string }>(`/incidents/${incidentId}/evidence`, input)
   }
 }

@@ -64,7 +64,7 @@ type SeedIncident = {
   report: { personas: number; voluntarios: number; filiales: [string, number][] }
   sources: { org: string; title: string; hOffset: number }[]
   timeline: { org: string | null; text: string; hOffset: number }[]
-  evidence: { kind: 'image' | 'pdf' | 'screenshot' | 'doc'; caption: string; fileName: string }[]
+  evidence: { kind: 'image' | 'pdf' | 'screenshot' | 'doc' | 'link'; caption: string; fileName: string; source: string }[]
 }
 
 const INCIDENTS: SeedIncident[] = [
@@ -86,8 +86,8 @@ const INCIDENTS: SeedIncident[] = [
       { org: null, text: 'Cruz Roja activa 6 filiales.', hOffset: 6 },
     ],
     evidence: [
-      { kind: 'image', caption: 'Río Aconcagua', fileName: 'aconcagua.jpg' },
-      { kind: 'pdf', caption: 'Comunicado N°12', fileName: 'comunicado-12.pdf' },
+      { kind: 'image', caption: 'Río Aconcagua', fileName: 'aconcagua.jpg', source: 'SENAPRED' },
+      { kind: 'pdf', caption: 'Comunicado N°12', fileName: 'comunicado-12.pdf', source: 'SENAPRED' },
     ],
   },
   {
@@ -183,7 +183,7 @@ async function main() {
     }
     for (let i = 0; i < it.evidence.length; i++) {
       const e = it.evidence[i]
-      await db.insert(schema.evidence).values({ id: `ev-${it.id}-${i}`, incidentId: it.id, kind: e.kind, caption: e.caption, fileName: e.fileName, capturedAt: start + 7200, createdBy: adminId }).onConflictDoNothing()
+      await db.insert(schema.evidence).values({ id: `ev-${it.id}-${i}`, incidentId: it.id, kind: e.kind, caption: e.caption, fileName: e.fileName, sourceText: e.source, capturedAt: start + 7200, createdBy: adminId }).onConflictDoNothing()
     }
   }
 

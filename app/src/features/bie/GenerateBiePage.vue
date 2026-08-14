@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useData } from '@/services/data'
 import { useSessionStore } from '@/stores/session'
+import { api, ApiError } from '@/services/api'
 import type { BieDraft } from '@/types'
 
 const route = useRoute()
@@ -14,7 +15,9 @@ const session = useSessionStore()
 
 const loading = ref(true)
 const notFound = ref(false)
+const downloading = ref(false)
 
+const incidentId = ref('')
 const incidentCode = ref('')
 const incidentTitle = ref('')
 const datos = reactive({ nbie: '', tipo: '', fechaEvento: '', fechaReporte: '', senapred: '', cruzRoja: '' })
@@ -40,6 +43,7 @@ function replaceRecord(target: Record<string, string>, next: Record<string, stri
 }
 
 function applyDraft(d: BieDraft) {
+  incidentId.value = d.incidentId
   incidentCode.value = d.incidentCode
   incidentTitle.value = d.incidentTitle
   Object.assign(datos, d.datos)
@@ -80,8 +84,43 @@ function guardarBorrador() {
 function enviar() {
   $q.notify({ type: 'positive', message: 'Enviado a aprobación', caption: `BIE N°${datos.nbie} · coordinador`, icon: 'send' })
 }
-function exportar(fmt: 'Word' | 'PDF') {
-  $q.notify({ type: 'ongoing', message: `Generando ${fmt}…`, timeout: 900 })
+function currentDraft(): BieDraft {
+  return {
+    incidentId: incidentId.value,
+    incidentCode: incidentCode.value,
+    incidentTitle: incidentTitle.value,
+    datos: { ...datos },
+    afectacion: { ...af },
+    titulos: titulos.value,
+    cruzRoja: { filiales: filiales.value, voluntarios: voluntarios.value, accionar: accionar.value, reporteFilial: reporteFilial.value },
+    necesidades: { ...nec },
+    cierre: { sala: sala.value, telecom: telecom.value, elaborado: elaborado.value, autorizado: autorizado.value },
+    fuentes: fuentes.value,
+  }
+}
+
+async function descargarWord() {
+  downloading.value = true
+  try {
+    const blob = await api.postBlob(`/incidents/${incidentId.value}/bie/docx`, currentDraft())
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `BIE-N${datos.nbie || 'sn'}.docx`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    $q.notify({ type: 'positive', message: 'BIE descargado (.docx)', icon: 'description' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo generar el BIE' })
+  } finally {
+    downloading.value = false
+  }
+}
+
+function exportarPdf() {
+  $q.notify({ type: 'info', message: 'PDF: por ahora descarga el .docx y expórtalo a PDF', caption: 'La conversión en el servidor llega después.' })
 }
 function editarTitulo(t: string) {
   $q.notify({ type: 'info', message: 'Editar sección', caption: t })
@@ -199,8 +238,8 @@ function verCompleto() {
             <div class="sec-title">Vista previa</div>
             <q-space />
             <q-btn color="primary" unelevated size="sm" label="Ver completo" @click="verCompleto" />
-            <q-btn outline size="sm" label="Word" class="q-ml-xs" @click="exportar('Word')" />
-            <q-btn outline size="sm" label="PDF" class="q-ml-xs" @click="exportar('PDF')" />
+            <q-btn outline size="sm" label="Word" class="q-ml-xs" :loading="downloading" @click="descargarWord" />
+            <q-btn outline size="sm" label="PDF" class="q-ml-xs" @click="exportarPdf" />
           </div>
           <div class="watermark q-my-md">BORRADOR · APOYO, NO OFICIAL</div>
           <div class="mini-doc">
