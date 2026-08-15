@@ -128,3 +128,9 @@ export interface EvidenceInput {
   url?: string
   fileName?: string
 }
+
+// Nuevo reporte de situación (historial).
+export interface ReportInput {
+  personasAfectadas: number
+  voluntarios: number
+}

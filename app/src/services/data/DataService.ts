@@ -1,4 +1,4 @@
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput } from '@/types'
+import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput } from '@/types'
 
 // Contrato de acceso a datos. Implementaciones: ApiDataService (backend real) y
 // MockDataService (fallback). Las pantallas hablan con esta interfaz.
@@ -9,4 +9,5 @@ export interface DataService {
   getBieDraft(incidentId: string): Promise<BieDraft | undefined>
   createIncident(input: NewIncidentInput): Promise<{ id: string; code: string }>
   addEvidence(incidentId: string, input: EvidenceInput): Promise<{ id: string }>
+  addReport(incidentId: string, input: ReportInput): Promise<{ id: string }>
 }

@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { createIncidentSchema, addEvidenceSchema } from '../types'
+import { createIncidentSchema, addEvidenceSchema, addReportSchema } from '../types'
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
-import { listSummaries, getDetail, createIncident, addEvidence } from '../services/incidents'
+import { listSummaries, getDetail, createIncident, addEvidence, addReport } from '../services/incidents'
 import { buildBieDocx } from '../lib/bieDocx'
 
 // Cualquier usuario autenticado puede LEER; crear/capturar requiere operator+.
@@ -25,6 +25,13 @@ r.post('/', requireRole('operator', 'coordinator', 'admin'), zValidator('json', 
 // Capturar evidencia (con procedencia) para un incidente.
 r.post('/:id/evidence', requireRole('operator', 'coordinator', 'admin'), zValidator('json', addEvidenceSchema), async (c) => {
   const res = await addEvidence(c.req.param('id'), c.req.valid('json'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res, 201)
+})
+
+// Nuevo reporte de situación (historial).
+r.post('/:id/report', requireRole('operator', 'coordinator', 'admin'), zValidator('json', addReportSchema), async (c) => {
+  const res = await addReport(c.req.param('id'), c.req.valid('json'), c.get('user').id)
   if (!res) return c.json({ error: 'no_encontrado' }, 404)
   return c.json(res, 201)
 })

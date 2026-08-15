@@ -144,7 +144,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - [x] Backend API (Hono) + cliente **SQLite local** (Drizzle) — R2 en etapa posterior
 - [x] Autenticación (login) — **JWT + scrypt** en el backend (recuperación: el admin fija la clave)
 - [x] Autorización por rol admin/coordinador/operador/consulta — en el backend (401/403 por endpoint)
-- [ ] Incidentes (CRUD) — **lista / detalle / crear** listos; falta editar/cerrar
+- [ ] Incidentes (CRUD) — lista / detalle / crear + **reporte de situación** (append-only, historial); falta editar/cerrar
 - [x] Comunas afectadas (relación N:M) — seed + join en lista/detalle
 - [ ] Fuentes + procedencia (fuente + URL + timestamp)
 - [ ] Evidencias — **metadatos con procedencia persisten** (`POST /:id/evidence`); falta el archivo real (R2)

@@ -49,3 +49,11 @@ export const addEvidenceSchema = z.object({
 })
 
 export type AddEvidenceInput = z.infer<typeof addEvidenceSchema>
+
+// Nuevo reporte de situación (append-only; historial para comparar).
+export const addReportSchema = z.object({
+  personasAfectadas: z.coerce.number().int().min(0),
+  voluntarios: z.coerce.number().int().min(0),
+})
+
+export type AddReportInput = z.infer<typeof addReportSchema>

@@ -65,8 +65,27 @@ async function agregarEvidencia() {
   }
 }
 
-function actualizar() {
-  $q.notify({ type: 'info', message: 'Reporte actualizado', caption: 'Se guardó un nuevo reporte en el historial', icon: 'update' })
+// --- Actualizar situación (nuevo reporte, historial) ---
+const showReport = ref(false)
+const rep = reactive({ personas: 0, voluntarios: 0 })
+function openReport() {
+  rep.personas = Number(String(inc.value?.personasAfectadas ?? '').replace(/\D/g, '')) || 0
+  rep.voluntarios = inc.value?.voluntarios ?? 0
+  showReport.value = true
+}
+async function guardarReporte() {
+  if (!inc.value) return
+  saving.value = true
+  try {
+    await data.addReport(inc.value.id, { personasAfectadas: rep.personas, voluntarios: rep.voluntarios })
+    $q.notify({ type: 'positive', message: 'Situación actualizada', caption: 'Se guardó un nuevo reporte', icon: 'update' })
+    showReport.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo actualizar' })
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -158,7 +177,7 @@ function actualizar() {
             <div class="row items-center q-mb-sm">
               <div class="sec-title">Situación actual</div>
               <q-space />
-              <q-btn dense outline size="sm" label="Actualizar" @click="actualizar" />
+              <q-btn dense outline size="sm" label="Actualizar" @click="openReport" />
             </div>
             <div class="row q-col-gutter-sm">
               <div class="col-6">
@@ -238,6 +257,28 @@ function actualizar() {
           <q-card-actions align="right" class="q-pr-md q-pb-md">
             <q-btn type="button" flat label="Cancelar" v-close-popup />
             <q-btn type="submit" color="primary" unelevated label="Agregar" :loading="saving" />
+          </q-card-actions>
+        </q-form>
+      </q-card>
+    </q-dialog>
+
+    <!-- Diálogo: actualizar situación (nuevo reporte) -->
+    <q-dialog v-model="showReport" aria-label="Actualizar situación">
+      <q-card style="min-width: 340px; max-width: 92vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-subtitle1">Actualizar situación</div>
+          <q-space />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+        </q-card-section>
+        <q-form greedy @submit.prevent="guardarReporte">
+          <q-card-section class="q-gutter-sm">
+            <q-input v-model.number="rep.personas" type="number" min="0" label="Personas afectadas" outlined dense />
+            <q-input v-model.number="rep.voluntarios" type="number" min="0" label="Voluntarios" outlined dense />
+            <div class="text-caption text-muted">Se guarda como un reporte nuevo (historial); no reemplaza los anteriores.</div>
+          </q-card-section>
+          <q-card-actions align="right" class="q-pr-md q-pb-md">
+            <q-btn type="button" flat label="Cancelar" v-close-popup />
+            <q-btn type="submit" color="primary" unelevated label="Guardar reporte" :loading="saving" />
           </q-card-actions>
         </q-form>
       </q-card>

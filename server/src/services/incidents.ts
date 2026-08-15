@@ -2,7 +2,7 @@ import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
-import type { CreateIncidentInput, AddEvidenceInput } from '../types'
+import type { CreateIncidentInput, AddEvidenceInput, AddReportInput } from '../types'
 
 const {
   incidents, incidentComunas, comunas, eventTypes, incidentReports,
@@ -199,6 +199,24 @@ export async function createIncident(input: CreateIncidentInput, userId: string)
     }
   }
   return { id, code }
+}
+
+// --- Nuevo reporte de situación (append-only; arrastra el desglose por filial previo). ---
+export async function addReport(incidentId: string, input: AddReportInput, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
+  if (!exists[0]) return undefined
+  const prev = await latestReport(incidentId)
+  const id = randomUUID()
+  await db.insert(incidentReports).values({
+    id,
+    incidentId,
+    personasAfectadas: input.personasAfectadas,
+    voluntarios: input.voluntarios,
+    voluntariosPorFilial: prev?.voluntariosPorFilial ?? null,
+    reportedAt: Math.floor(Date.now() / 1000),
+    createdBy: userId,
+  })
+  return { id }
 }
 
 // --- Agregar evidencia (con procedencia). El archivo real (R2) es etapa posterior. ---
