@@ -7,6 +7,7 @@ import { listSummaries, getDetail, createIncident, addEvidence, addReport, updat
 
 const EDITORES = ['operator', 'coordinator', 'admin'] as const
 import { buildBieDocx } from '../lib/bieDocx'
+import { buildBiePdf, PdfUnavailableError } from '../lib/biePdf'
 
 // Cualquier usuario autenticado puede LEER; crear/capturar requiere operator+.
 const r = new Hono<HonoEnv>()
@@ -86,6 +87,24 @@ r.post('/:id/bie/docx', async (c) => {
       'Content-Disposition': `attachment; filename="BIE-N${nbie}.docx"`,
     },
   })
+})
+
+// Generar el PDF del BIE (rellena el maestro y lo convierte con LibreOffice o Word).
+r.post('/:id/bie/pdf', async (c) => {
+  const draft = await c.req.json().catch(() => ({}))
+  try {
+    const buf = await buildBiePdf(draft)
+    const nbie = (draft?.datos?.nbie ?? 'BIE').toString().replace(/[^\w-]/g, '')
+    return new Response(new Uint8Array(buf), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="BIE-N${nbie}.pdf"`,
+      },
+    })
+  } catch (e) {
+    if (e instanceof PdfUnavailableError) return c.json({ error: 'pdf_no_disponible', message: e.message }, 503)
+    throw e
+  }
 })
 
 export default r

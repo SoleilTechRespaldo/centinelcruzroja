@@ -16,6 +16,7 @@ const session = useSessionStore()
 const loading = ref(true)
 const notFound = ref(false)
 const downloading = ref(false)
+const pdfLoading = ref(false)
 const saving = ref(false)
 
 interface BieVersion { id: string; versionNumber: number; status: string; createdAt: string; generatedBy: string; approvedBy: string | null; approvedAt: string | null }
@@ -175,8 +176,24 @@ async function descargarWord() {
   }
 }
 
-function exportarPdf() {
-  $q.notify({ type: 'info', message: 'PDF: por ahora descarga el .docx y expórtalo a PDF', caption: 'La conversión en el servidor llega después.' })
+async function exportarPdf() {
+  pdfLoading.value = true
+  try {
+    const blob = await api.postBlob(`/incidents/${incidentId.value}/bie/pdf`, currentDraft())
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `BIE-N${datos.nbie || 'sn'}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    $q.notify({ type: 'positive', message: 'BIE descargado (.pdf)', icon: 'picture_as_pdf' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo generar el PDF', timeout: 6000 })
+  } finally {
+    pdfLoading.value = false
+  }
 }
 function verCompleto() {
   router.push({ path: '/bie/preview', query: route.query.incident ? { incident: String(route.query.incident) } : {} })
@@ -300,7 +317,7 @@ function verCompleto() {
             <q-space />
             <q-btn color="primary" unelevated size="sm" label="Ver completo" @click="verCompleto" />
             <q-btn outline size="sm" label="Word" class="q-ml-xs" :loading="downloading" @click="descargarWord" />
-            <q-btn outline size="sm" label="PDF" class="q-ml-xs" @click="exportarPdf" />
+            <q-btn outline size="sm" label="PDF" class="q-ml-xs" :loading="pdfLoading" @click="exportarPdf" />
           </div>
           <div class="watermark q-my-md">BORRADOR · APOYO, NO OFICIAL</div>
           <div class="mini-doc">
