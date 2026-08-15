@@ -40,6 +40,14 @@ const router = useRouter()
 </template>
 
 <style scoped>
-.err { background: var(--al-red-bg); color: var(--al-red-t); border-radius: 8px; }
-.warn { background: var(--al-yellow-bg); color: var(--al-yellow-t); border-radius: 8px; }
+.err {
+  background: var(--al-red-bg);
+  color: var(--al-red-t);
+  border-radius: 8px;
+}
+.warn {
+  background: var(--al-yellow-bg);
+  color: var(--al-yellow-t);
+  border-radius: 8px;
+}
 </style>

@@ -48,7 +48,9 @@ const timeline = [
 
     <q-card flat bordered class="q-pa-md q-mb-md">
       <div class="sec-title q-mb-sm">Resumen</div>
-      <p class="q-mb-none">Sistema frontal (08–11/08) con Alerta Amarilla en 5 comunas; 2.350 afectados, 72 voluntarios de 6 filiales. Evento cerrado el 11/08.</p>
+      <p class="q-mb-none">
+        Sistema frontal (08–11/08) con Alerta Amarilla en 5 comunas; 2.350 afectados, 72 voluntarios de 6 filiales. Evento cerrado el 11/08.
+      </p>
     </q-card>
 
     <div class="row q-col-gutter-md">

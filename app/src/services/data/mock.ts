@@ -1,5 +1,16 @@
 import type { DataService } from './DataService'
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput, UpdateIncidentInput, TimelineInput, SourceInput } from '@/types'
+import type {
+  DashboardData,
+  IncidentSummary,
+  IncidentDetail,
+  BieDraft,
+  NewIncidentInput,
+  EvidenceInput,
+  ReportInput,
+  UpdateIncidentInput,
+  TimelineInput,
+  SourceInput,
+} from '@/types'
 import * as db from './mockDb'
 import { buildBieDraft } from './bieDraft'
 
@@ -35,9 +46,15 @@ export class MockDataService implements DataService {
     const code = `2026-${String(maxSeq + 1).padStart(4, '0')}`
     const id = 'i' + (maxSeq + 1)
     db.incidents.unshift({
-      id, code, title: input.title, eventType: input.eventType,
-      status: input.status, alertSenapred: input.alertSenapred, alertCruzRoja: input.alertCruzRoja,
-      comunas: input.comunas, startedAt: input.startedAt,
+      id,
+      code,
+      title: input.title,
+      eventType: input.eventType,
+      status: input.status,
+      alertSenapred: input.alertSenapred,
+      alertCruzRoja: input.alertCruzRoja,
+      comunas: input.comunas,
+      startedAt: input.startedAt,
     })
     return { id, code }
   }

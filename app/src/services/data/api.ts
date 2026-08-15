@@ -1,5 +1,16 @@
 import type { DataService } from './DataService'
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput, UpdateIncidentInput, TimelineInput, SourceInput } from '@/types'
+import type {
+  DashboardData,
+  IncidentSummary,
+  IncidentDetail,
+  BieDraft,
+  NewIncidentInput,
+  EvidenceInput,
+  ReportInput,
+  UpdateIncidentInput,
+  TimelineInput,
+  SourceInput,
+} from '@/types'
 import { api, ApiError } from '@/services/api'
 import { buildBieDraft } from './bieDraft'
 

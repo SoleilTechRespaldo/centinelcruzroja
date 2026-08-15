@@ -103,7 +103,9 @@ async function toggleActive(it: CatItem) {
         </thead>
         <tbody>
           <template v-if="loading">
-            <tr v-for="n in 5" :key="n"><td v-for="c in 4" :key="c"><q-skeleton type="text" /></td></tr>
+            <tr v-for="n in 5" :key="n">
+              <td v-for="c in 4" :key="c"><q-skeleton type="text" /></td>
+            </tr>
           </template>
           <template v-else>
             <tr v-for="it in current" :key="it.id">
@@ -153,6 +155,10 @@ async function toggleActive(it: CatItem) {
 
 <style scoped>
 /* Pestañas inactivas con contraste AA (WCAG 1.4.3) */
-:deep(.q-tab--inactive) { opacity: 1; }
-:deep(.q-tab--inactive .q-tab__label) { color: var(--c-text2); }
+:deep(.q-tab--inactive) {
+  opacity: 1;
+}
+:deep(.q-tab--inactive .q-tab__label) {
+  color: var(--c-text2);
+}
 </style>

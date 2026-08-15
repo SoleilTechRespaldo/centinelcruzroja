@@ -39,25 +39,49 @@ const cams = [
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <q-card
-          flat bordered
+          flat
+          bordered
           class="cam-add cursor-pointer"
           role="button"
           tabindex="0"
           @click="agregarCamara"
           @keydown.enter.prevent="agregarCamara"
           @keydown.space.prevent="agregarCamara"
-        >+ Agregar cámara (link de YouTube)</q-card>
+          >+ Agregar cámara (link de YouTube)</q-card
+        >
       </div>
     </div>
 
     <div class="text-caption text-muted q-mt-md">
-      Catálogo curado por el operador. Descubrimiento opcional vía YouTube Data API (cuota gratuita). No se descargan ni redistribuyen los streams.
+      Catálogo curado por el operador. Descubrimiento opcional vía YouTube Data API (cuota gratuita). No se descargan ni redistribuyen los
+      streams.
     </div>
   </q-page>
 </template>
 
 <style scoped>
-.cam { position: relative; background: #0b0b0b; height: 150px; display: flex; align-items: center; justify-content: center; color: #8a93a0; font-size: 13px; }
-.cam-badge { position: absolute; top: 8px; left: 8px; font-weight: 600; }
-.cam-add { display: flex; align-items: center; justify-content: center; min-height: 190px; color: var(--c-text2); border-style: dashed; }
+.cam {
+  position: relative;
+  background: #0b0b0b;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a93a0;
+  font-size: 13px;
+}
+.cam-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-weight: 600;
+}
+.cam-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 190px;
+  color: var(--c-text2);
+  border-style: dashed;
+}
 </style>

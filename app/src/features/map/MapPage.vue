@@ -11,7 +11,14 @@ function exportar(fmt: 'PNG' | 'PDF') {
   $q.notify({ type: 'ongoing', message: `Exportando mapa (${fmt})…`, timeout: 900 })
 }
 
-interface ComunaPoint { name: string; lat: number; lng: number; color: string; alert: string; tone: AlertTone }
+interface ComunaPoint {
+  name: string
+  lat: number
+  lng: number
+  color: string
+  alert: string
+  tone: AlertTone
+}
 
 const comunas: ComunaPoint[] = [
   { name: 'Valparaíso', lat: -33.045, lng: -71.62, color: '#C1121F', alert: 'Roja', tone: 'red' },
@@ -36,14 +43,35 @@ onMounted(() => {
       .addTo(map)
       .bindPopup(`<b>${c.name}</b><br>Alerta: ${c.alert}`)
   }
-  L.polygon([[-33.06, -71.61], [-33.09, -71.57], [-33.05, -71.55], [-33.03, -71.59]], { color: '#E4661E', fillColor: '#E4661E', fillOpacity: 0.35, weight: 2 })
-    .addTo(map).bindPopup('<b>Zona estimada — Incendio</b><br>Aproximada · no oficial')
-  L.polygon([[-32.95, -71.55], [-32.93, -71.50], [-32.90, -71.53], [-32.92, -71.58]], { color: '#1D4ED8', fillColor: '#1D4ED8', fillOpacity: 0.30, weight: 2 })
-    .addTo(map).bindPopup('<b>Zona estimada — Inundación</b><br>Aproximada · no oficial')
+  L.polygon(
+    [
+      [-33.06, -71.61],
+      [-33.09, -71.57],
+      [-33.05, -71.55],
+      [-33.03, -71.59],
+    ],
+    { color: '#E4661E', fillColor: '#E4661E', fillOpacity: 0.35, weight: 2 },
+  )
+    .addTo(map)
+    .bindPopup('<b>Zona estimada — Incendio</b><br>Aproximada · no oficial')
+  L.polygon(
+    [
+      [-32.95, -71.55],
+      [-32.93, -71.5],
+      [-32.9, -71.53],
+      [-32.92, -71.58],
+    ],
+    { color: '#1D4ED8', fillColor: '#1D4ED8', fillOpacity: 0.3, weight: 2 },
+  )
+    .addTo(map)
+    .bindPopup('<b>Zona estimada — Inundación</b><br>Aproximada · no oficial')
   setTimeout(() => map?.invalidateSize(), 150)
 })
 
-onBeforeUnmount(() => { map?.remove(); map = null })
+onBeforeUnmount(() => {
+  map?.remove()
+  map = null
+})
 
 async function toggleBig() {
   big.value = !big.value
@@ -57,7 +85,14 @@ async function toggleBig() {
     <div class="row items-center q-mb-md">
       <h1 class="text-h6">Mapa por comuna</h1>
       <q-space />
-      <q-btn dense outline size="sm" :icon="big ? 'close_fullscreen' : 'open_in_full'" :label="big ? 'Reducir' : 'Ampliar'" @click="toggleBig" />
+      <q-btn
+        dense
+        outline
+        size="sm"
+        :icon="big ? 'close_fullscreen' : 'open_in_full'"
+        :label="big ? 'Reducir' : 'Ampliar'"
+        @click="toggleBig"
+      />
       <q-btn dense outline size="sm" label="PNG" class="q-ml-sm" @click="exportar('PNG')" />
       <q-btn dense outline size="sm" label="PDF" class="q-ml-sm" @click="exportar('PDF')" />
     </div>
@@ -71,14 +106,20 @@ async function toggleBig() {
             <AlertBadge label="Amarilla" tone="yellow" />
             <AlertBadge label="Sin alerta" tone="green" />
           </div>
-          <div ref="mapEl" class="lmap" role="application" aria-label="Mapa de comunas de la Región de Valparaíso por nivel de alerta" :style="{ height: big ? '78vh' : '380px' }" />
+          <div
+            ref="mapEl"
+            class="lmap"
+            role="application"
+            aria-label="Mapa de comunas de la Región de Valparaíso por nivel de alerta"
+            :style="{ height: big ? '78vh' : '380px' }"
+          />
           <div class="text-caption text-muted q-mt-sm">
             Mapa real con <b>Leaflet + OpenStreetMap</b> (gratis, sin API key) · comunas por alerta · apoyo, no oficial
           </div>
           <div class="zone-legend q-mt-xs">
             <span class="text-caption text-weight-medium">Zonas estimadas:</span>
-            <span class="zl"><i style="background:#e4661e" />Incendio</span>
-            <span class="zl"><i style="background:#1d4ed8" />Inundación</span>
+            <span class="zl"><i style="background: #e4661e" />Incendio</span>
+            <span class="zl"><i style="background: #1d4ed8" />Inundación</span>
             <span class="text-caption text-muted">· Lluvia: capa de radar</span>
           </div>
         </q-card>
@@ -96,9 +137,34 @@ async function toggleBig() {
 </template>
 
 <style scoped>
-.lmap { border-radius: 8px; border: 1px solid var(--c-border); z-index: 0; }
-.badges { display: flex; flex-wrap: wrap; gap: 10px; }
-.zone-legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.zl { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--c-text2); }
-.zl i { width: 12px; height: 12px; border-radius: 3px; opacity: 0.5; display: inline-block; }
+.lmap {
+  border-radius: 8px;
+  border: 1px solid var(--c-border);
+  z-index: 0;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.zone-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.zl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--c-text2);
+}
+.zl i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  opacity: 0.5;
+  display: inline-block;
+}
 </style>

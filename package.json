@@ -1,0 +1,23 @@
+{
+  "name": "centinela",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Centinela — apoyo al monitoreo situacional y generación del BIE para Cruz Roja Valparaíso.",
+  "scripts": {
+    "format": "prettier --write \"app/src/**/*.{ts,vue,css}\" \"server/src/**/*.ts\" \"server/test/**/*.ts\"",
+    "format:check": "prettier --check \"app/src/**/*.{ts,vue,css}\" \"server/src/**/*.ts\" \"server/test/**/*.ts\"",
+    "lint": "eslint app/src server/src server/test",
+    "lint:fix": "eslint app/src server/src server/test --fix",
+    "typecheck": "npm --prefix server run typecheck",
+    "test": "npm --prefix server test",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
+    "eslint-plugin-vue": "^10.10.0",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.67.0"
+  }
+}

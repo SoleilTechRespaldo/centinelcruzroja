@@ -55,7 +55,12 @@ const saving = ref(false)
 
 // --- Invitar (crear) ---
 const showInvite = ref(false)
-const nuevo = reactive<{ displayName: string; email: string; role: Role | null; password: string }>({ displayName: '', email: '', role: null, password: '' })
+const nuevo = reactive<{ displayName: string; email: string; role: Role | null; password: string }>({
+  displayName: '',
+  email: '',
+  role: null,
+  password: '',
+})
 function openInvite() {
   nuevo.displayName = ''
   nuevo.email = ''
@@ -103,7 +108,12 @@ async function restablecerClave() {
   resetting.value = true
   try {
     await api.post(`/users/${editing.value.id}/password`, { password: newPass.value })
-    $q.notify({ type: 'positive', message: 'Contraseña restablecida', caption: 'Entrégasela al usuario de forma segura.', icon: 'lock_reset' })
+    $q.notify({
+      type: 'positive',
+      message: 'Contraseña restablecida',
+      caption: 'Entrégasela al usuario de forma segura.',
+      icon: 'lock_reset',
+    })
     newPass.value = ''
   } catch (e) {
     $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo restablecer' })
@@ -158,7 +168,9 @@ async function guardarEdit() {
         </thead>
         <tbody>
           <template v-if="loading">
-            <tr v-for="n in 4" :key="n"><td v-for="c in 6" :key="c"><q-skeleton type="text" /></td></tr>
+            <tr v-for="n in 4" :key="n">
+              <td v-for="c in 6" :key="c"><q-skeleton type="text" /></td>
+            </tr>
           </template>
           <template v-else>
             <tr v-for="u in users" :key="u.id">
@@ -200,7 +212,15 @@ async function guardarEdit() {
             <q-input v-model="nuevo.displayName" label="Nombre *" outlined dense :rules="[req]" autofocus />
             <q-input v-model="nuevo.email" label="Correo *" type="email" outlined dense :rules="[req, isEmail]" />
             <q-select v-model="nuevo.role" :options="roleOptions" label="Rol *" outlined dense emit-value map-options :rules="[req]" />
-            <q-input v-model="nuevo.password" label="Clave inicial *" type="text" outlined dense :rules="[req, minPass]" hint="Se la entregas al usuario; luego la puede cambiar." />
+            <q-input
+              v-model="nuevo.password"
+              label="Clave inicial *"
+              type="text"
+              outlined
+              dense
+              :rules="[req, minPass]"
+              hint="Se la entregas al usuario; luego la puede cambiar."
+            />
           </q-card-section>
           <q-card-actions align="right" class="q-pr-md q-pb-md">
             <q-btn type="button" flat label="Cancelar" v-close-popup />
@@ -219,14 +239,14 @@ async function guardarEdit() {
           <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
         </q-card-section>
         <q-card-section class="q-gutter-sm">
-          <div class="text-body2">{{ editing?.displayName }} <span class="text-muted">· {{ editing?.email }}</span></div>
+          <div class="text-body2">
+            {{ editing?.displayName }} <span class="text-muted">· {{ editing?.email }}</span>
+          </div>
           <q-select v-model="editRole" :options="roleOptions" label="Rol" outlined dense emit-value map-options />
           <q-toggle v-model="editActive" :label="editActive ? 'Activo (puede ingresar)' : 'Inactivo (no puede ingresar)'" />
 
           <q-separator class="q-my-sm" />
-          <div class="text-caption text-muted">
-            Recuperar contraseña: el administrador fija una clave nueva y se la entrega al usuario.
-          </div>
+          <div class="text-caption text-muted">Recuperar contraseña: el administrador fija una clave nueva y se la entrega al usuario.</div>
           <q-input
             v-model="newPass"
             label="Nueva contraseña"

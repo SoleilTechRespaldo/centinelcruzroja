@@ -52,7 +52,17 @@ r.post('/', zValidator('json', createSchema), async (c) => {
   await db.insert(schema.users).values({ id, email, displayName: body.displayName, role: body.role, passwordHash, isActive: true })
 
   const admin = c.get('user')
-  await db.insert(schema.auditLog).values({ id: randomUUID(), userId: admin.id, action: 'user.create', entityType: 'user', entityId: id, details: { email, role: body.role } }).catch(() => {})
+  await db
+    .insert(schema.auditLog)
+    .values({
+      id: randomUUID(),
+      userId: admin.id,
+      action: 'user.create',
+      entityType: 'user',
+      entityId: id,
+      details: { email, role: body.role },
+    })
+    .catch(() => {})
   const created = (await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1))[0]
   return c.json({ user: publicUser(created) }, 201)
 })
@@ -71,7 +81,10 @@ r.patch('/:id', zValidator('json', updateSchema), async (c) => {
   if (body.isActive !== undefined) patch.isActive = body.isActive
   await db.update(schema.users).set(patch).where(eq(schema.users.id, id))
 
-  await db.insert(schema.auditLog).values({ id: randomUUID(), userId: admin.id, action: 'user.update', entityType: 'user', entityId: id, details: body }).catch(() => {})
+  await db
+    .insert(schema.auditLog)
+    .values({ id: randomUUID(), userId: admin.id, action: 'user.update', entityType: 'user', entityId: id, details: body })
+    .catch(() => {})
   const updated = (await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1))[0]
   return c.json({ user: publicUser(updated) })
 })
@@ -82,7 +95,10 @@ r.post('/:id/password', zValidator('json', z.object({ password: z.string().min(8
   const target = (await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.id, id)).limit(1))[0]
   if (!target) return c.json({ error: 'no_encontrado' }, 404)
   const passwordHash = await hashPassword(c.req.valid('json').password)
-  await db.update(schema.users).set({ passwordHash, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.users.id, id))
+  await db
+    .update(schema.users)
+    .set({ passwordHash, updatedAt: Math.floor(Date.now() / 1000) })
+    .where(eq(schema.users.id, id))
   return c.json({ ok: true })
 })
 

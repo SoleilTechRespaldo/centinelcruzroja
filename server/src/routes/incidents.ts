@@ -1,9 +1,28 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { createIncidentSchema, addEvidenceSchema, addReportSchema, updateIncidentSchema, addTimelineSchema, addSourceSchema } from '../types'
+import {
+  createIncidentSchema,
+  addEvidenceSchema,
+  addReportSchema,
+  updateIncidentSchema,
+  addTimelineSchema,
+  addSourceSchema,
+} from '../types'
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
-import { listSummaries, getDetail, createIncident, addEvidence, addReport, updateIncident, addTimelineEvent, addSource, saveBieVersion, listBieVersions, approveBieVersion } from '../services/incidents'
+import {
+  listSummaries,
+  getDetail,
+  createIncident,
+  addEvidence,
+  addReport,
+  updateIncident,
+  addTimelineEvent,
+  addSource,
+  saveBieVersion,
+  listBieVersions,
+  approveBieVersion,
+} from '../services/incidents'
 
 const EDITORES = ['operator', 'coordinator', 'admin'] as const
 import { buildBieDocx } from '../lib/bieDocx'

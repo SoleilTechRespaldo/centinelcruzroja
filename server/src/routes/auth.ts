@@ -20,10 +20,16 @@ r.post('/login', zValidator('json', loginSchema), async (c) => {
   }
   if (!user.isActive) return c.json({ error: 'usuario_inactivo' }, 403)
 
-  await db.update(schema.users).set({ lastLoginAt: Math.floor(Date.now() / 1000) }).where(eq(schema.users.id, user.id))
+  await db
+    .update(schema.users)
+    .set({ lastLoginAt: Math.floor(Date.now() / 1000) })
+    .where(eq(schema.users.id, user.id))
   const authUser: AuthUser = { id: user.id, email: user.email, role: user.role, displayName: user.displayName }
   const token = await signToken(authUser)
-  await db.insert(schema.auditLog).values({ id: randomUUID(), userId: user.id, action: 'login', entityType: 'user', entityId: user.id }).catch(() => {})
+  await db
+    .insert(schema.auditLog)
+    .values({ id: randomUUID(), userId: user.id, action: 'login', entityType: 'user', entityId: user.id })
+    .catch(() => {})
   return c.json({ token, user: authUser })
 })
 

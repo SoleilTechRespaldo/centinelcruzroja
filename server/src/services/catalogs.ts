@@ -6,16 +6,17 @@ const { comunas, eventTypes, sourceOrgs } = schema
 export type CatalogType = 'comunas' | 'tipos' | 'fuentes'
 
 function slug(s: string): string {
-  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 }
 
 // Lectura: comunas / tipos de evento / fuentes oficiales (con su estado).
 export async function getCatalogs() {
-  const [cs, ts, fs] = await Promise.all([
-    db.select().from(comunas),
-    db.select().from(eventTypes),
-    db.select().from(sourceOrgs),
-  ])
+  const [cs, ts, fs] = await Promise.all([db.select().from(comunas), db.select().from(eventTypes), db.select().from(sourceOrgs)])
   return {
     comunas: cs.map((c) => ({ id: c.id, name: c.name, meta: c.province ?? '', isActive: c.isActive })),
     tipos: ts.map((t) => ({ id: t.id, name: t.name, meta: '', isActive: t.isActive })),

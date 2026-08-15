@@ -97,11 +97,9 @@ async function convertWithWord(docx: Buffer): Promise<Buffer | null> {
   ].join('\n')
   try {
     await writeFile(src, docx)
-    await execFileP(
-      'powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
-      { timeout: 90000 },
-    )
+    await execFileP('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+      timeout: 90000,
+    })
     return (await exists(dst)) ? await readFile(dst) : null
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => {})

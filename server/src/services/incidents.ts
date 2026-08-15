@@ -6,8 +6,17 @@ import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
 import type { CreateIncidentInput, AddEvidenceInput, AddReportInput, UpdateIncidentInput, AddTimelineInput, AddSourceInput } from '../types'
 
 const {
-  incidents, incidentComunas, comunas, eventTypes, incidentReports,
-  sources, sourceOrgs, evidence, timelineEvents, auditLog, bieVersions,
+  incidents,
+  incidentComunas,
+  comunas,
+  eventTypes,
+  incidentReports,
+  sources,
+  sourceOrgs,
+  evidence,
+  timelineEvents,
+  auditLog,
+  bieVersions,
 } = schema
 
 type Filial = { filial: string; n: number }
@@ -48,9 +57,14 @@ function senapredTone(a: string): string {
 export async function listSummaries() {
   const rows = await db
     .select({
-      id: incidents.id, code: incidents.code, title: incidents.title,
-      status: incidents.status, alertSenapred: incidents.alertSenapred, alertCruzRoja: incidents.alertCruzRoja,
-      startedAt: incidents.startedAt, eventType: eventTypes.name,
+      id: incidents.id,
+      code: incidents.code,
+      title: incidents.title,
+      status: incidents.status,
+      alertSenapred: incidents.alertSenapred,
+      alertCruzRoja: incidents.alertCruzRoja,
+      startedAt: incidents.startedAt,
+      eventType: eventTypes.name,
     })
     .from(incidents)
     .leftJoin(eventTypes, eq(incidents.eventTypeId, eventTypes.id))
@@ -58,9 +72,15 @@ export async function listSummaries() {
     .orderBy(desc(incidents.startedAt))
   const cmap = await comunasByIncident(rows.map((r) => r.id))
   return rows.map((r) => ({
-    id: r.id, code: r.code, title: r.title, eventType: r.eventType ?? '—',
-    status: r.status, alertSenapred: r.alertSenapred, alertCruzRoja: r.alertCruzRoja,
-    comunas: cmap.get(r.id) ?? [], startedAt: fmtDateTime(r.startedAt),
+    id: r.id,
+    code: r.code,
+    title: r.title,
+    eventType: r.eventType ?? '—',
+    status: r.status,
+    alertSenapred: r.alertSenapred,
+    alertCruzRoja: r.alertCruzRoja,
+    comunas: cmap.get(r.id) ?? [],
+    startedAt: fmtDateTime(r.startedAt),
   }))
 }
 
@@ -68,9 +88,15 @@ export async function listSummaries() {
 export async function getDetail(id: string) {
   const rows = await db
     .select({
-      id: incidents.id, code: incidents.code, title: incidents.title,
-      status: incidents.status, alertSenapred: incidents.alertSenapred, alertCruzRoja: incidents.alertCruzRoja,
-      startedAt: incidents.startedAt, description: incidents.description, eventType: eventTypes.name,
+      id: incidents.id,
+      code: incidents.code,
+      title: incidents.title,
+      status: incidents.status,
+      alertSenapred: incidents.alertSenapred,
+      alertCruzRoja: incidents.alertCruzRoja,
+      startedAt: incidents.startedAt,
+      description: incidents.description,
+      eventType: eventTypes.name,
     })
     .from(incidents)
     .leftJoin(eventTypes, eq(incidents.eventTypeId, eventTypes.id))
@@ -106,15 +132,28 @@ export async function getDetail(id: string) {
   const vpf = (rep?.voluntariosPorFilial as Filial[] | null) ?? []
 
   return {
-    id: inc.id, code: inc.code, title: inc.title, eventType: inc.eventType ?? '—',
-    status: inc.status, alertSenapred: inc.alertSenapred, alertCruzRoja: inc.alertCruzRoja,
-    comunas: cmap.get(id) ?? [], startedAt: fmtDateTime(inc.startedAt),
+    id: inc.id,
+    code: inc.code,
+    title: inc.title,
+    eventType: inc.eventType ?? '—',
+    status: inc.status,
+    alertSenapred: inc.alertSenapred,
+    alertCruzRoja: inc.alertCruzRoja,
+    comunas: cmap.get(id) ?? [],
+    startedAt: fmtDateTime(inc.startedAt),
     description: inc.description ?? '',
     personasAfectadas: rep?.personasAfectadas != null ? rep.personasAfectadas.toLocaleString('es-CL') : 'En evaluación',
     voluntarios: rep?.voluntarios ?? 0,
     voluntariosPorFilial: vpf,
     timeline: tl.map((t) => ({ at: fmtTimeline(t.happenedAt), text: t.description, source: t.org ?? undefined })),
-    evidence: evs.map((e) => ({ id: e.id, kind: e.kind, caption: e.caption ?? '', source: e.sourceText ?? '', at: fmtTime(e.capturedAt), url: e.url ?? undefined })),
+    evidence: evs.map((e) => ({
+      id: e.id,
+      kind: e.kind,
+      caption: e.caption ?? '',
+      source: e.sourceText ?? '',
+      at: fmtTime(e.capturedAt),
+      url: e.url ?? undefined,
+    })),
     sources: srcs.map((s) => ({ org: s.org ?? '—', title: s.title ?? '', at: fmtTime(s.capturedAt) })),
   }
 }
@@ -188,9 +227,16 @@ export async function createIncident(input: CreateIncidentInput, userId: string)
   const startedAt = parseDate(input.startedAt) ?? Math.floor(Date.now() / 1000)
 
   await db.insert(incidents).values({
-    id, code, title: input.title, eventTypeId: et[0]?.id,
-    status: input.status, alertSenapred: input.alertSenapred, alertCruzRoja: input.alertCruzRoja,
-    description: input.description ?? '', startedAt, createdBy: userId,
+    id,
+    code,
+    title: input.title,
+    eventTypeId: et[0]?.id,
+    status: input.status,
+    alertSenapred: input.alertSenapred,
+    alertCruzRoja: input.alertCruzRoja,
+    description: input.description ?? '',
+    startedAt,
+    createdBy: userId,
   })
 
   if (input.comunas.length) {
@@ -229,7 +275,10 @@ export async function updateIncident(id: string, input: UpdateIncidentInput, use
       for (const cr of crows) await db.insert(incidentComunas).values({ incidentId: id, comunaId: cr.id }).onConflictDoNothing()
     }
   }
-  await db.insert(auditLog).values({ id: randomUUID(), userId, action: 'incident.update', entityType: 'incident', entityId: id, details: input }).catch(() => {})
+  await db
+    .insert(auditLog)
+    .values({ id: randomUUID(), userId, action: 'incident.update', entityType: 'incident', entityId: id, details: input })
+    .catch(() => {})
   return { id }
 }
 
@@ -239,9 +288,12 @@ export async function addTimelineEvent(id: string, input: AddTimelineInput, user
   if (!exists[0]) return undefined
   const eid = randomUUID()
   await db.insert(timelineEvents).values({
-    id: eid, incidentId: id,
+    id: eid,
+    incidentId: id,
     happenedAt: parseDate(input.happenedAt) ?? Math.floor(Date.now() / 1000),
-    entryType: input.entryType, description: input.description, createdBy: userId,
+    entryType: input.entryType,
+    description: input.description,
+    createdBy: userId,
   })
   return { id: eid }
 }
@@ -252,7 +304,9 @@ export async function addSource(id: string, input: AddSourceInput, userId: strin
   if (!exists[0]) return undefined
   const so = await db.select({ id: sourceOrgs.id }).from(sourceOrgs).where(eq(sourceOrgs.name, input.org)).limit(1)
   const sid = randomUUID()
-  await db.insert(sources).values({ id: sid, incidentId: id, sourceOrgId: so[0]?.id ?? null, title: input.title, url: input.url, createdBy: userId })
+  await db
+    .insert(sources)
+    .values({ id: sid, incidentId: id, sourceOrgId: so[0]?.id ?? null, title: input.title, url: input.url, createdBy: userId })
   return { id: sid }
 }
 
@@ -275,7 +329,11 @@ export async function addReport(incidentId: string, input: AddReportInput, userI
 }
 
 // --- Versiones del BIE (borrador → aprobación por el coordinador). ---
-export async function saveBieVersion(incidentId: string, data: unknown, userId: string): Promise<{ id: string; versionNumber: number } | undefined> {
+export async function saveBieVersion(
+  incidentId: string,
+  data: unknown,
+  userId: string,
+): Promise<{ id: string; versionNumber: number } | undefined> {
   const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
   if (!exists[0]) return undefined
   const rows = await db.select({ v: bieVersions.versionNumber }).from(bieVersions).where(eq(bieVersions.incidentId, incidentId))
@@ -290,9 +348,13 @@ export async function listBieVersions(incidentId: string) {
   const au = alias(schema.users, 'au')
   const rows = await db
     .select({
-      id: bieVersions.id, versionNumber: bieVersions.versionNumber, status: bieVersions.status,
-      createdAt: bieVersions.createdAt, approvedAt: bieVersions.approvedAt,
-      generatedBy: gu.displayName, approvedBy: au.displayName,
+      id: bieVersions.id,
+      versionNumber: bieVersions.versionNumber,
+      status: bieVersions.status,
+      createdAt: bieVersions.createdAt,
+      approvedAt: bieVersions.approvedAt,
+      generatedBy: gu.displayName,
+      approvedBy: au.displayName,
     })
     .from(bieVersions)
     .leftJoin(gu, eq(bieVersions.generatedBy, gu.id))
@@ -300,16 +362,23 @@ export async function listBieVersions(incidentId: string) {
     .where(and(eq(bieVersions.incidentId, incidentId), isNull(bieVersions.deletedAt)))
     .orderBy(desc(bieVersions.versionNumber))
   return rows.map((r) => ({
-    id: r.id, versionNumber: r.versionNumber, status: r.status,
-    createdAt: fmtDateTime(r.createdAt), approvedAt: r.approvedAt ? fmtDateTime(r.approvedAt) : null,
-    generatedBy: r.generatedBy ?? '—', approvedBy: r.approvedBy ?? null,
+    id: r.id,
+    versionNumber: r.versionNumber,
+    status: r.status,
+    createdAt: fmtDateTime(r.createdAt),
+    approvedAt: r.approvedAt ? fmtDateTime(r.approvedAt) : null,
+    generatedBy: r.generatedBy ?? '—',
+    approvedBy: r.approvedBy ?? null,
   }))
 }
 
 export async function approveBieVersion(versionId: string, userId: string): Promise<{ id: string } | undefined> {
   const exists = await db.select({ id: bieVersions.id }).from(bieVersions).where(eq(bieVersions.id, versionId)).limit(1)
   if (!exists[0]) return undefined
-  await db.update(bieVersions).set({ status: 'approved', approvedBy: userId, approvedAt: Math.floor(Date.now() / 1000) }).where(eq(bieVersions.id, versionId))
+  await db
+    .update(bieVersions)
+    .set({ status: 'approved', approvedBy: userId, approvedAt: Math.floor(Date.now() / 1000) })
+    .where(eq(bieVersions.id, versionId))
   return { id: versionId }
 }
 
@@ -320,8 +389,15 @@ export async function addEvidence(incidentId: string, input: AddEvidenceInput, u
   const id = randomUUID()
   const capturedAt = parseDate(input.at) ?? Math.floor(Date.now() / 1000)
   await db.insert(evidence).values({
-    id, incidentId, kind: input.kind, caption: input.caption, sourceText: input.source,
-    url: input.url, fileName: input.fileName, capturedAt, createdBy: userId,
+    id,
+    incidentId,
+    kind: input.kind,
+    caption: input.caption,
+    sourceText: input.source,
+    url: input.url,
+    fileName: input.fileName,
+    capturedAt,
+    createdBy: userId,
   })
   return { id }
 }

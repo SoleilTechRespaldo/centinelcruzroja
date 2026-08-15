@@ -134,10 +134,35 @@ const porMes = [
 </template>
 
 <style scoped>
-.badges { display: flex; flex-wrap: wrap; gap: 6px; }
-.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
-.bar-label { width: 120px; font-size: 13px; color: var(--c-text2); }
-.bar-track { flex: 1; background: var(--c-surface2); border-radius: 4px; height: 14px; }
-.bar-fill { height: 14px; border-radius: 4px; }
-.bar-val { width: 22px; text-align: right; font-size: 12px; }
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.bar-label {
+  width: 120px;
+  font-size: 13px;
+  color: var(--c-text2);
+}
+.bar-track {
+  flex: 1;
+  background: var(--c-surface2);
+  border-radius: 4px;
+  height: 14px;
+}
+.bar-fill {
+  height: 14px;
+  border-radius: 4px;
+}
+.bar-val {
+  width: 22px;
+  text-align: right;
+  font-size: 12px;
+}
 </style>

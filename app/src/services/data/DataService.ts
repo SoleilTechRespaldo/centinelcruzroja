@@ -1,4 +1,15 @@
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput, UpdateIncidentInput, TimelineInput, SourceInput } from '@/types'
+import type {
+  DashboardData,
+  IncidentSummary,
+  IncidentDetail,
+  BieDraft,
+  NewIncidentInput,
+  EvidenceInput,
+  ReportInput,
+  UpdateIncidentInput,
+  TimelineInput,
+  SourceInput,
+} from '@/types'
 
 // Contrato de acceso a datos. Implementaciones: ApiDataService (backend real) y
 // MockDataService (fallback). Las pantallas hablan con esta interfaz.

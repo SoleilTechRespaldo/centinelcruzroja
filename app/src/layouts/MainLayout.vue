@@ -24,9 +24,14 @@ const nav: NavItem[] = [
   { label: 'Usuarios', to: '/users', icon: 'group', adminOnly: true },
 ]
 
-const roleLabels: Record<string, string> = { admin: 'Administrador', coordinator: 'Coordinador', operator: 'Operador', consulta: 'Consulta' }
+const roleLabels: Record<string, string> = {
+  admin: 'Administrador',
+  coordinator: 'Coordinador',
+  operator: 'Operador',
+  consulta: 'Consulta',
+}
 function roleLabel(r: string | null): string {
-  return r ? roleLabels[r] ?? r : ''
+  return r ? (roleLabels[r] ?? r) : ''
 }
 
 // Tamaño de letra (A− / A+): escala el contenido y se recuerda entre sesiones.
@@ -65,9 +70,25 @@ function logout() {
 
         <!-- Tamaño de letra -->
         <div class="tsize gt-xs" role="group" aria-label="Tamaño de letra">
-          <q-btn dense flat class="tsize-btn" label="A−" aria-label="Reducir tamaño de letra" :disable="zoom <= MIN" @click="bumpZoom(-1)" />
+          <q-btn
+            dense
+            flat
+            class="tsize-btn"
+            label="A−"
+            aria-label="Reducir tamaño de letra"
+            :disable="zoom <= MIN"
+            @click="bumpZoom(-1)"
+          />
           <span class="tsize-val" aria-live="polite">{{ zoomPct }}</span>
-          <q-btn dense flat class="tsize-btn tsize-plus" label="A+" aria-label="Aumentar tamaño de letra" :disable="zoom >= MAX" @click="bumpZoom(1)" />
+          <q-btn
+            dense
+            flat
+            class="tsize-btn tsize-plus"
+            label="A+"
+            aria-label="Aumentar tamaño de letra"
+            :disable="zoom >= MAX"
+            @click="bumpZoom(1)"
+          />
         </div>
 
         <span class="region q-mx-md gt-md">Región de Valparaíso</span>
@@ -106,22 +127,83 @@ function logout() {
 </template>
 
 <style scoped>
-.topbar { background: var(--grafito); }
-.brand-name { font-weight: 600; font-size: 16px; }
-.brand-sub { color: #aeb4c0; font-size: 13px; font-weight: 400; }
-.region { color: #c9cdd4; font-size: 13px; }
-.nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-muted); font-weight: 600; padding: 14px 16px 4px; }
-.sidebar :deep(.q-item) { border-radius: 8px; margin: 2px 8px; color: var(--c-text2); font-weight: 500; min-height: 42px; }
-.sidebar :deep(.nav-active) { color: var(--c-red); background: #fdecec; box-shadow: inset 3px 0 0 var(--c-red); }
+.topbar {
+  background: var(--grafito);
+}
+.brand-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+.brand-sub {
+  color: #aeb4c0;
+  font-size: 13px;
+  font-weight: 400;
+}
+.region {
+  color: #c9cdd4;
+  font-size: 13px;
+}
+.nav-section {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--c-muted);
+  font-weight: 600;
+  padding: 14px 16px 4px;
+}
+.sidebar :deep(.q-item) {
+  border-radius: 8px;
+  margin: 2px 8px;
+  color: var(--c-text2);
+  font-weight: 500;
+  min-height: 42px;
+}
+.sidebar :deep(.nav-active) {
+  color: var(--c-red);
+  background: #fdecec;
+  box-shadow: inset 3px 0 0 var(--c-red);
+}
 
 /* Control de tamaño de letra */
-.tsize { display: inline-flex; align-items: center; border: 1px solid #3a4050; border-radius: 8px; overflow: hidden; }
-.tsize-btn { color: #c9cdd4; min-height: 26px; padding: 0 9px; font-weight: 600; border-radius: 0; }
-.tsize-plus { border-left: 1px solid #3a4050; }
-.tsize-val { color: #c9cdd4; font-size: 11px; min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+.tsize {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #3a4050;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tsize-btn {
+  color: #c9cdd4;
+  min-height: 26px;
+  padding: 0 9px;
+  font-weight: 600;
+  border-radius: 0;
+}
+.tsize-plus {
+  border-left: 1px solid #3a4050;
+}
+.tsize-val {
+  color: #c9cdd4;
+  font-size: 11px;
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Usuario en el topbar */
-.userbox { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
-.user-name { color: #fff; font-size: 13px; font-weight: 500; }
-.user-role { color: #aeb4c0; font-size: 11px; }
+.userbox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+.user-name {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+.user-role {
+  color: #aeb4c0;
+  font-size: 11px;
+}
 </style>

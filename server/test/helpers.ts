@@ -7,11 +7,7 @@ export interface ApiResult {
 }
 
 // Ejecuta una petición contra la app Hono en memoria (sin abrir puertos).
-export async function apiReq(
-  method: string,
-  path: string,
-  opts: { token?: string; body?: unknown } = {},
-): Promise<ApiResult> {
+export async function apiReq(method: string, path: string, opts: { token?: string; body?: unknown } = {}): Promise<ApiResult> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (opts.token) headers.Authorization = `Bearer ${opts.token}`
   const res = await app.request(`/api${path}`, {
@@ -21,10 +17,12 @@ export async function apiReq(
   })
   const text = await res.text()
   let json: any = null
-  try {
-    json = text ? JSON.parse(text) : null
-  } catch {
-    json = text
+  if (text) {
+    try {
+      json = JSON.parse(text)
+    } catch {
+      json = text
+    }
   }
   return { status: res.status, json }
 }

@@ -19,7 +19,15 @@ const downloading = ref(false)
 const pdfLoading = ref(false)
 const saving = ref(false)
 
-interface BieVersion { id: string; versionNumber: number; status: string; createdAt: string; generatedBy: string; approvedBy: string | null; approvedAt: string | null }
+interface BieVersion {
+  id: string
+  versionNumber: number
+  status: string
+  createdAt: string
+  generatedBy: string
+  approvedBy: string | null
+  approvedAt: string | null
+}
 const versiones = ref<BieVersion[]>([])
 const canApprove = computed(() => session.role === 'coordinator' || session.role === 'admin')
 
@@ -124,7 +132,12 @@ async function enviar() {
   saving.value = true
   try {
     const res = await api.post<{ versionNumber: number }>(`/incidents/${incidentId.value}/bie/versions`, { data: currentDraft() })
-    $q.notify({ type: 'positive', message: `Enviado a aprobación (v${res.versionNumber})`, caption: 'El coordinador puede aprobarlo.', icon: 'send' })
+    $q.notify({
+      type: 'positive',
+      message: `Enviado a aprobación (v${res.versionNumber})`,
+      caption: 'El coordinador puede aprobarlo.',
+      icon: 'send',
+    })
     await loadVersiones()
   } catch (e) {
     $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo enviar' })
@@ -149,9 +162,24 @@ function currentDraft(): BieDraft {
     datos: { ...datos },
     afectacion: { ...af },
     descripcion: descripcion.value,
-    cruzRoja: { filiales: filiales.value, voluntarios: voluntarios.value, actividades: actividades.value, gestion: gestion.value, salud: salud.value, comunicacion: comunicacion.value, proteccion: proteccion.value, reporteFilial: reporteFilial.value },
+    cruzRoja: {
+      filiales: filiales.value,
+      voluntarios: voluntarios.value,
+      actividades: actividades.value,
+      gestion: gestion.value,
+      salud: salud.value,
+      comunicacion: comunicacion.value,
+      proteccion: proteccion.value,
+      reporteFilial: reporteFilial.value,
+    },
     necesidades: { ...nec },
-    cierre: { sala: sala.value, telecom: telecom.value, elaborado: elaborado.value, autorizado: autorizado.value, monitoreoEquipo: monitoreoEquipo.value },
+    cierre: {
+      sala: sala.value,
+      telecom: telecom.value,
+      elaborado: elaborado.value,
+      autorizado: autorizado.value,
+      monitoreoEquipo: monitoreoEquipo.value,
+    },
     fuentes: fuentes.value,
   }
 }
@@ -213,16 +241,14 @@ function verCompleto() {
 
     <q-banner v-if="!loading && !notFound" dense rounded class="autofill-note q-mb-md">
       <template #avatar><q-icon name="auto_awesome" color="primary" /></template>
-      Autollenado desde el incidente <b>{{ incidentCode }}</b> y sus fuentes registradas.
-      <b>N/A</b> = no aplica · <b>En evaluación</b> = sin dato aún.
+      Autollenado desde el incidente <b>{{ incidentCode }}</b> y sus fuentes registradas. <b>N/A</b> = no aplica · <b>En evaluación</b> =
+      sin dato aún.
       <span class="text-muted">Sin conexión a fuentes en vivo todavía (RF-20, etapa backend).</span>
     </q-banner>
 
     <!-- Carga -->
     <div v-if="loading" class="row q-col-gutter-md">
-      <div class="col-12 col-md-7 q-gutter-sm">
-        <q-skeleton height="120px" /><q-skeleton height="180px" /><q-skeleton height="140px" />
-      </div>
+      <div class="col-12 col-md-7 q-gutter-sm"><q-skeleton height="120px" /><q-skeleton height="180px" /><q-skeleton height="140px" /></div>
       <div class="col-12 col-md-5"><q-skeleton height="300px" /></div>
     </div>
 
@@ -267,7 +293,9 @@ function verCompleto() {
               v-model="b.texto"
               :label="b.titulo"
               type="textarea"
-              outlined dense autogrow
+              outlined
+              dense
+              autogrow
               class="q-mb-sm"
             />
           </q-card>
@@ -278,10 +306,34 @@ function verCompleto() {
               <q-input v-model="filiales" label="Filiales" outlined dense class="col-8" />
               <q-input v-model="voluntarios" label="Voluntarios" outlined dense class="col-4" />
             </div>
-            <q-input v-model="gestion" label="Gestión del riesgo (COGRID · monitoreo · reporte)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input
+              v-model="gestion"
+              label="Gestión del riesgo (COGRID · monitoreo · reporte)"
+              type="textarea"
+              outlined
+              dense
+              autogrow
+              class="q-mb-sm"
+            />
             <q-input v-model="salud" label="Salud (SMAPS · PPAA · WASH)" type="textarea" outlined dense autogrow class="q-mb-sm" />
-            <q-input v-model="comunicacion" label="Comunicación (mensajes clave · campañas)" type="textarea" outlined dense autogrow class="q-mb-sm" />
-            <q-input v-model="proteccion" label="Protección (PGI · RCF · datos sensibles)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input
+              v-model="comunicacion"
+              label="Comunicación (mensajes clave · campañas)"
+              type="textarea"
+              outlined
+              dense
+              autogrow
+              class="q-mb-sm"
+            />
+            <q-input
+              v-model="proteccion"
+              label="Protección (PGI · RCF · datos sensibles)"
+              type="textarea"
+              outlined
+              dense
+              autogrow
+              class="q-mb-sm"
+            />
             <q-input v-model="reporteFilial" label="Reporte por filial (ACCIONES DE CRUZ ROJA)" type="textarea" outlined dense autogrow />
           </q-card>
 
@@ -300,7 +352,15 @@ function verCompleto() {
               <q-input v-model="elaborado" label="Elaborado por *" outlined dense class="col-6" :rules="[req]" />
               <q-input v-model="autorizado" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
             </div>
-            <q-input v-model="monitoreoEquipo" label="Monitoreo y recopilación de información (equipo)" type="textarea" outlined dense autogrow class="q-mt-sm" />
+            <q-input
+              v-model="monitoreoEquipo"
+              label="Monitoreo y recopilación de información (equipo)"
+              type="textarea"
+              outlined
+              dense
+              autogrow
+              class="q-mt-sm"
+            />
             <div class="q-mt-md">
               <q-btn type="button" outline size="sm" label="Guardar borrador" :loading="saving" @click="guardarBorrador" />
               <q-btn type="submit" color="primary" unelevated size="sm" label="Enviar a aprobación" class="q-ml-sm" :loading="saving" />
@@ -321,10 +381,16 @@ function verCompleto() {
           </div>
           <div class="watermark q-my-md">BORRADOR · APOYO, NO OFICIAL</div>
           <div class="mini-doc">
-            <div class="text-center text-weight-bold q-mb-xs">BIE N°{{ datos.nbie }} — Monitoreo Regional<br /><span class="text-caption text-muted">Cruz Roja Chilena · Comité Regional Valparaíso</span></div>
+            <div class="text-center text-weight-bold q-mb-xs">
+              BIE N°{{ datos.nbie }} — Monitoreo Regional<br /><span class="text-caption text-muted"
+                >Cruz Roja Chilena · Comité Regional Valparaíso</span
+              >
+            </div>
             <div><b>Tipo:</b> {{ datos.tipo }} &nbsp; <b>Inicio:</b> {{ datos.fechaEvento }}</div>
             <div><b>Alerta SENAPRED:</b> {{ datos.senapred }} &nbsp; <b>Cruz Roja:</b> {{ datos.cruzRoja }}</div>
-            <div class="q-mt-xs"><b>Afectación:</b> {{ af.Afectados }} afectados · {{ af.Comunas }} comunas · {{ af.Albergues }} albergues</div>
+            <div class="q-mt-xs">
+              <b>Afectación:</b> {{ af.Afectados }} afectados · {{ af.Comunas }} comunas · {{ af.Albergues }} albergues
+            </div>
             <div class="q-mt-xs"><b>Cruz Roja:</b> {{ filiales }} · {{ voluntarios }} voluntarios</div>
             <div class="q-mt-xs text-muted">Fuentes: {{ fuentes.length ? fuentes.join(', ') : '—' }}</div>
           </div>
@@ -333,8 +399,13 @@ function verCompleto() {
           <q-list v-else separator dense>
             <q-item v-for="v in versiones" :key="v.id">
               <q-item-section>
-                <q-item-label>v{{ v.versionNumber }} · {{ v.status === 'approved' ? 'Aprobado' : v.status === 'exported' ? 'Exportado' : 'Borrador' }}</q-item-label>
-                <q-item-label caption>{{ v.createdAt }} · {{ v.generatedBy }}<span v-if="v.approvedBy"> · aprobó {{ v.approvedBy }}</span></q-item-label>
+                <q-item-label
+                  >v{{ v.versionNumber }} ·
+                  {{ v.status === 'approved' ? 'Aprobado' : v.status === 'exported' ? 'Exportado' : 'Borrador' }}</q-item-label
+                >
+                <q-item-label caption
+                  >{{ v.createdAt }} · {{ v.generatedBy }}<span v-if="v.approvedBy"> · aprobó {{ v.approvedBy }}</span></q-item-label
+                >
               </q-item-section>
               <q-item-section v-if="canApprove && v.status === 'draft'" side>
                 <q-btn dense flat size="sm" color="positive" label="Aprobar" @click="aprobar(v)" />
@@ -348,7 +419,12 @@ function verCompleto() {
 </template>
 
 <style scoped>
-.autofill-note { background: #eef4ff; border: 1px solid #d5e2fb; color: var(--c-text2); font-size: 13px; }
+.autofill-note {
+  background: #eef4ff;
+  border: 1px solid #d5e2fb;
+  color: var(--c-text2);
+  font-size: 13px;
+}
 .watermark {
   background: repeating-linear-gradient(45deg, #fafafa, #fafafa 10px, #f3f4f6 10px, #f3f4f6 20px);
   border: 1px dashed var(--c-border);

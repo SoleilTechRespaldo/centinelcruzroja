@@ -30,15 +30,29 @@ onMounted(async () => {
 const showAdd = ref(false)
 const tipos = ['Imagen', 'PDF', 'Captura', 'Documento', 'Enlace']
 const kindMap: Record<string, EvidenceItem['kind']> = {
-  Imagen: 'image', PDF: 'pdf', Captura: 'screenshot', Documento: 'doc', Enlace: 'link',
+  Imagen: 'image',
+  PDF: 'pdf',
+  Captura: 'screenshot',
+  Documento: 'doc',
+  Enlace: 'link',
 }
 const ev = reactive<{ tipo: string | null; caption: string; source: string; at: string; url: string; file: File | null }>({
-  tipo: null, caption: '', source: '', at: '', url: '', file: null,
+  tipo: null,
+  caption: '',
+  source: '',
+  at: '',
+  url: '',
+  file: null,
 })
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
 
 function openAdd() {
-  ev.tipo = null; ev.caption = ''; ev.source = ''; ev.at = ''; ev.url = ''; ev.file = null
+  ev.tipo = null
+  ev.caption = ''
+  ev.source = ''
+  ev.at = ''
+  ev.url = ''
+  ev.file = null
   showAdd.value = true
 }
 
@@ -89,16 +103,62 @@ async function guardarReporte() {
 }
 
 // Opciones (etiqueta -> valor del dominio)
-const estadoOpts = [{ label: 'Monitoreo', value: 'monitoring' }, { label: 'Activo', value: 'active' }, { label: 'Cerrado', value: 'closed' }]
-const senapredOpts = [{ label: 'Sin alerta', value: 'none' }, { label: 'Preventiva', value: 'atp' }, { label: 'Amarilla', value: 'yellow' }, { label: 'Roja', value: 'red' }]
-const crOpts = [{ label: 'Verde', value: 'green' }, { label: 'Amarilla', value: 'yellow' }, { label: 'Roja', value: 'red' }]
-const tiposEvento = ['Sistema frontal', 'Incendio forestal', 'Sismo', 'Marejada', 'Aluvión / remoción en masa', 'Corte eléctrico', 'Corte de agua']
-const comunasOpts = ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana', 'Limache', 'Concón', 'Quintero', 'Quillota', 'Olmué', 'Casablanca']
+const estadoOpts = [
+  { label: 'Monitoreo', value: 'monitoring' },
+  { label: 'Activo', value: 'active' },
+  { label: 'Cerrado', value: 'closed' },
+]
+const senapredOpts = [
+  { label: 'Sin alerta', value: 'none' },
+  { label: 'Preventiva', value: 'atp' },
+  { label: 'Amarilla', value: 'yellow' },
+  { label: 'Roja', value: 'red' },
+]
+const crOpts = [
+  { label: 'Verde', value: 'green' },
+  { label: 'Amarilla', value: 'yellow' },
+  { label: 'Roja', value: 'red' },
+]
+const tiposEvento = [
+  'Sistema frontal',
+  'Incendio forestal',
+  'Sismo',
+  'Marejada',
+  'Aluvión / remoción en masa',
+  'Corte eléctrico',
+  'Corte de agua',
+]
+const comunasOpts = [
+  'Valparaíso',
+  'Viña del Mar',
+  'Quilpué',
+  'Villa Alemana',
+  'Limache',
+  'Concón',
+  'Quintero',
+  'Quillota',
+  'Olmué',
+  'Casablanca',
+]
 
 // --- Editar incidente (incluye cerrar = estado Cerrado) ---
 const showEdit = ref(false)
-const edit = reactive<{ title: string; status: string; senapred: string; cruzRoja: string; description: string; eventType: string; comunas: string[] }>({
-  title: '', status: 'monitoring', senapred: 'none', cruzRoja: 'green', description: '', eventType: '', comunas: [],
+const edit = reactive<{
+  title: string
+  status: string
+  senapred: string
+  cruzRoja: string
+  description: string
+  eventType: string
+  comunas: string[]
+}>({
+  title: '',
+  status: 'monitoring',
+  senapred: 'none',
+  cruzRoja: 'green',
+  description: '',
+  eventType: '',
+  comunas: [],
 })
 function openEdit() {
   if (!inc.value) return
@@ -116,8 +176,13 @@ async function guardarEdit() {
   saving.value = true
   try {
     await data.updateIncident(inc.value.id, {
-      title: edit.title, status: edit.status as IncidentStatus, alertSenapred: edit.senapred as AlertSenapred,
-      alertCruzRoja: edit.cruzRoja as AlertCruzRoja, description: edit.description, eventType: edit.eventType, comunas: edit.comunas,
+      title: edit.title,
+      status: edit.status as IncidentStatus,
+      alertSenapred: edit.senapred as AlertSenapred,
+      alertCruzRoja: edit.cruzRoja as AlertCruzRoja,
+      description: edit.description,
+      eventType: edit.eventType,
+      comunas: edit.comunas,
     })
     $q.notify({ type: 'positive', message: 'Incidente actualizado', icon: 'check_circle' })
     showEdit.value = false
@@ -132,7 +197,12 @@ async function guardarEdit() {
 // --- Agregar hito a la cronología ---
 const showTl = ref(false)
 const tl = reactive({ at: '', tipo: 'note', descripcion: '' })
-const tlTipos = [{ label: 'Nota', value: 'note' }, { label: 'Acción', value: 'action' }, { label: 'Cambio de alerta', value: 'alert_change' }, { label: 'Fuente', value: 'source' }]
+const tlTipos = [
+  { label: 'Nota', value: 'note' },
+  { label: 'Acción', value: 'action' },
+  { label: 'Cambio de alerta', value: 'alert_change' },
+  { label: 'Fuente', value: 'source' },
+]
 function openTl() {
   tl.at = ''
   tl.tipo = 'note'
@@ -157,7 +227,23 @@ async function guardarTl() {
 // --- Registrar una fuente ---
 const showSrc = ref(false)
 const src = reactive({ org: '', title: '', url: '' })
-const orgOpts = ['SENAPRED', 'DMC', 'DGA', 'SHOA', 'CSN', 'CONAF', 'SEC', 'Esval', 'Vialidad MOP', 'DIRECTEMAR', 'SERNAGEOMIN', 'Delegación Presidencial Valparaíso', 'MINEDUC', 'MINSAL', 'SUBTEL']
+const orgOpts = [
+  'SENAPRED',
+  'DMC',
+  'DGA',
+  'SHOA',
+  'CSN',
+  'CONAF',
+  'SEC',
+  'Esval',
+  'Vialidad MOP',
+  'DIRECTEMAR',
+  'SERNAGEOMIN',
+  'Delegación Presidencial Valparaíso',
+  'MINEDUC',
+  'MINSAL',
+  'SUBTEL',
+]
 function openSrc() {
   src.org = ''
   src.title = ''
@@ -207,7 +293,13 @@ async function guardarSrc() {
           </div>
           <div class="row q-gutter-xs">
             <q-btn outline size="sm" icon="edit" label="Editar" @click="openEdit" />
-            <q-btn color="primary" unelevated size="sm" label="Generar BIE" @click="router.push({ path: '/bie', query: { incident: inc.id } })" />
+            <q-btn
+              color="primary"
+              unelevated
+              size="sm"
+              label="Generar BIE"
+              @click="router.push({ path: '/bie', query: { incident: inc.id } })"
+            />
           </div>
         </div>
       </div>
@@ -232,7 +324,9 @@ async function guardarSrc() {
             <ol class="tl">
               <li v-for="(t, idx) in inc.timeline" :key="idx" class="tl-item">
                 <div class="tl-time tabular">{{ t.at }}</div>
-                <div>{{ t.text }}<span v-if="t.source" class="text-caption text-muted"> · {{ t.source }}</span></div>
+                <div>
+                  {{ t.text }}<span v-if="t.source" class="text-caption text-muted"> · {{ t.source }}</span>
+                </div>
               </li>
             </ol>
           </q-card>
@@ -246,16 +340,21 @@ async function guardarSrc() {
             <div class="row q-col-gutter-sm">
               <div v-for="e in evidence" :key="e.id" class="col-6 col-sm-4">
                 <q-card flat bordered>
-                  <div class="evidence-thumb"><q-icon :name="e.kind === 'link' ? 'link' : 'description'" size="18px" class="q-mr-xs" />{{ e.kind }}</div>
+                  <div class="evidence-thumb">
+                    <q-icon :name="e.kind === 'link' ? 'link' : 'description'" size="18px" class="q-mr-xs" />{{ e.kind }}
+                  </div>
                   <div class="q-pa-xs">
                     <div class="text-caption ellipsis-2-lines">{{ e.caption }}</div>
-                    <div class="text-caption text-muted">{{ e.source }}<span v-if="e.at"> · {{ e.at }}</span></div>
+                    <div class="text-caption text-muted">
+                      {{ e.source }}<span v-if="e.at"> · {{ e.at }}</span>
+                    </div>
                   </div>
                 </q-card>
               </div>
               <div class="col-6 col-sm-4">
                 <q-card
-                  flat bordered
+                  flat
+                  bordered
                   class="evidence-add cursor-pointer"
                   role="button"
                   tabindex="0"
@@ -332,7 +431,14 @@ async function guardarSrc() {
           <q-card-section class="q-gutter-sm">
             <q-select v-model="ev.tipo" :options="tipos" label="Tipo *" outlined dense :rules="[req]" />
             <q-input v-model="ev.caption" label="Descripción *" outlined dense :rules="[req]" />
-            <q-input v-model="ev.source" label="Fuente / procedencia *" placeholder="Ej: SENAPRED, municipalidad, terreno…" outlined dense :rules="[req]" />
+            <q-input
+              v-model="ev.source"
+              label="Fuente / procedencia *"
+              placeholder="Ej: SENAPRED, municipalidad, terreno…"
+              outlined
+              dense
+              :rules="[req]"
+            />
             <q-input v-model="ev.at" label="Fecha / hora *" placeholder="dd/mm/aaaa hh:mm" outlined dense :rules="[req]">
               <template #append>
                 <q-icon name="event" class="cursor-pointer" aria-label="Elegir fecha">
@@ -351,7 +457,15 @@ async function guardarSrc() {
                 </q-icon>
               </template>
             </q-input>
-            <q-input v-if="ev.tipo === 'Enlace'" v-model="ev.url" label="Enlace (URL) *" placeholder="https://…" outlined dense :rules="[req]" />
+            <q-input
+              v-if="ev.tipo === 'Enlace'"
+              v-model="ev.url"
+              label="Enlace (URL) *"
+              placeholder="https://…"
+              outlined
+              dense
+              :rules="[req]"
+            />
             <q-file v-else v-model="ev.file" label="Archivo" outlined dense accept=".jpg,.jpeg,.png,.pdf,.docx">
               <template #prepend><q-icon name="attach_file" /></template>
             </q-file>
@@ -400,8 +514,26 @@ async function guardarSrc() {
             <div class="row q-col-gutter-sm">
               <q-select class="col-6" v-model="edit.status" :options="estadoOpts" label="Estado" outlined dense emit-value map-options />
               <q-select class="col-6" v-model="edit.eventType" :options="tiposEvento" label="Tipo de evento" outlined dense />
-              <q-select class="col-6" v-model="edit.senapred" :options="senapredOpts" label="Alerta SENAPRED" outlined dense emit-value map-options />
-              <q-select class="col-6" v-model="edit.cruzRoja" :options="crOpts" label="Alerta Cruz Roja" outlined dense emit-value map-options />
+              <q-select
+                class="col-6"
+                v-model="edit.senapred"
+                :options="senapredOpts"
+                label="Alerta SENAPRED"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
+              <q-select
+                class="col-6"
+                v-model="edit.cruzRoja"
+                :options="crOpts"
+                label="Alerta Cruz Roja"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
             </div>
             <q-select v-model="edit.comunas" :options="comunasOpts" label="Comunas afectadas" multiple use-chips outlined dense />
             <q-input v-model="edit.description" label="Descripción" type="textarea" outlined dense autogrow />
@@ -428,12 +560,16 @@ async function guardarSrc() {
               <template #append>
                 <q-icon name="event" class="cursor-pointer" aria-label="Elegir fecha">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="tl.at" mask="DD/MM/YYYY HH:mm"><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div></q-date>
+                    <q-date v-model="tl.at" mask="DD/MM/YYYY HH:mm"
+                      ><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div
+                    ></q-date>
                   </q-popup-proxy>
                 </q-icon>
                 <q-icon name="schedule" class="cursor-pointer q-ml-sm" aria-label="Elegir hora">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-time v-model="tl.at" mask="DD/MM/YYYY HH:mm" format24h><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div></q-time>
+                    <q-time v-model="tl.at" mask="DD/MM/YYYY HH:mm" format24h
+                      ><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div
+                    ></q-time>
                   </q-popup-proxy>
                 </q-icon>
               </template>
@@ -474,7 +610,11 @@ async function guardarSrc() {
 </template>
 
 <style scoped>
-.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .evidence-thumb {
   height: 64px;
   display: flex;

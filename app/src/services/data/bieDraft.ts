@@ -29,7 +29,10 @@ const TITULOS_BIE = [
 export function buildBieDraft(d: IncidentDetail): BieDraft {
   const corr = Number(d.code.split('-')[1] ?? '0')
   const filialNames = d.voluntariosPorFilial.map((f) => f.filial)
-  const accionar = d.timeline.filter((t) => !t.source || t.source === 'Interno').map((t) => t.text).join(' ')
+  const accionar = d.timeline
+    .filter((t) => !t.source || t.source === 'Interno')
+    .map((t) => t.text)
+    .join(' ')
   const reporteFilial = d.voluntariosPorFilial.map((f) => `${f.filial}: ${f.n} voluntarios`).join('\n')
   const lastAt = d.timeline.at(-1)?.at ?? d.startedAt
 
@@ -70,7 +73,7 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
       Albergues: PENDIENTE,
       Albergados: PENDIENTE,
       Agua: PENDIENTE,
-      'Eléctrico': PENDIENTE,
+      Eléctrico: PENDIENTE,
       Rutas: PENDIENTE,
       Hospitales: PENDIENTE,
       Aeropuerto: 'N/A',
@@ -88,10 +91,10 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
       reporteFilial: reporteFilial || PENDIENTE,
     },
     necesidades: {
-      'Gestión': PENDIENTE,
+      Gestión: PENDIENTE,
       Salud: PENDIENTE,
       Voluntariado: PENDIENTE,
-      'Logística': PENDIENTE,
+      Logística: PENDIENTE,
       Albergues: PENDIENTE,
     },
     cierre: { sala: 'Activada', telecom: 'Sin activar', elaborado: '', autorizado: 'Ive Manni', monitoreoEquipo: EQUIPO_MONITOREO },
