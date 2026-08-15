@@ -82,11 +82,34 @@ const showEdit = ref(false)
 const editing = ref<ApiUser | null>(null)
 const editRole = ref<Role>('consulta')
 const editActive = ref(true)
+const newPass = ref('')
+const resetting = ref(false)
 function openEdit(u: ApiUser) {
   editing.value = u
   editRole.value = u.role
   editActive.value = u.isActive
+  newPass.value = ''
   showEdit.value = true
+}
+// Recuperación de contraseña (opción admin): fija una clave nueva y se la entrega al usuario.
+function sugerirClave() {
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+  const arr = new Uint32Array(12)
+  crypto.getRandomValues(arr)
+  newPass.value = Array.from(arr, (n) => abc[n % abc.length]).join('')
+}
+async function restablecerClave() {
+  if (!editing.value || newPass.value.length < 8) return
+  resetting.value = true
+  try {
+    await api.post(`/users/${editing.value.id}/password`, { password: newPass.value })
+    $q.notify({ type: 'positive', message: 'Contraseña restablecida', caption: 'Entrégasela al usuario de forma segura.', icon: 'lock_reset' })
+    newPass.value = ''
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo restablecer' })
+  } finally {
+    resetting.value = false
+  }
 }
 async function guardarEdit() {
   if (!editing.value) return
@@ -199,6 +222,37 @@ async function guardarEdit() {
           <div class="text-body2">{{ editing?.displayName }} <span class="text-muted">· {{ editing?.email }}</span></div>
           <q-select v-model="editRole" :options="roleOptions" label="Rol" outlined dense emit-value map-options />
           <q-toggle v-model="editActive" :label="editActive ? 'Activo (puede ingresar)' : 'Inactivo (no puede ingresar)'" />
+
+          <q-separator class="q-my-sm" />
+          <div class="text-caption text-muted">
+            Recuperar contraseña: el administrador fija una clave nueva y se la entrega al usuario.
+          </div>
+          <q-input
+            v-model="newPass"
+            label="Nueva contraseña"
+            type="text"
+            outlined
+            dense
+            hint="Mínimo 8 caracteres. Queda visible para que la copies."
+            :rules="[(v: string) => !v || v.length >= 8 || 'Mínimo 8 caracteres']"
+          >
+            <template #append>
+              <q-btn flat dense no-caps size="sm" icon="casino" label="Generar" @click="sugerirClave" />
+            </template>
+          </q-input>
+          <div class="row justify-end">
+            <q-btn
+              type="button"
+              outline
+              size="sm"
+              color="primary"
+              icon="lock_reset"
+              label="Restablecer contraseña"
+              :loading="resetting"
+              :disable="newPass.length < 8"
+              @click="restablecerClave"
+            />
+          </div>
         </q-card-section>
         <q-card-actions align="right" class="q-pr-md q-pb-md">
           <q-btn type="button" flat label="Cancelar" v-close-popup />
