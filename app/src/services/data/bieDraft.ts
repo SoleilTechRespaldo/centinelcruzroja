@@ -32,6 +32,18 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
   const reporteFilial = d.voluntariosPorFilial.map((f) => `${f.filial}: ${f.n} voluntarios`).join('\n')
   const lastAt = d.timeline.at(-1)?.at ?? d.startedAt
 
+  // Cuerpos de la Descripción derivables del incidente; el resto los completa el operador.
+  const senap = senapredBadge(d.alertSenapred).label
+  const crLabel = cruzRojaBadge(d.alertCruzRoja).label
+  const cuerpos: Record<number, string> = {
+    1: d.description || '',
+    2: `Alerta SENAPRED: ${senap}. Alerta Cruz Roja: ${crLabel}.`,
+    4: `${d.personasAfectadas || PENDIENTE} personas afectadas en ${d.comunas.length} comuna(s).`,
+    13: d.comunas.length ? `Comunas afectadas: ${d.comunas.join(', ')}.` : '',
+    16: [...new Set(d.sources.map((s) => s.org))].join(', '),
+  }
+  const descripcion = TITULOS_BIE.map((titulo, i) => ({ titulo, texto: cuerpos[i + 1] ?? '' }))
+
   return {
     incidentId: d.id,
     incidentCode: d.code,
@@ -61,12 +73,16 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
       Aeropuerto: 'N/A',
       Otras: PENDIENTE,
     },
-    titulos: TITULOS_BIE,
+    descripcion,
     cruzRoja: {
       filiales: filialNames.length ? filialNames.join(', ') : PENDIENTE,
       voluntarios: d.voluntarios ? String(d.voluntarios) : PENDIENTE,
-      accionar: accionar ? accionar : PENDIENTE,
-      reporteFilial: reporteFilial ? reporteFilial : PENDIENTE,
+      actividades: accionar || 'Monitoreo regional y apoyo en terreno/albergues.',
+      gestion: accionar || 'Participación en COGRID, monitoreo y reporte.',
+      salud: '',
+      comunicacion: '',
+      proteccion: 'Resguardo y confidencialidad de datos personales sensibles (RCF).',
+      reporteFilial: reporteFilial || PENDIENTE,
     },
     necesidades: {
       'Gestión': PENDIENTE,

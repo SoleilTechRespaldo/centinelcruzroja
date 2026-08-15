@@ -83,11 +83,15 @@ export interface BieDraft {
     cruzRoja: string
   }
   afectacion: Record<string, string>
-  titulos: string[]
+  descripcion: { titulo: string; texto: string }[]
   cruzRoja: {
     filiales: string
     voluntarios: string
-    accionar: string
+    actividades: string
+    gestion: string
+    salud: string
+    comunicacion: string
+    proteccion: string
     reporteFilial: string
   }
   necesidades: Record<string, string>

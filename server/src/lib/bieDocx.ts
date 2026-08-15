@@ -14,7 +14,7 @@ type Draft = {
   incidentTitle?: string
   datos?: Record<string, string>
   afectacion?: Record<string, string>
-  titulos?: string[]
+  descripcion?: { titulo: string; texto: string }[]
   cruzRoja?: Record<string, string>
   necesidades?: Record<string, string>
   cierre?: Record<string, string>
@@ -68,7 +68,9 @@ function draftToFields(d: Draft): Record<string, string> {
     heridos: af.Heridos ?? '', desplazados: af.Desplazados ?? '', agua: af.Agua ?? '', albergues: af.Albergues ?? '',
     fallecidos: af.Fallecidos ?? '', electrico: af['Eléctrico'] ?? '', aeropuerto: af.Aeropuerto ?? '', rutas: af.Rutas ?? '',
     personas_albergadas: af.Albergados ?? '', hospitales: af.Hospitales ?? '', damnificadas: af.Damnificados ?? '', otras_afectaciones: af.Otras ?? '',
-    filiales: cr.filiales ?? '', voluntarios: cr.voluntarios ?? '', actividades: cr.accionar ?? '', acciones_cr: cr.reporteFilial ?? '',
+    filiales: cr.filiales ?? '', voluntarios: cr.voluntarios ?? '', actividades: cr.actividades ?? cr.accionar ?? '',
+    cr_gestion: cr.gestion ?? '', cr_salud: cr.salud ?? '', cr_comunicacion: cr.comunicacion ?? '', cr_proteccion: cr.proteccion ?? '',
+    acciones_cr: cr.reporteFilial ?? '',
     nec_gestion: nec['Gestión'] ?? '', nec_salud: nec.Salud ?? '', nec_voluntariado: nec.Voluntariado ?? '',
     nec_logistica: nec['Logística'] ?? '', nec_albergues: nec.Albergues ?? '',
     sala_crisis: cierre.sala ?? '', telecom: cierre.telecom ?? '', num_bie: datos.nbie ?? '',
@@ -129,7 +131,7 @@ function setCellText(doc: El, tc: El, text: string): void {
 
 export async function buildBieDocx(d: Draft): Promise<Buffer> {
   const fields = draftToFields(d)
-  const blocks = (d.titulos ?? []).map((titulo) => ({ titulo, texto: '' }))
+  const blocks = d.descripcion ?? []
 
   const zip = new PizZip(readFileSync(MASTER_PATH))
   const xml = zip.file('word/document.xml')?.asText() ?? ''

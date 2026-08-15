@@ -15,8 +15,12 @@ Las más recientes arriba.
   del formato oficial (MAYÚSCULAS): SÍNTESIS DE LA JORNADA … FUENTES CONSULTADAS.
 - **Verificado:** `POST /bie/docx` → 200, **~3,1 MB** (con logos), firma `PK`; `document.xml` (113 KB)
   con campos rellenados (tipo, afectados, eléctrico, los 16 títulos, filiales, firma). `tsc` + build limpios.
-- **Pendiente:** mapear más campos oficiales (magnitud, cr_gestión/salud/comunicación/protección por
-  separado, cuerpos de cada título de la Descripción); PDF (conversor); `monitoreo_equipo` real.
+- **Autollenado más completo (mismo día):** los **cuerpos de la Descripción** se derivan del incidente
+  (SÍNTESIS←descripción, BALANCE REGIONAL←afectación, EMERGENCIAS POR COMUNA←comunas, FUENTES←fuentes;
+  el resto queda editable en textareas) y las **4 acciones de Cruz Roja** (gestión/salud/comunicación/
+  protección) se llenan por separado y entran al maestro. `BieDraft`: `titulos` → `descripcion[{titulo,
+  texto}]` + `cruzRoja` con las 4 acciones. Verificado (docx incluye cuerpos + COGRID + RCF).
+- **Pendiente:** magnitud/intensidad (sismo), `monitoreo_equipo` real, y el PDF (conversor).
 
 ## 2026-08-14 — Evidencia persistida + generación real del BIE (.docx)
 - **Evidencia:** columna `source_text` (procedencia) en `evidence` (migración **0001**); `POST

@@ -23,11 +23,15 @@ const incidentTitle = ref('')
 const datos = reactive({ nbie: '', tipo: '', fechaEvento: '', fechaReporte: '', senapred: '', cruzRoja: '' })
 const af = reactive<Record<string, string>>({})
 const nec = reactive<Record<string, string>>({})
-const titulos = ref<string[]>([])
+const descripcion = ref<{ titulo: string; texto: string }[]>([])
 const fuentes = ref<string[]>([])
 const filiales = ref('')
 const voluntarios = ref('')
-const accionar = ref('')
+const actividades = ref('')
+const gestion = ref('')
+const salud = ref('')
+const comunicacion = ref('')
+const proteccion = ref('')
 const reporteFilial = ref('')
 const sala = ref('')
 const telecom = ref('')
@@ -49,11 +53,15 @@ function applyDraft(d: BieDraft) {
   Object.assign(datos, d.datos)
   replaceRecord(af, d.afectacion)
   replaceRecord(nec, d.necesidades)
-  titulos.value = d.titulos
+  descripcion.value = d.descripcion.map((b) => ({ ...b }))
   fuentes.value = d.fuentes
   filiales.value = d.cruzRoja.filiales
   voluntarios.value = d.cruzRoja.voluntarios
-  accionar.value = d.cruzRoja.accionar
+  actividades.value = d.cruzRoja.actividades
+  gestion.value = d.cruzRoja.gestion
+  salud.value = d.cruzRoja.salud
+  comunicacion.value = d.cruzRoja.comunicacion
+  proteccion.value = d.cruzRoja.proteccion
   reporteFilial.value = d.cruzRoja.reporteFilial
   sala.value = d.cierre.sala
   telecom.value = d.cierre.telecom
@@ -91,8 +99,8 @@ function currentDraft(): BieDraft {
     incidentTitle: incidentTitle.value,
     datos: { ...datos },
     afectacion: { ...af },
-    titulos: titulos.value,
-    cruzRoja: { filiales: filiales.value, voluntarios: voluntarios.value, accionar: accionar.value, reporteFilial: reporteFilial.value },
+    descripcion: descripcion.value,
+    cruzRoja: { filiales: filiales.value, voluntarios: voluntarios.value, actividades: actividades.value, gestion: gestion.value, salud: salud.value, comunicacion: comunicacion.value, proteccion: proteccion.value, reporteFilial: reporteFilial.value },
     necesidades: { ...nec },
     cierre: { sala: sala.value, telecom: telecom.value, elaborado: elaborado.value, autorizado: autorizado.value },
     fuentes: fuentes.value,
@@ -121,9 +129,6 @@ async function descargarWord() {
 
 function exportarPdf() {
   $q.notify({ type: 'info', message: 'PDF: por ahora descarga el .docx y expórtalo a PDF', caption: 'La conversión en el servidor llega después.' })
-}
-function editarTitulo(t: string) {
-  $q.notify({ type: 'info', message: 'Editar sección', caption: t })
 }
 function verCompleto() {
   router.push({ path: '/bie/preview', query: route.query.incident ? { incident: String(route.query.incident) } : {} })
@@ -188,24 +193,29 @@ function verCompleto() {
 
           <q-card flat bordered class="q-pa-md q-mb-md">
             <div class="sec-title q-mb-sm">Descripción · 16 títulos</div>
-            <q-list separator dense>
-              <q-item v-for="t in titulos" :key="t">
-                <q-item-section>{{ t }}</q-item-section>
-                <q-item-section side>
-                  <button type="button" class="link" @click="editarTitulo(t)">editar</button>
-                </q-item-section>
-              </q-item>
-            </q-list>
+            <div class="text-caption text-muted q-mb-sm">Autollenado lo que se pudo derivar del incidente; completa/edita el resto.</div>
+            <q-input
+              v-for="(b, i) in descripcion"
+              :key="i"
+              v-model="b.texto"
+              :label="b.titulo"
+              type="textarea"
+              outlined dense autogrow
+              class="q-mb-sm"
+            />
           </q-card>
 
           <q-card flat bordered class="q-pa-md q-mb-md">
-            <div class="sec-title q-mb-sm">Cruz Roja: accionar y voluntariado</div>
+            <div class="sec-title q-mb-sm">Cruz Roja: acciones y voluntariado</div>
             <div class="row q-col-gutter-sm q-mb-sm">
               <q-input v-model="filiales" label="Filiales" outlined dense class="col-8" />
               <q-input v-model="voluntarios" label="Voluntarios" outlined dense class="col-4" />
             </div>
-            <q-input v-model="accionar" label="Accionar (gestión · salud · comunicación · protección)" type="textarea" outlined autogrow class="q-mb-sm" />
-            <q-input v-model="reporteFilial" label="Reporte por filial" type="textarea" outlined autogrow />
+            <q-input v-model="gestion" label="Gestión del riesgo (COGRID · monitoreo · reporte)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input v-model="salud" label="Salud (SMAPS · PPAA · WASH)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input v-model="comunicacion" label="Comunicación (mensajes clave · campañas)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input v-model="proteccion" label="Protección (PGI · RCF · datos sensibles)" type="textarea" outlined dense autogrow class="q-mb-sm" />
+            <q-input v-model="reporteFilial" label="Reporte por filial (ACCIONES DE CRUZ ROJA)" type="textarea" outlined dense autogrow />
           </q-card>
 
           <q-card flat bordered class="q-pa-md q-mb-md">
