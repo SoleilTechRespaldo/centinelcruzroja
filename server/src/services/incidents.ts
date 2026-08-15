@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/sqlite-core'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
@@ -6,7 +7,7 @@ import type { CreateIncidentInput, AddEvidenceInput, AddReportInput, UpdateIncid
 
 const {
   incidents, incidentComunas, comunas, eventTypes, incidentReports,
-  sources, sourceOrgs, evidence, timelineEvents, auditLog,
+  sources, sourceOrgs, evidence, timelineEvents, auditLog, bieVersions,
 } = schema
 
 type Filial = { filial: string; n: number }
@@ -271,6 +272,45 @@ export async function addReport(incidentId: string, input: AddReportInput, userI
     createdBy: userId,
   })
   return { id }
+}
+
+// --- Versiones del BIE (borrador → aprobación por el coordinador). ---
+export async function saveBieVersion(incidentId: string, data: unknown, userId: string): Promise<{ id: string; versionNumber: number } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
+  if (!exists[0]) return undefined
+  const rows = await db.select({ v: bieVersions.versionNumber }).from(bieVersions).where(eq(bieVersions.incidentId, incidentId))
+  const versionNumber = rows.reduce((m, r) => Math.max(m, r.v), 0) + 1
+  const id = randomUUID()
+  await db.insert(bieVersions).values({ id, incidentId, versionNumber, status: 'draft', data, generatedBy: userId })
+  return { id, versionNumber }
+}
+
+export async function listBieVersions(incidentId: string) {
+  const gu = alias(schema.users, 'gu')
+  const au = alias(schema.users, 'au')
+  const rows = await db
+    .select({
+      id: bieVersions.id, versionNumber: bieVersions.versionNumber, status: bieVersions.status,
+      createdAt: bieVersions.createdAt, approvedAt: bieVersions.approvedAt,
+      generatedBy: gu.displayName, approvedBy: au.displayName,
+    })
+    .from(bieVersions)
+    .leftJoin(gu, eq(bieVersions.generatedBy, gu.id))
+    .leftJoin(au, eq(bieVersions.approvedBy, au.id))
+    .where(and(eq(bieVersions.incidentId, incidentId), isNull(bieVersions.deletedAt)))
+    .orderBy(desc(bieVersions.versionNumber))
+  return rows.map((r) => ({
+    id: r.id, versionNumber: r.versionNumber, status: r.status,
+    createdAt: fmtDateTime(r.createdAt), approvedAt: r.approvedAt ? fmtDateTime(r.approvedAt) : null,
+    generatedBy: r.generatedBy ?? '—', approvedBy: r.approvedBy ?? null,
+  }))
+}
+
+export async function approveBieVersion(versionId: string, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: bieVersions.id }).from(bieVersions).where(eq(bieVersions.id, versionId)).limit(1)
+  if (!exists[0]) return undefined
+  await db.update(bieVersions).set({ status: 'approved', approvedBy: userId, approvedAt: Math.floor(Date.now() / 1000) }).where(eq(bieVersions.id, versionId))
+  return { id: versionId }
 }
 
 // --- Agregar evidencia (con procedencia). El archivo real (R2) es etapa posterior. ---

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useData } from '@/services/data'
@@ -16,6 +16,11 @@ const session = useSessionStore()
 const loading = ref(true)
 const notFound = ref(false)
 const downloading = ref(false)
+const saving = ref(false)
+
+interface BieVersion { id: string; versionNumber: number; status: string; createdAt: string; generatedBy: string; approvedBy: string | null; approvedAt: string | null }
+const versiones = ref<BieVersion[]>([])
+const canApprove = computed(() => session.role === 'coordinator' || session.role === 'admin')
 
 const incidentId = ref('')
 const incidentCode = ref('')
@@ -82,17 +87,58 @@ async function load() {
     const first = list.find((i) => i.status === 'active') ?? list[0]
     if (first) draft = await data.getBieDraft(first.id)
   }
-  if (draft) applyDraft(draft)
-  else notFound.value = true
+  if (draft) {
+    applyDraft(draft)
+    await loadVersiones()
+  } else {
+    notFound.value = true
+  }
   loading.value = false
 }
 onMounted(load)
 
-function guardarBorrador() {
-  $q.notify({ type: 'info', message: 'Borrador guardado', caption: `BIE N°${datos.nbie}`, icon: 'save' })
+async function loadVersiones() {
+  if (!incidentId.value) return
+  try {
+    const res = await api.get<{ items: BieVersion[] }>(`/incidents/${incidentId.value}/bie/versions`)
+    versiones.value = res.items
+  } catch {
+    /* silencioso */
+  }
 }
-function enviar() {
-  $q.notify({ type: 'positive', message: 'Enviado a aprobación', caption: `BIE N°${datos.nbie} · coordinador`, icon: 'send' })
+
+async function guardarBorrador() {
+  saving.value = true
+  try {
+    const res = await api.post<{ versionNumber: number }>(`/incidents/${incidentId.value}/bie/versions`, { data: currentDraft() })
+    $q.notify({ type: 'positive', message: `Borrador guardado (v${res.versionNumber})`, icon: 'save' })
+    await loadVersiones()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo guardar' })
+  } finally {
+    saving.value = false
+  }
+}
+async function enviar() {
+  saving.value = true
+  try {
+    const res = await api.post<{ versionNumber: number }>(`/incidents/${incidentId.value}/bie/versions`, { data: currentDraft() })
+    $q.notify({ type: 'positive', message: `Enviado a aprobación (v${res.versionNumber})`, caption: 'El coordinador puede aprobarlo.', icon: 'send' })
+    await loadVersiones()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo enviar' })
+  } finally {
+    saving.value = false
+  }
+}
+async function aprobar(v: BieVersion) {
+  try {
+    await api.post(`/incidents/${incidentId.value}/bie/versions/${v.id}/approve`, {})
+    $q.notify({ type: 'positive', message: `Versión ${v.versionNumber} aprobada`, icon: 'verified' })
+    await loadVersiones()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo aprobar' })
+  }
 }
 function currentDraft(): BieDraft {
   return {
@@ -239,8 +285,8 @@ function verCompleto() {
             </div>
             <q-input v-model="monitoreoEquipo" label="Monitoreo y recopilación de información (equipo)" type="textarea" outlined dense autogrow class="q-mt-sm" />
             <div class="q-mt-md">
-              <q-btn type="button" outline size="sm" label="Guardar borrador" @click="guardarBorrador" />
-              <q-btn type="submit" color="primary" unelevated size="sm" label="Enviar a aprobación" class="q-ml-sm" />
+              <q-btn type="button" outline size="sm" label="Guardar borrador" :loading="saving" @click="guardarBorrador" />
+              <q-btn type="submit" color="primary" unelevated size="sm" label="Enviar a aprobación" class="q-ml-sm" :loading="saving" />
             </div>
           </q-card>
         </q-form>
@@ -266,10 +312,17 @@ function verCompleto() {
             <div class="q-mt-xs text-muted">Fuentes: {{ fuentes.length ? fuentes.join(', ') : '—' }}</div>
           </div>
           <div class="sec-title q-mt-md q-mb-xs">Versiones</div>
-          <q-list separator dense>
-            <q-item><q-item-section>v3 · Borrador</q-item-section><q-item-section side class="text-caption">hoy 16:10</q-item-section></q-item>
-            <q-item><q-item-section>v2 · Aprobado</q-item-section><q-item-section side class="text-caption">09/08 12:00</q-item-section></q-item>
-            <q-item><q-item-section>v1 · Exportado</q-item-section><q-item-section side class="text-caption">08/08 18:30</q-item-section></q-item>
+          <div v-if="versiones.length === 0" class="text-caption text-muted">Aún no hay versiones. Usa «Guardar borrador».</div>
+          <q-list v-else separator dense>
+            <q-item v-for="v in versiones" :key="v.id">
+              <q-item-section>
+                <q-item-label>v{{ v.versionNumber }} · {{ v.status === 'approved' ? 'Aprobado' : v.status === 'exported' ? 'Exportado' : 'Borrador' }}</q-item-label>
+                <q-item-label caption>{{ v.createdAt }} · {{ v.generatedBy }}<span v-if="v.approvedBy"> · aprobó {{ v.approvedBy }}</span></q-item-label>
+              </q-item-section>
+              <q-item-section v-if="canApprove && v.status === 'draft'" side>
+                <q-btn dense flat size="sm" color="positive" label="Aprobar" @click="aprobar(v)" />
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-card>
       </div>

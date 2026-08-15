@@ -1,8 +1,9 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import { createIncidentSchema, addEvidenceSchema, addReportSchema, updateIncidentSchema, addTimelineSchema, addSourceSchema } from '../types'
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
-import { listSummaries, getDetail, createIncident, addEvidence, addReport, updateIncident, addTimelineEvent, addSource } from '../services/incidents'
+import { listSummaries, getDetail, createIncident, addEvidence, addReport, updateIncident, addTimelineEvent, addSource, saveBieVersion, listBieVersions, approveBieVersion } from '../services/incidents'
 
 const EDITORES = ['operator', 'coordinator', 'admin'] as const
 import { buildBieDocx } from '../lib/bieDocx'
@@ -57,6 +58,21 @@ r.post('/:id/report', requireRole('operator', 'coordinator', 'admin'), zValidato
   const res = await addReport(c.req.param('id'), c.req.valid('json'), c.get('user').id)
   if (!res) return c.json({ error: 'no_encontrado' }, 404)
   return c.json(res, 201)
+})
+
+// Versiones del BIE: listar, guardar borrador, aprobar (coordinador+).
+r.get('/:id/bie/versions', async (c) => c.json({ items: await listBieVersions(c.req.param('id')) }))
+
+r.post('/:id/bie/versions', requireRole(...EDITORES), zValidator('json', z.object({ data: z.any() })), async (c) => {
+  const res = await saveBieVersion(c.req.param('id'), c.req.valid('json').data, c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res, 201)
+})
+
+r.post('/:id/bie/versions/:versionId/approve', requireRole('coordinator', 'admin'), async (c) => {
+  const res = await approveBieVersion(c.req.param('versionId'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res)
 })
 
 // Generar el .docx del BIE desde los datos del borrador (los del formulario).
