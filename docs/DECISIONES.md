@@ -20,7 +20,8 @@ Las más recientes arriba.
   el resto queda editable en textareas) y las **4 acciones de Cruz Roja** (gestión/salud/comunicación/
   protección) se llenan por separado y entran al maestro. `BieDraft`: `titulos` → `descripcion[{titulo,
   texto}]` + `cruzRoja` con las 4 acciones. Verificado (docx incluye cuerpos + COGRID + RCF).
-- **Pendiente:** magnitud/intensidad (sismo), `monitoreo_equipo` real, y el PDF (conversor).
+- **Completado (mismo día):** `magnitud`/`intensidad` (N/A salvo sismo) y `monitoreo_equipo` (equipo
+  por defecto), editables, ya entran al maestro. **Solo queda el PDF** (requiere conversor tipo LibreOffice).
 
 ## 2026-08-14 — Evidencia persistida + generación real del BIE (.docx)
 - **Evidencia:** columna `source_text` (procedencia) en `evidence` (migración **0001**); `POST

@@ -4,6 +4,7 @@ import { senapredBadge, cruzRojaBadge } from '@/utils/alerts'
 // Deriva el borrador del BIE desde un incidente (lo conocido se autollena; el resto
 // queda "En evaluación"). Lo usan tanto el mock como el ApiDataService.
 const PENDIENTE = 'En evaluación'
+const EQUIPO_MONITOREO = 'Ive Manni, Dayana Moreno, Kabriell Valencia, Sara Girbau, Evelyn Rozas, Nicolás Jerez'
 
 // Los 16 títulos uniformes de la Descripción, según el formato oficial del BIE.
 const TITULOS_BIE = [
@@ -55,6 +56,8 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
       fechaReporte: lastAt,
       senapred: senapredBadge(d.alertSenapred).label,
       cruzRoja: cruzRojaBadge(d.alertCruzRoja).label.toUpperCase(),
+      magnitud: /sismo|terremoto/i.test(d.eventType) ? '' : 'N/A',
+      intensidad: /sismo|terremoto/i.test(d.eventType) ? '' : 'N/A',
     },
     afectacion: {
       Afectados: d.personasAfectadas || PENDIENTE,
@@ -91,7 +94,7 @@ export function buildBieDraft(d: IncidentDetail): BieDraft {
       'Logística': PENDIENTE,
       Albergues: PENDIENTE,
     },
-    cierre: { sala: 'Activada', telecom: 'Sin activar', elaborado: '', autorizado: 'Ive Manni' },
+    cierre: { sala: 'Activada', telecom: 'Sin activar', elaborado: '', autorizado: 'Ive Manni', monitoreoEquipo: EQUIPO_MONITOREO },
     fuentes: [...new Set(d.sources.map((s) => s.org))],
   }
 }

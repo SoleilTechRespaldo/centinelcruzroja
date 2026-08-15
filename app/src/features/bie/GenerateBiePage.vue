@@ -20,7 +20,7 @@ const downloading = ref(false)
 const incidentId = ref('')
 const incidentCode = ref('')
 const incidentTitle = ref('')
-const datos = reactive({ nbie: '', tipo: '', fechaEvento: '', fechaReporte: '', senapred: '', cruzRoja: '' })
+const datos = reactive({ nbie: '', tipo: '', fechaEvento: '', fechaReporte: '', senapred: '', cruzRoja: '', magnitud: '', intensidad: '' })
 const af = reactive<Record<string, string>>({})
 const nec = reactive<Record<string, string>>({})
 const descripcion = ref<{ titulo: string; texto: string }[]>([])
@@ -37,6 +37,7 @@ const sala = ref('')
 const telecom = ref('')
 const elaborado = ref('')
 const autorizado = ref('Ive Manni')
+const monitoreoEquipo = ref('')
 
 // Validación
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
@@ -67,6 +68,7 @@ function applyDraft(d: BieDraft) {
   telecom.value = d.cierre.telecom
   elaborado.value = session.displayName || d.cierre.elaborado
   autorizado.value = d.cierre.autorizado
+  monitoreoEquipo.value = d.cierre.monitoreoEquipo
 }
 
 async function load() {
@@ -102,7 +104,7 @@ function currentDraft(): BieDraft {
     descripcion: descripcion.value,
     cruzRoja: { filiales: filiales.value, voluntarios: voluntarios.value, actividades: actividades.value, gestion: gestion.value, salud: salud.value, comunicacion: comunicacion.value, proteccion: proteccion.value, reporteFilial: reporteFilial.value },
     necesidades: { ...nec },
-    cierre: { sala: sala.value, telecom: telecom.value, elaborado: elaborado.value, autorizado: autorizado.value },
+    cierre: { sala: sala.value, telecom: telecom.value, elaborado: elaborado.value, autorizado: autorizado.value, monitoreoEquipo: monitoreoEquipo.value },
     fuentes: fuentes.value,
   }
 }
@@ -185,8 +187,10 @@ function verCompleto() {
           </q-card>
 
           <q-card flat bordered class="q-pa-md q-mb-md">
-            <div class="sec-title q-mb-sm">Afectación</div>
+            <div class="sec-title q-mb-sm">Datos generales y afectación</div>
             <div class="row q-col-gutter-sm">
+              <q-input v-model="datos.magnitud" label="Magnitud (Richter)" outlined dense class="col-6 col-sm-4" />
+              <q-input v-model="datos.intensidad" label="Intensidad (Mercalli)" outlined dense class="col-6 col-sm-4" />
               <q-input v-for="(_v, k) in af" :key="k" v-model="af[k]" :label="k" outlined dense class="col-6 col-sm-4" />
             </div>
           </q-card>
@@ -233,6 +237,7 @@ function verCompleto() {
               <q-input v-model="elaborado" label="Elaborado por *" outlined dense class="col-6" :rules="[req]" />
               <q-input v-model="autorizado" label="Autorizado por (fijo)" outlined dense readonly class="col-6" />
             </div>
+            <q-input v-model="monitoreoEquipo" label="Monitoreo y recopilación de información (equipo)" type="textarea" outlined dense autogrow class="q-mt-sm" />
             <div class="q-mt-md">
               <q-btn type="button" outline size="sm" label="Guardar borrador" @click="guardarBorrador" />
               <q-btn type="submit" color="primary" unelevated size="sm" label="Enviar a aprobación" class="q-ml-sm" />

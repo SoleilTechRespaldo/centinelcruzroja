@@ -63,6 +63,7 @@ function draftToFields(d: Draft): Record<string, string> {
     tipo_emergencia: datos.tipo ?? '', fecha_evento: fe, hora_evento: he,
     evento: d.incidentTitle ? `${datos.tipo ?? ''} — ${d.incidentTitle}` : datos.tipo ?? '',
     alerta_cruz_roja: datos.cruzRoja ?? '', alerta_senapred: datos.senapred ?? '', fecha_reporte: fr, hora_reporte: hr,
+    magnitud: datos.magnitud ?? '', intensidad: datos.intensidad ?? '',
     afectacion_territorial: af.Comunas ? `${af.Comunas} comuna(s) de la región` : '',
     afectados_total: af.Afectados ?? '', comunas_afectadas: af.Comunas ?? '', viviendas_afectadas: af.Viviendas ?? '',
     heridos: af.Heridos ?? '', desplazados: af.Desplazados ?? '', agua: af.Agua ?? '', albergues: af.Albergues ?? '',
@@ -74,7 +75,7 @@ function draftToFields(d: Draft): Record<string, string> {
     nec_gestion: nec['Gestión'] ?? '', nec_salud: nec.Salud ?? '', nec_voluntariado: nec.Voluntariado ?? '',
     nec_logistica: nec['Logística'] ?? '', nec_albergues: nec.Albergues ?? '',
     sala_crisis: cierre.sala ?? '', telecom: cierre.telecom ?? '', num_bie: datos.nbie ?? '',
-    elaborado_por: cierre.elaborado ?? '', monitoreo_equipo: cierre.elaborado ?? '',
+    elaborado_por: cierre.elaborado ?? '', monitoreo_equipo: cierre.monitoreoEquipo ?? '',
     descripcion_encabezado: `${datos.tipo ?? ''} | Región de Valparaíso | ${datos.fechaReporte ?? ''}`,
   }
 }

@@ -81,6 +81,8 @@ export interface BieDraft {
     fechaReporte: string
     senapred: string
     cruzRoja: string
+    magnitud: string
+    intensidad: string
   }
   afectacion: Record<string, string>
   descripcion: { titulo: string; texto: string }[]
@@ -100,6 +102,7 @@ export interface BieDraft {
     telecom: string
     elaborado: string
     autorizado: string
+    monitoreoEquipo: string
   }
   fuentes: string[]
 }
