@@ -1,5 +1,6 @@
 import { migrate } from 'drizzle-orm/libsql/migrator'
 import { randomUUID } from 'node:crypto'
+import { pathToFileURL } from 'node:url'
 import { db, schema, client } from './client'
 import { hashPassword } from '../lib/password'
 import type { Role } from '../lib/auth'
@@ -116,11 +117,10 @@ const INCIDENTS: SeedIncident[] = [
   },
 ]
 
-async function main() {
-  console.log('→ Aplicando migraciones (drizzle/)…')
+// Migra + siembra. Exportada para reutilizarla en pruebas (BD en memoria).
+export async function seed() {
   await migrate(db, { migrationsFolder: './drizzle' })
 
-  console.log('→ Sembrando datos…')
   const regionId = 'reg-valparaiso'
   await db.insert(schema.regions).values({ id: regionId, name: 'Valparaíso' }).onConflictDoNothing()
 
@@ -187,11 +187,20 @@ async function main() {
     }
   }
 
-  console.log(`✓ Seed OK — ${COMUNAS.length} comunas, ${EVENT_TYPES.length} tipos, ${SOURCE_ORGS.length} fuentes, ${USERS.length} usuarios, ${INCIDENTS.length} incidentes.`)
-  console.log(`  Clave inicial de todos los usuarios: "${initialPassword}"  (cámbiala luego)`)
+  return { comunas: COMUNAS.length, tipos: EVENT_TYPES.length, fuentes: SOURCE_ORGS.length, usuarios: USERS.length, incidentes: INCIDENTS.length, initialPassword }
+}
+
+async function main() {
+  console.log('→ Aplicando migraciones y sembrando datos…')
+  const r = await seed()
+  console.log(`✓ Seed OK — ${r.comunas} comunas, ${r.tipos} tipos, ${r.fuentes} fuentes, ${r.usuarios} usuarios, ${r.incidentes} incidentes.`)
+  console.log(`  Clave inicial de todos los usuarios: "${r.initialPassword}"  (cámbiala luego)`)
   USERS.forEach((u) => console.log(`   - ${u.email}  (${u.role})`))
 }
 
-main()
-  .then(() => { client.close(); process.exit(0) })
-  .catch((e) => { console.error('✗ Seed falló:', e); client.close(); process.exit(1) })
+// Ejecutar solo si se invoca directamente (no al importar, p. ej. en pruebas).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main()
+    .then(() => { client.close(); process.exit(0) })
+    .catch((e) => { console.error('✗ Seed falló:', e); client.close(); process.exit(1) })
+}
