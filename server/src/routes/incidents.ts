@@ -1,8 +1,10 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { createIncidentSchema, addEvidenceSchema, addReportSchema } from '../types'
+import { createIncidentSchema, addEvidenceSchema, addReportSchema, updateIncidentSchema, addTimelineSchema, addSourceSchema } from '../types'
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
-import { listSummaries, getDetail, createIncident, addEvidence, addReport } from '../services/incidents'
+import { listSummaries, getDetail, createIncident, addEvidence, addReport, updateIncident, addTimelineEvent, addSource } from '../services/incidents'
+
+const EDITORES = ['operator', 'coordinator', 'admin'] as const
 import { buildBieDocx } from '../lib/bieDocx'
 
 // Cualquier usuario autenticado puede LEER; crear/capturar requiere operator+.
@@ -17,9 +19,30 @@ r.get('/:id', async (c) => {
   return c.json(inc)
 })
 
-r.post('/', requireRole('operator', 'coordinator', 'admin'), zValidator('json', createIncidentSchema), async (c) => {
+r.post('/', requireRole(...EDITORES), zValidator('json', createIncidentSchema), async (c) => {
   const created = await createIncident(c.req.valid('json'), c.get('user').id)
   return c.json(created, 201)
+})
+
+// Editar / cerrar incidente.
+r.patch('/:id', requireRole(...EDITORES), zValidator('json', updateIncidentSchema), async (c) => {
+  const res = await updateIncident(c.req.param('id'), c.req.valid('json'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res)
+})
+
+// Agregar hito a la cronología.
+r.post('/:id/timeline', requireRole(...EDITORES), zValidator('json', addTimelineSchema), async (c) => {
+  const res = await addTimelineEvent(c.req.param('id'), c.req.valid('json'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res, 201)
+})
+
+// Registrar una fuente.
+r.post('/:id/source', requireRole(...EDITORES), zValidator('json', addSourceSchema), async (c) => {
+  const res = await addSource(c.req.param('id'), c.req.valid('json'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res, 201)
 })
 
 // Capturar evidencia (con procedencia) para un incidente.

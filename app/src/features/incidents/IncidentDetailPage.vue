@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useData } from '@/services/data'
 import { ApiError } from '@/services/api'
-import type { IncidentDetail, EvidenceItem } from '@/types'
+import type { IncidentDetail, EvidenceItem, IncidentStatus, AlertSenapred, AlertCruzRoja } from '@/types'
 import { senapredBadge, cruzRojaBadge } from '@/utils/alerts'
 import AlertBadge from '@/components/ui/AlertBadge.vue'
 
@@ -87,6 +87,97 @@ async function guardarReporte() {
     saving.value = false
   }
 }
+
+// Opciones (etiqueta -> valor del dominio)
+const estadoOpts = [{ label: 'Monitoreo', value: 'monitoring' }, { label: 'Activo', value: 'active' }, { label: 'Cerrado', value: 'closed' }]
+const senapredOpts = [{ label: 'Sin alerta', value: 'none' }, { label: 'Preventiva', value: 'atp' }, { label: 'Amarilla', value: 'yellow' }, { label: 'Roja', value: 'red' }]
+const crOpts = [{ label: 'Verde', value: 'green' }, { label: 'Amarilla', value: 'yellow' }, { label: 'Roja', value: 'red' }]
+const tiposEvento = ['Sistema frontal', 'Incendio forestal', 'Sismo', 'Marejada', 'Aluvión / remoción en masa', 'Corte eléctrico', 'Corte de agua']
+const comunasOpts = ['Valparaíso', 'Viña del Mar', 'Quilpué', 'Villa Alemana', 'Limache', 'Concón', 'Quintero', 'Quillota', 'Olmué', 'Casablanca']
+
+// --- Editar incidente (incluye cerrar = estado Cerrado) ---
+const showEdit = ref(false)
+const edit = reactive<{ title: string; status: string; senapred: string; cruzRoja: string; description: string; eventType: string; comunas: string[] }>({
+  title: '', status: 'monitoring', senapred: 'none', cruzRoja: 'green', description: '', eventType: '', comunas: [],
+})
+function openEdit() {
+  if (!inc.value) return
+  edit.title = inc.value.title
+  edit.status = inc.value.status
+  edit.senapred = inc.value.alertSenapred
+  edit.cruzRoja = inc.value.alertCruzRoja
+  edit.description = inc.value.description
+  edit.eventType = inc.value.eventType
+  edit.comunas = [...inc.value.comunas]
+  showEdit.value = true
+}
+async function guardarEdit() {
+  if (!inc.value) return
+  saving.value = true
+  try {
+    await data.updateIncident(inc.value.id, {
+      title: edit.title, status: edit.status as IncidentStatus, alertSenapred: edit.senapred as AlertSenapred,
+      alertCruzRoja: edit.cruzRoja as AlertCruzRoja, description: edit.description, eventType: edit.eventType, comunas: edit.comunas,
+    })
+    $q.notify({ type: 'positive', message: 'Incidente actualizado', icon: 'check_circle' })
+    showEdit.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo actualizar' })
+  } finally {
+    saving.value = false
+  }
+}
+
+// --- Agregar hito a la cronología ---
+const showTl = ref(false)
+const tl = reactive({ at: '', tipo: 'note', descripcion: '' })
+const tlTipos = [{ label: 'Nota', value: 'note' }, { label: 'Acción', value: 'action' }, { label: 'Cambio de alerta', value: 'alert_change' }, { label: 'Fuente', value: 'source' }]
+function openTl() {
+  tl.at = ''
+  tl.tipo = 'note'
+  tl.descripcion = ''
+  showTl.value = true
+}
+async function guardarTl() {
+  if (!inc.value) return
+  saving.value = true
+  try {
+    await data.addTimelineEvent(inc.value.id, { happenedAt: tl.at, entryType: tl.tipo, description: tl.descripcion })
+    $q.notify({ type: 'positive', message: 'Hito agregado a la cronología', icon: 'check_circle' })
+    showTl.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo agregar' })
+  } finally {
+    saving.value = false
+  }
+}
+
+// --- Registrar una fuente ---
+const showSrc = ref(false)
+const src = reactive({ org: '', title: '', url: '' })
+const orgOpts = ['SENAPRED', 'DMC', 'DGA', 'SHOA', 'CSN', 'CONAF', 'SEC', 'Esval', 'Vialidad MOP', 'DIRECTEMAR', 'SERNAGEOMIN', 'Delegación Presidencial Valparaíso', 'MINEDUC', 'MINSAL', 'SUBTEL']
+function openSrc() {
+  src.org = ''
+  src.title = ''
+  src.url = ''
+  showSrc.value = true
+}
+async function guardarSrc() {
+  if (!inc.value) return
+  saving.value = true
+  try {
+    await data.addSource(inc.value.id, { org: src.org, title: src.title, url: src.url || undefined })
+    $q.notify({ type: 'positive', message: 'Fuente registrada', icon: 'check_circle' })
+    showSrc.value = false
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo registrar' })
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -114,7 +205,10 @@ async function guardarReporte() {
             <AlertBadge :tone="senapredBadge(inc.alertSenapred).tone" :label="'SENAPRED: ' + senapredBadge(inc.alertSenapred).label" />
             <AlertBadge :tone="cruzRojaBadge(inc.alertCruzRoja).tone" :label="'Cruz Roja: ' + cruzRojaBadge(inc.alertCruzRoja).label" />
           </div>
-          <q-btn color="primary" unelevated size="sm" label="Generar BIE" @click="router.push({ path: '/bie', query: { incident: inc.id } })" />
+          <div class="row q-gutter-xs">
+            <q-btn outline size="sm" icon="edit" label="Editar" @click="openEdit" />
+            <q-btn color="primary" unelevated size="sm" label="Generar BIE" @click="router.push({ path: '/bie', query: { incident: inc.id } })" />
+          </div>
         </div>
       </div>
 
@@ -130,7 +224,11 @@ async function guardarReporte() {
           </q-card>
 
           <q-card flat bordered class="q-pa-md q-mb-md">
-            <div class="sec-title q-mb-sm">Cronología</div>
+            <div class="row items-center q-mb-sm">
+              <div class="sec-title">Cronología</div>
+              <q-space />
+              <q-btn dense flat size="sm" icon="add" label="Agregar hito" @click="openTl" />
+            </div>
             <ol class="tl">
               <li v-for="(t, idx) in inc.timeline" :key="idx" class="tl-item">
                 <div class="tl-time tabular">{{ t.at }}</div>
@@ -206,7 +304,11 @@ async function guardarReporte() {
           </q-card>
 
           <q-card flat bordered class="q-pa-md">
-            <div class="sec-title q-mb-sm">Fuentes consultadas</div>
+            <div class="row items-center q-mb-sm">
+              <div class="sec-title">Fuentes consultadas</div>
+              <q-space />
+              <q-btn dense flat size="sm" icon="add" label="Agregar" @click="openSrc" />
+            </div>
             <q-list separator dense>
               <q-item v-for="(s, i) in inc.sources" :key="i">
                 <q-item-section>{{ s.org }} — {{ s.title }}</q-item-section>
@@ -279,6 +381,91 @@ async function guardarReporte() {
           <q-card-actions align="right" class="q-pr-md q-pb-md">
             <q-btn type="button" flat label="Cancelar" v-close-popup />
             <q-btn type="submit" color="primary" unelevated label="Guardar reporte" :loading="saving" />
+          </q-card-actions>
+        </q-form>
+      </q-card>
+    </q-dialog>
+
+    <!-- Diálogo: editar incidente (estado Cerrado = cerrar el evento) -->
+    <q-dialog v-model="showEdit" aria-label="Editar incidente">
+      <q-card style="min-width: 380px; max-width: 92vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-subtitle1">Editar incidente</div>
+          <q-space />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+        </q-card-section>
+        <q-form greedy @submit.prevent="guardarEdit">
+          <q-card-section class="q-gutter-sm">
+            <q-input v-model="edit.title" label="Título *" outlined dense :rules="[req]" />
+            <div class="row q-col-gutter-sm">
+              <q-select class="col-6" v-model="edit.status" :options="estadoOpts" label="Estado" outlined dense emit-value map-options />
+              <q-select class="col-6" v-model="edit.eventType" :options="tiposEvento" label="Tipo de evento" outlined dense />
+              <q-select class="col-6" v-model="edit.senapred" :options="senapredOpts" label="Alerta SENAPRED" outlined dense emit-value map-options />
+              <q-select class="col-6" v-model="edit.cruzRoja" :options="crOpts" label="Alerta Cruz Roja" outlined dense emit-value map-options />
+            </div>
+            <q-select v-model="edit.comunas" :options="comunasOpts" label="Comunas afectadas" multiple use-chips outlined dense />
+            <q-input v-model="edit.description" label="Descripción" type="textarea" outlined dense autogrow />
+          </q-card-section>
+          <q-card-actions align="right" class="q-pr-md q-pb-md">
+            <q-btn type="button" flat label="Cancelar" v-close-popup />
+            <q-btn type="submit" color="primary" unelevated label="Guardar" :loading="saving" />
+          </q-card-actions>
+        </q-form>
+      </q-card>
+    </q-dialog>
+
+    <!-- Diálogo: agregar hito a la cronología -->
+    <q-dialog v-model="showTl" aria-label="Agregar hito">
+      <q-card style="min-width: 340px; max-width: 92vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-subtitle1">Agregar hito</div>
+          <q-space />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+        </q-card-section>
+        <q-form greedy @submit.prevent="guardarTl">
+          <q-card-section class="q-gutter-sm">
+            <q-input v-model="tl.at" label="Fecha / hora *" placeholder="dd/mm/aaaa hh:mm" outlined dense :rules="[req]">
+              <template #append>
+                <q-icon name="event" class="cursor-pointer" aria-label="Elegir fecha">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="tl.at" mask="DD/MM/YYYY HH:mm"><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div></q-date>
+                  </q-popup-proxy>
+                </q-icon>
+                <q-icon name="schedule" class="cursor-pointer q-ml-sm" aria-label="Elegir hora">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-time v-model="tl.at" mask="DD/MM/YYYY HH:mm" format24h><div class="row items-center justify-end"><q-btn v-close-popup label="OK" color="primary" flat /></div></q-time>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+            <q-select v-model="tl.tipo" :options="tlTipos" label="Tipo" outlined dense emit-value map-options />
+            <q-input v-model="tl.descripcion" label="Descripción *" type="textarea" outlined dense autogrow :rules="[req]" />
+          </q-card-section>
+          <q-card-actions align="right" class="q-pr-md q-pb-md">
+            <q-btn type="button" flat label="Cancelar" v-close-popup />
+            <q-btn type="submit" color="primary" unelevated label="Agregar" :loading="saving" />
+          </q-card-actions>
+        </q-form>
+      </q-card>
+    </q-dialog>
+
+    <!-- Diálogo: registrar fuente -->
+    <q-dialog v-model="showSrc" aria-label="Registrar fuente">
+      <q-card style="min-width: 340px; max-width: 92vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-subtitle1">Registrar fuente</div>
+          <q-space />
+          <q-btn type="button" icon="close" flat round dense v-close-popup aria-label="Cerrar" />
+        </q-card-section>
+        <q-form greedy @submit.prevent="guardarSrc">
+          <q-card-section class="q-gutter-sm">
+            <q-select v-model="src.org" :options="orgOpts" label="Organismo *" outlined dense :rules="[req]" />
+            <q-input v-model="src.title" label="Título / comunicado *" outlined dense :rules="[req]" />
+            <q-input v-model="src.url" label="Enlace (URL)" placeholder="https://…" outlined dense />
+          </q-card-section>
+          <q-card-actions align="right" class="q-pr-md q-pb-md">
+            <q-btn type="button" flat label="Cancelar" v-close-popup />
+            <q-btn type="submit" color="primary" unelevated label="Registrar" :loading="saving" />
           </q-card-actions>
         </q-form>
       </q-card>

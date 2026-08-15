@@ -134,3 +134,26 @@ export interface ReportInput {
   personasAfectadas: number
   voluntarios: number
 }
+
+// Editar incidente (parcial); "cerrar" = status: 'closed'.
+export interface UpdateIncidentInput {
+  title?: string
+  status?: IncidentStatus
+  alertSenapred?: AlertSenapred
+  alertCruzRoja?: AlertCruzRoja
+  description?: string
+  eventType?: string
+  comunas?: string[]
+}
+
+export interface TimelineInput {
+  happenedAt: string
+  entryType: string
+  description: string
+}
+
+export interface SourceInput {
+  org: string
+  title: string
+  url?: string
+}

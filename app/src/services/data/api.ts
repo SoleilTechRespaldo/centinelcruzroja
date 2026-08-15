@@ -1,5 +1,5 @@
 import type { DataService } from './DataService'
-import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput } from '@/types'
+import type { DashboardData, IncidentSummary, IncidentDetail, BieDraft, NewIncidentInput, EvidenceInput, ReportInput, UpdateIncidentInput, TimelineInput, SourceInput } from '@/types'
 import { api, ApiError } from '@/services/api'
 import { buildBieDraft } from './bieDraft'
 
@@ -38,5 +38,17 @@ export class ApiDataService implements DataService {
 
   addReport(incidentId: string, input: ReportInput): Promise<{ id: string }> {
     return api.post<{ id: string }>(`/incidents/${incidentId}/report`, input)
+  }
+
+  updateIncident(incidentId: string, patch: UpdateIncidentInput): Promise<{ id: string }> {
+    return api.patch<{ id: string }>(`/incidents/${incidentId}`, patch)
+  }
+
+  addTimelineEvent(incidentId: string, input: TimelineInput): Promise<{ id: string }> {
+    return api.post<{ id: string }>(`/incidents/${incidentId}/timeline`, input)
+  }
+
+  addSource(incidentId: string, input: SourceInput): Promise<{ id: string }> {
+    return api.post<{ id: string }>(`/incidents/${incidentId}/source`, input)
   }
 }

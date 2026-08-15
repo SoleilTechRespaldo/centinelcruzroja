@@ -57,3 +57,34 @@ export const addReportSchema = z.object({
 })
 
 export type AddReportInput = z.infer<typeof addReportSchema>
+
+// Editar incidente (parcial). "Cerrar" = status: 'closed'.
+export const updateIncidentSchema = z
+  .object({
+    title: z.string().trim().min(3).optional(),
+    status: incidentStatusEnum.optional(),
+    alertSenapred: senapredEnum.optional(),
+    alertCruzRoja: cruzRojaEnum.optional(),
+    description: z.string().max(5000).optional(),
+    eventType: z.string().optional(),
+    comunas: z.array(z.string()).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar')
+
+export type UpdateIncidentInput = z.infer<typeof updateIncidentSchema>
+
+// Agregar hito a la cronología (append-only).
+export const addTimelineSchema = z.object({
+  happenedAt: z.string().trim().min(1),
+  entryType: z.enum(['alert_change', 'source', 'note', 'action']).default('note'),
+  description: z.string().trim().min(1),
+})
+export type AddTimelineInput = z.infer<typeof addTimelineSchema>
+
+// Registrar una fuente (procedencia).
+export const addSourceSchema = z.object({
+  org: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  url: z.string().optional(),
+})
+export type AddSourceInput = z.infer<typeof addSourceSchema>

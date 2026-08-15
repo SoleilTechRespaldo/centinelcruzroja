@@ -2,11 +2,11 @@ import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
-import type { CreateIncidentInput, AddEvidenceInput, AddReportInput } from '../types'
+import type { CreateIncidentInput, AddEvidenceInput, AddReportInput, UpdateIncidentInput, AddTimelineInput, AddSourceInput } from '../types'
 
 const {
   incidents, incidentComunas, comunas, eventTypes, incidentReports,
-  sources, sourceOrgs, evidence, timelineEvents,
+  sources, sourceOrgs, evidence, timelineEvents, auditLog,
 } = schema
 
 type Filial = { filial: string; n: number }
@@ -199,6 +199,60 @@ export async function createIncident(input: CreateIncidentInput, userId: string)
     }
   }
   return { id, code }
+}
+
+// --- Editar incidente (parcial); "cerrar" = status closed (+ endedAt). ---
+export async function updateIncident(id: string, input: UpdateIncidentInput, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, id)).limit(1)
+  if (!exists[0]) return undefined
+  const nowSec = Math.floor(Date.now() / 1000)
+  const patch: Partial<typeof incidents.$inferInsert> = { updatedAt: nowSec }
+  if (input.title !== undefined) patch.title = input.title
+  if (input.status !== undefined) {
+    patch.status = input.status
+    patch.endedAt = input.status === 'closed' ? nowSec : null
+  }
+  if (input.alertSenapred !== undefined) patch.alertSenapred = input.alertSenapred
+  if (input.alertCruzRoja !== undefined) patch.alertCruzRoja = input.alertCruzRoja
+  if (input.description !== undefined) patch.description = input.description
+  if (input.eventType !== undefined) {
+    const et = await db.select({ id: eventTypes.id }).from(eventTypes).where(eq(eventTypes.name, input.eventType)).limit(1)
+    patch.eventTypeId = et[0]?.id ?? null
+  }
+  await db.update(incidents).set(patch).where(eq(incidents.id, id))
+
+  if (input.comunas !== undefined) {
+    await db.delete(incidentComunas).where(eq(incidentComunas.incidentId, id))
+    if (input.comunas.length) {
+      const crows = await db.select({ id: comunas.id }).from(comunas).where(inArray(comunas.name, input.comunas))
+      for (const cr of crows) await db.insert(incidentComunas).values({ incidentId: id, comunaId: cr.id }).onConflictDoNothing()
+    }
+  }
+  await db.insert(auditLog).values({ id: randomUUID(), userId, action: 'incident.update', entityType: 'incident', entityId: id, details: input }).catch(() => {})
+  return { id }
+}
+
+// --- Agregar hito a la cronología (append-only). ---
+export async function addTimelineEvent(id: string, input: AddTimelineInput, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, id)).limit(1)
+  if (!exists[0]) return undefined
+  const eid = randomUUID()
+  await db.insert(timelineEvents).values({
+    id: eid, incidentId: id,
+    happenedAt: parseDate(input.happenedAt) ?? Math.floor(Date.now() / 1000),
+    entryType: input.entryType, description: input.description, createdBy: userId,
+  })
+  return { id: eid }
+}
+
+// --- Registrar una fuente (procedencia). ---
+export async function addSource(id: string, input: AddSourceInput, userId: string): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, id)).limit(1)
+  if (!exists[0]) return undefined
+  const so = await db.select({ id: sourceOrgs.id }).from(sourceOrgs).where(eq(sourceOrgs.name, input.org)).limit(1)
+  const sid = randomUUID()
+  await db.insert(sources).values({ id: sid, incidentId: id, sourceOrgId: so[0]?.id ?? null, title: input.title, url: input.url, createdBy: userId })
+  return { id: sid }
 }
 
 // --- Nuevo reporte de situación (append-only; arrastra el desglose por filial previo). ---
