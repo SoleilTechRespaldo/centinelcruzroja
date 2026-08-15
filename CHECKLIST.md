@@ -17,7 +17,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
 ## ▶ PARA RETOMAR
 
-**Hecho (al 2026-08-14):**
+**Hecho (al 2026-08-15):**
 - Fases 1–4 + ERD + mockups (🚦G1·G2·G3).
 - **Frontend** en `app/` (Vite 8 + Vue 3 + TS + Quasar + PWA): **14 pantallas** contra
   `DataService` (mock), login+guard, mapa Leaflet real, generar BIE + vista previa.
@@ -35,7 +35,7 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   **`ApiDataService`** reemplazó al mock — **login, Usuarios (gating por rol), dashboard, incidentes
   (lista/detalle/crear) y BIE autollenado** leen del backend. **Evidencia con procedencia persiste**
   (`POST /:id/evidence`) y el **BIE se descarga rellenando el maestro oficial** (`.docx` con logos/formato). Verificado en
-  navegador. Falta: archivo real de evidencia (R2), versiones/aprobación del BIE y el PDF (conversor).
+  navegador. Falta: archivo real de evidencia (R2).
 
 **Identidad (provisional, pendiente evaluación final):** **Centinela** + mark torre con faro.
 
@@ -47,16 +47,28 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 4. **Calce con el mockup** — Catálogos con datos por pestaña; feedback (`Notify`) en botones antes inertes.
 5. **BIE autollenado desde el incidente** (`getBieDraft`, mock).
 
-### ▶ Pendiente (orden sugerido)
-6. **(Cuando autorices) F6/F7:** repo privado en GitHub + README inicial.
-7. **Etapa final — Base de datos:** crear BD **Turso**, migración, **seeders** (comunas de
-   Valparaíso, tipos de evento, fuentes oficiales, filiales) y conectar el **ApiDataService**
-   (reemplazar el mock) + auth real.
-8. **RF-18 (IA de apoyo)** — al final del todo.
-9. *(opcional)* prueba manual con lector de pantalla (NVDA/VoiceOver) — lo automatizado ya está limpio.
+### ✔ Hecho (2026-08-15)
+6. **Punto 1 · MVP núcleo (backend + frontend, verificado):** incidentes **editar/cerrar**;
+   **cronología** (hitos); **fuentes** (procedencia); **catálogos contra el backend**
+   (comunas/tipos/fuentes, activar/desactivar); **BIE versiones y aprobación**
+   (`bie_versions`; guardar operator+, aprobar coordinator/admin); **recuperar contraseña**
+   (admin fija clave nueva).
+7. **PDF del BIE** — `server/src/lib/biePdf.ts` rellena el maestro y convierte con
+   **LibreOffice** (headless, cualquier SO) o **Word COM** (Windows). Ruta `.../bie/pdf`,
+   botón PDF; sin conversor → 503. Verificado: PDF 5 págs, `%%EOF`, sin Word colgado.
+8. **Preproducción** — **Vitest** (12 pruebas, SQLite en memoria); **ESLint + Prettier +
+   EditorConfig** (config flat única, `npm run check`); **README + CHANGELOG + .gitattributes**.
 
-**Ruta prevista:** F6/F7 GitHub+README → crear BD Turso + migrar + seeders
-→ conectar rutas + auth → F13 integración → **RF-18 IA**.
+### ▶ Pendiente (orden sugerido)
+9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).
+10. **Etapa final — Base de datos:** crear BD **Turso** y apuntar las 2 variables
+    (`TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN`); el código no cambia. Migrar + sembrar allí.
+11. **Evidencia real (Cloudflare R2)** — subir/servir el archivo, no solo la procedencia.
+12. **RF-18 (IA de apoyo)** — al final del todo.
+13. *(opcional)* pruebas E2E del frontend (Playwright) y prueba con lector de pantalla.
+
+**Ruta prevista:** GitHub → crear BD Turso (2 variables) + migrar/sembrar
+→ R2 (evidencia) → **RF-18 IA**.
 
 ---
 
