@@ -66,7 +66,10 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - **2.1 Correo (IMAP)** — lee buzones (imapflow + mailparser), **dedup por Message-ID**;
   se activa con `IMAP_MAILBOXES` en el `.env` del servidor (vacío = desactivado); botón
   "Revisar correo" (admin). Credenciales al `.env`, nunca al repo.
-- **Sigue:** 2.2 R2 (adjuntos) → 2.3 webs oficiales → 2.4 redes → 2.5 mapa → 2.6 IA.
+- **2.2 Almacenamiento + evidencia real (RF-09)** — abstracción `storage` (carpeta local
+  por defecto, **Cloudflare R2** con las 4 variables `R2_*`); subir/descargar el archivo
+  real de evidencia (`/incidents/:id/evidence/upload`, `/evidence/:id/file`).
+- **Sigue:** 2.3 webs oficiales (RF-20) → 2.4 redes → 2.5 mapa → 2.6 IA.
 
 ### ▶ Pendiente (orden sugerido)
 9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).

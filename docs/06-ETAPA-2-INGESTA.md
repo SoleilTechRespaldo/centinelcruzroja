@@ -151,9 +151,11 @@ emitir alertas hacia afuera; inventar datos.
 
 ## 9. Fases, esfuerzo y costos
 
-> **Estado al 2026-08-15:** ✅ **2.0 (bandeja de indicios)** y ✅ **2.1 (canal correo IMAP)**
-> construidas, probadas (21 pruebas) y verificadas en navegador. El correo queda
-> **desactivado** hasta cargar `IMAP_MAILBOXES` en el `.env` del servidor.
+> **Estado al 2026-08-15:** ✅ **2.0 (bandeja)**, ✅ **2.1 (correo IMAP)** y ✅ **2.2
+> (almacenamiento local/R2 + evidencia con archivo real, RF-09)** construidas y probadas
+> (27 pruebas); 2.0 verificada en navegador. El **correo** queda desactivado hasta cargar
+> `IMAP_MAILBOXES`, y **R2** hasta cargar las 4 variables `R2_*` (mientras, archivos en
+> carpeta local). **Sigue: 2.3 webs oficiales (RF-20).**
 
 Esfuerzo relativo (S = chico, M = medio, L = grande). Son **estimaciones**, no fechas.
 
