@@ -15,6 +15,13 @@
       "when": 1786681858719,
       "tag": "0001_stiff_photon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786840181264,
+      "tag": "0002_bent_norrin_radd",
+      "breakpoints": true
     }
   ]
 }

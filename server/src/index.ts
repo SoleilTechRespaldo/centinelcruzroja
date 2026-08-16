@@ -9,6 +9,7 @@ import users from './routes/users'
 import incidents from './routes/incidents'
 import dashboard from './routes/dashboard'
 import catalogs from './routes/catalogs'
+import indicios from './routes/indicios'
 
 // App Hono. Middlewares transversales + manejo de errores. Autorización por rol
 // en cada ruta (en el backend, porque SQLite no tiene RLS).
@@ -34,6 +35,7 @@ api.route('/users', users)
 api.route('/incidents', incidents)
 api.route('/dashboard', dashboard)
 api.route('/catalogs', catalogs)
+api.route('/indicios', indicios)
 app.route('/api', api)
 
 app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))

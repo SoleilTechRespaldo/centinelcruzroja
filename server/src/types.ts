@@ -88,3 +88,33 @@ export const addSourceSchema = z.object({
   url: z.string().optional(),
 })
 export type AddSourceInput = z.infer<typeof addSourceSchema>
+
+// --- Indicios (bandeja de ingesta) ---
+// Alta manual: captura legal de redes o un indicio a mano. Los canales
+// automáticos (correo/web) insertan directo, sin pasar por este esquema.
+export const createIndicioSchema = z.object({
+  channel: z.enum(['manual', 'redes']).default('manual'),
+  title: z.string().trim().min(1, 'Falta el título'),
+  content: z.string().optional(),
+  url: z.string().optional(),
+  sender: z.string().optional(), // perfil oficial (redes) o remitente
+  sourceOrg: z.string().optional(), // nombre del organismo (se resuelve a id)
+  isOfficial: z.boolean().optional(),
+  incidentId: z.string().optional(),
+  occurredAt: z.string().optional(),
+})
+export type CreateIndicioInput = z.infer<typeof createIndicioSchema>
+
+// Dar el visto bueno: verifica y (por defecto) lo promueve a fuente del incidente.
+export const verifyIndicioSchema = z.object({
+  incidentId: z.string().optional(),
+  promote: z.boolean().default(true),
+  sourceOrg: z.string().optional(),
+  note: z.string().optional(),
+})
+export type VerifyIndicioInput = z.infer<typeof verifyIndicioSchema>
+
+export const discardIndicioSchema = z.object({
+  note: z.string().optional(),
+})
+export type DiscardIndicioInput = z.infer<typeof discardIndicioSchema>

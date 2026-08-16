@@ -2,7 +2,7 @@
 // Refleja el ERD (docs/05-BASE-DE-DATOS.md). La creación real de la BD Turso
 // (provisión + migraciones) se deja para el final; aquí va solo el "molde".
 
-import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 const now = sql`(unixepoch())`
@@ -15,6 +15,8 @@ const alertCruzRojaEnum = ['green', 'yellow', 'red'] as const
 const evidenceKindEnum = ['image', 'pdf', 'screenshot', 'doc', 'link'] as const
 const timelineTypeEnum = ['alert_change', 'source', 'note', 'action'] as const
 const bieStatusEnum = ['draft', 'approved', 'exported'] as const
+const indicioChannelEnum = ['correo', 'web', 'redes', 'manual'] as const
+const indicioStatusEnum = ['por_verificar', 'verificado', 'descartado'] as const
 
 // --- Usuarios (auth/roles; sesiones las gestiona la librería de auth) ---
 export const users = sqliteTable('users', {
@@ -214,6 +216,41 @@ export const bieVersions = sqliteTable(
     deletedAt: integer('deleted_at'),
   },
   (t) => [index('idx_bie_incident').on(t.incidentId)],
+)
+
+// --- Indicios (bandeja de ingesta: correo/web/redes/manual) ---
+// Nada entra al BIE desde aquí sin visto bueno humano. Al verificar con un
+// incidente se puede "promover" a una fuente (procedencia) de ese incidente.
+export const indicios = sqliteTable(
+  'indicios',
+  {
+    id: text('id').primaryKey(),
+    incidentId: text('incident_id').references(() => incidents.id), // nullable: bandeja general (sin asignar)
+    channel: text('channel', { enum: indicioChannelEnum }).notNull(),
+    status: text('status', { enum: indicioStatusEnum }).notNull().default('por_verificar'),
+    sourceOrgId: text('source_org_id').references(() => sourceOrgs.id),
+    title: text('title').notNull(),
+    summary: text('summary'), // resumen corto (IA en el futuro)
+    content: text('content'), // cuerpo (texto del correo/página/post)
+    url: text('url'),
+    sender: text('sender'), // remitente del correo o perfil oficial (redes)
+    externalRef: text('external_ref'), // Message-ID del correo / hash de la página → dedup
+    isOfficial: integer('is_official', { mode: 'boolean' }).notNull().default(true), // redes = false
+    occurredAt: integer('occurred_at'), // cuándo ocurrió/publicó (si se sabe)
+    receivedAt: integer('received_at').notNull().default(now), // cuándo lo captó el sistema
+    reviewedBy: text('reviewed_by').references(() => users.id),
+    reviewedAt: integer('reviewed_at'),
+    reviewNote: text('review_note'),
+    promotedSourceId: text('promoted_source_id').references(() => sources.id), // fuente creada al verificar
+    createdAt: integer('created_at').notNull().default(now),
+    deletedAt: integer('deleted_at'),
+  },
+  (t) => [
+    index('idx_indicios_status').on(t.status),
+    index('idx_indicios_incident').on(t.incidentId),
+    // Dedup por canal: dos capturas del mismo correo/página no se duplican.
+    uniqueIndex('idx_indicios_dedup').on(t.channel, t.externalRef),
+  ],
 )
 
 // --- Bitácora (append-only; el backend solo inserta) ---
