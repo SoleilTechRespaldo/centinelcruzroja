@@ -87,9 +87,55 @@ async function requestBlob(method: string, path: string, body?: unknown): Promis
   return res.blob()
 }
 
+// Envía multipart/form-data (archivos). NO fija Content-Type: el navegador pone el boundary.
+async function requestForm<T>(path: string, form: FormData): Promise<T> {
+  const headers: Record<string, string> = {}
+  const token = getToken()
+  if (token) headers.Authorization = `Bearer ${token}`
+  let res: Response
+  try {
+    res = await fetch(`${API_URL}/api${path}`, { method: 'POST', headers, body: form })
+  } catch {
+    throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
+  }
+  const text = await res.text()
+  const data = text ? JSON.parse(text) : null
+  if (!res.ok) {
+    const code = (data && data.error) || 'error'
+    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
+  }
+  return data as T
+}
+
+// Descarga un binario con autenticación (ej. archivo de evidencia).
+async function getBlob(path: string): Promise<Blob> {
+  const headers: Record<string, string> = {}
+  const token = getToken()
+  if (token) headers.Authorization = `Bearer ${token}`
+  let res: Response
+  try {
+    res = await fetch(`${API_URL}/api${path}`, { headers })
+  } catch {
+    throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
+  }
+  if (!res.ok) {
+    const text = await res.text()
+    let code = 'error'
+    try {
+      code = (JSON.parse(text) as { error?: string })?.error ?? 'error'
+    } catch {
+      /* respuesta no-JSON */
+    }
+    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
+  }
+  return res.blob()
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
   postBlob: (path: string, body?: unknown) => requestBlob('POST', path, body),
+  postForm: <T>(path: string, form: FormData) => requestForm<T>(path, form),
+  getBlob: (path: string) => getBlob(path),
 }

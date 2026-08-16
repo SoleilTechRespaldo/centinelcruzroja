@@ -3,7 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useData } from '@/services/data'
-import { ApiError } from '@/services/api'
+import { api, ApiError } from '@/services/api'
 import type { IncidentDetail, EvidenceItem, IncidentStatus, AlertSenapred, AlertCruzRoja } from '@/types'
 import { senapredBadge, cruzRojaBadge } from '@/utils/alerts'
 import AlertBadge from '@/components/ui/AlertBadge.vue'
@@ -61,14 +61,23 @@ async function agregarEvidencia() {
   const kind = kindMap[ev.tipo ?? ''] ?? 'doc'
   saving.value = true
   try {
-    await data.addEvidence(inc.value.id, {
-      kind,
-      caption: ev.caption,
-      source: ev.source,
-      at: ev.at,
-      url: ev.tipo === 'Enlace' ? ev.url : undefined,
-      fileName: ev.tipo !== 'Enlace' ? ev.file?.name : undefined,
-    })
+    if (ev.file && ev.tipo !== 'Enlace') {
+      // Con archivo: sube el binario real (se guarda local o en R2).
+      const fd = new FormData()
+      fd.set('kind', kind)
+      fd.set('caption', ev.caption)
+      fd.set('source', ev.source)
+      fd.set('file', ev.file)
+      await api.postForm(`/incidents/${inc.value.id}/evidence/upload`, fd)
+    } else {
+      await data.addEvidence(inc.value.id, {
+        kind,
+        caption: ev.caption,
+        source: ev.source,
+        at: ev.at,
+        url: ev.tipo === 'Enlace' ? ev.url : undefined,
+      })
+    }
     $q.notify({ type: 'positive', message: 'Evidencia agregada', caption: `${ev.caption} · ${ev.source}`, icon: 'check_circle' })
     showAdd.value = false
     await load()
@@ -76,6 +85,23 @@ async function agregarEvidencia() {
     $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo guardar la evidencia' })
   } finally {
     saving.value = false
+  }
+}
+
+// Descarga el archivo real de una evidencia (con autenticación).
+async function descargarEvidencia(e: EvidenceItem) {
+  try {
+    const blob = await api.getBlob(`/evidence/${e.id}/file`)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = e.fileName || 'evidencia'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err instanceof ApiError ? err.message : 'No se pudo descargar el archivo' })
   }
 }
 
@@ -348,6 +374,7 @@ async function guardarSrc() {
                     <div class="text-caption text-muted">
                       {{ e.source }}<span v-if="e.at"> · {{ e.at }}</span>
                     </div>
+                    <button v-if="e.hasFile" type="button" class="link" @click="descargarEvidencia(e)">descargar archivo</button>
                   </div>
                 </q-card>
               </div>

@@ -19,6 +19,7 @@ import {
   updateIncident,
   addTimelineEvent,
   addSource,
+  addEvidenceFile,
   saveBieVersion,
   listBieVersions,
   approveBieVersion,
@@ -69,6 +70,27 @@ r.post('/:id/source', requireRole(...EDITORES), zValidator('json', addSourceSche
 // Capturar evidencia (con procedencia) para un incidente.
 r.post('/:id/evidence', requireRole('operator', 'coordinator', 'admin'), zValidator('json', addEvidenceSchema), async (c) => {
   const res = await addEvidence(c.req.param('id'), c.req.valid('json'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res, 201)
+})
+
+// Subir evidencia con ARCHIVO real (multipart → almacenamiento local o R2).
+const EVIDENCE_KINDS = ['image', 'pdf', 'screenshot', 'doc', 'link'] as const
+r.post('/:id/evidence/upload', requireRole('operator', 'coordinator', 'admin'), async (c) => {
+  const body = await c.req.parseBody()
+  const file = body['file']
+  if (!(file instanceof File)) return c.json({ error: 'archivo_requerido' }, 400)
+  const caption = String(body['caption'] ?? '').trim()
+  const source = String(body['source'] ?? '').trim()
+  if (!caption || !source) return c.json({ error: 'datos_incompletos' }, 400)
+  const kindRaw = String(body['kind'] ?? 'doc')
+  const kind = (EVIDENCE_KINDS as readonly string[]).includes(kindRaw) ? (kindRaw as (typeof EVIDENCE_KINDS)[number]) : 'doc'
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const res = await addEvidenceFile(
+    c.req.param('id'),
+    { kind, caption, source, fileName: file.name || 'archivo', mimeType: file.type || 'application/octet-stream', bytes },
+    c.get('user').id,
+  )
   if (!res) return c.json({ error: 'no_encontrado' }, 404)
   return c.json(res, 201)
 })

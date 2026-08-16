@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
 import { randomUUID } from 'node:crypto'
+import { putObject, getObject } from '../lib/storage'
 import { db, schema } from '../db/client'
 import { fmtDateTime, fmtTimeline, fmtTime } from '../lib/format'
 import type { CreateIncidentInput, AddEvidenceInput, AddReportInput, UpdateIncidentInput, AddTimelineInput, AddSourceInput } from '../types'
@@ -153,6 +154,8 @@ export async function getDetail(id: string) {
       source: e.sourceText ?? '',
       at: fmtTime(e.capturedAt),
       url: e.url ?? undefined,
+      fileName: e.fileName ?? undefined,
+      hasFile: !!e.fileKey,
     })),
     sources: srcs.map((s) => ({ org: s.org ?? '—', title: s.title ?? '', at: fmtTime(s.capturedAt) })),
   }
@@ -382,7 +385,54 @@ export async function approveBieVersion(versionId: string, userId: string): Prom
   return { id: versionId }
 }
 
-// --- Agregar evidencia (con procedencia). El archivo real (R2) es etapa posterior. ---
+// --- Evidencia con archivo real (almacenamiento local o R2). ---
+export async function addEvidenceFile(
+  incidentId: string,
+  input: {
+    kind: 'image' | 'pdf' | 'screenshot' | 'doc' | 'link'
+    caption: string
+    source: string
+    fileName: string
+    mimeType: string
+    bytes: Uint8Array
+  },
+  userId: string,
+): Promise<{ id: string } | undefined> {
+  const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
+  if (!exists[0]) return undefined
+  const id = randomUUID()
+  const safe = (input.fileName || 'archivo').replace(/[^\w.-]+/g, '_').slice(-80)
+  const key = `evidence/${incidentId}/${id}-${safe}`
+  await putObject(key, input.bytes, input.mimeType)
+  await db.insert(evidence).values({
+    id,
+    incidentId,
+    kind: input.kind,
+    caption: input.caption,
+    sourceText: input.source,
+    fileKey: key,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    sizeBytes: input.bytes.byteLength,
+    createdBy: userId,
+  })
+  return { id }
+}
+
+export async function getEvidenceFile(evidenceId: string): Promise<{ fileName: string; mimeType: string; bytes: Uint8Array } | null> {
+  const rows = await db
+    .select({ fileKey: evidence.fileKey, fileName: evidence.fileName, mimeType: evidence.mimeType })
+    .from(evidence)
+    .where(eq(evidence.id, evidenceId))
+    .limit(1)
+  const ev = rows[0]
+  if (!ev || !ev.fileKey) return null
+  const bytes = await getObject(ev.fileKey)
+  if (!bytes) return null
+  return { fileName: ev.fileName ?? 'evidencia', mimeType: ev.mimeType ?? 'application/octet-stream', bytes }
+}
+
+// --- Agregar evidencia (metadatos de procedencia; sin archivo). ---
 export async function addEvidence(incidentId: string, input: AddEvidenceInput, userId: string): Promise<{ id: string } | undefined> {
   const exists = await db.select({ id: incidents.id }).from(incidents).where(eq(incidents.id, incidentId)).limit(1)
   if (!exists[0]) return undefined

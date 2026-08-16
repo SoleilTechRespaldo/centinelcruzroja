@@ -50,6 +50,8 @@ export interface EvidenceItem {
   source: string
   at?: string
   url?: string
+  fileName?: string
+  hasFile?: boolean
 }
 
 export interface SourceItem {
