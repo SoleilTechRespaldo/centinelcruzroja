@@ -151,6 +151,10 @@ emitir alertas hacia afuera; inventar datos.
 
 ## 9. Fases, esfuerzo y costos
 
+> **Estado al 2026-08-15:** ✅ **2.0 (bandeja de indicios)** y ✅ **2.1 (canal correo IMAP)**
+> construidas, probadas (21 pruebas) y verificadas en navegador. El correo queda
+> **desactivado** hasta cargar `IMAP_MAILBOXES` en el `.env` del servidor.
+
 Esfuerzo relativo (S = chico, M = medio, L = grande). Son **estimaciones**, no fechas.
 
 | Fase | Contenido | Esfuerzo | Costo mensual |
