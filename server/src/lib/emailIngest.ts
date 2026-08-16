@@ -3,7 +3,7 @@ import { simpleParser } from 'mailparser'
 import { z } from 'zod'
 import { db, schema } from '../db/client'
 import { env } from '../env'
-import { ingestIndicio } from '../services/indicios'
+import { ingestIndicio, type IndicioAttachment } from '../services/indicios'
 
 // Canal de ingesta por correo (RF-26). Lee buzones IMAP (solo lectura), convierte
 // cada correo nuevo en un indicio "por verificar" y deduplica por Message-ID.
@@ -37,6 +37,7 @@ export interface ParsedEmail {
   externalRef: string | null
   occurredAt: number | null
   isOfficial: boolean
+  attachment: IndicioAttachment | null
 }
 
 // Convierte el RFC822 crudo de un correo en los campos de un indicio. Puro y testeable.
@@ -45,6 +46,12 @@ export async function parseEmailToIndicio(raw: string | Buffer): Promise<ParsedE
   const title = (mail.subject ?? '(sin asunto)').trim() || '(sin asunto)'
   const sender = mail.from?.text ?? ''
   const body = (mail.text ?? (typeof mail.html === 'string' ? mail.html : '') ?? '').toString()
+  // Primer adjunto real (ej. el PDF oficial de la alerta).
+  const att = (mail.attachments ?? []).find((a) => a.content && !a.related) ?? mail.attachments?.[0]
+  const attachment: IndicioAttachment | null =
+    att?.content != null
+      ? { bytes: new Uint8Array(att.content), fileName: att.filename ?? 'adjunto', mimeType: att.contentType ?? 'application/octet-stream' }
+      : null
   return {
     channel: 'correo',
     title,
@@ -53,6 +60,7 @@ export async function parseEmailToIndicio(raw: string | Buffer): Promise<ParsedE
     externalRef: mail.messageId ?? null,
     occurredAt: mail.date ? Math.floor(mail.date.getTime() / 1000) : null,
     isOfficial: true,
+    attachment,
   }
 }
 

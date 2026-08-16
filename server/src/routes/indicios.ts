@@ -3,7 +3,15 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { createIndicioSchema, verifyIndicioSchema, discardIndicioSchema } from '../types'
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
-import { listIndicios, getIndicio, createIndicio, verifyIndicio, discardIndicio } from '../services/indicios'
+import {
+  listIndicios,
+  getIndicio,
+  createIndicio,
+  createIndicioWithFile,
+  getIndicioFile,
+  verifyIndicio,
+  discardIndicio,
+} from '../services/indicios'
 import { runEmailIngestionOnce } from '../lib/emailIngest'
 import { runWebIngestionOnce } from '../lib/webIngest'
 
@@ -41,8 +49,49 @@ r.get('/:id', async (c) => {
   return c.json(ind)
 })
 
+// Descargar el archivo adjunto de un indicio.
+r.get('/:id/file', async (c) => {
+  const f = await getIndicioFile(c.req.param('id'))
+  if (!f) return c.json({ error: 'no_encontrado' }, 404)
+  return new Response(new Uint8Array(f.bytes), {
+    headers: {
+      'Content-Type': f.mimeType,
+      'Content-Disposition': `inline; filename="${f.fileName.replace(/"/g, '')}"`,
+    },
+  })
+})
+
 r.post('/', requireRole(...EDITORES), zValidator('json', createIndicioSchema), async (c) => {
   const res = await createIndicio(c.req.valid('json'), c.get('user').id)
+  return c.json(res, 201)
+})
+
+// Captura con ARCHIVO (multipart): redes con captura de pantalla (RF-27).
+r.post('/upload', requireRole(...EDITORES), async (c) => {
+  const body = await c.req.parseBody()
+  const title = String(body['title'] ?? '').trim()
+  if (!title) return c.json({ error: 'datos_incompletos' }, 400)
+  const channelRaw = String(body['channel'] ?? 'redes')
+  const channel = channelRaw === 'manual' ? 'manual' : 'redes'
+  const f = body['file']
+  const file =
+    f instanceof File
+      ? { bytes: new Uint8Array(await f.arrayBuffer()), fileName: f.name || 'archivo', mimeType: f.type || 'application/octet-stream' }
+      : null
+  const val = (k: string) => String(body[k] ?? '').trim() || undefined
+  const res = await createIndicioWithFile(
+    {
+      channel,
+      title,
+      content: val('content'),
+      url: val('url'),
+      sender: val('sender'),
+      sourceOrg: val('sourceOrg'),
+      incidentId: val('incidentId'),
+    },
+    file,
+    c.get('user').id,
+  )
   return c.json(res, 201)
 })
 

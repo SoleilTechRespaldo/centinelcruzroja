@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import app from '../src/index'
 import { apiReq, login } from './helpers'
 
 describe('bandeja de indicios', () => {
@@ -66,5 +67,38 @@ describe('bandeja de indicios', () => {
     expect(discard.status).toBe(200)
     const list = await apiReq('GET', '/indicios?status=descartado', { token })
     expect(list.json.items.some((i: { id: string }) => i.id === create.json.id)).toBe(true)
+  })
+})
+
+describe('indicios con adjunto (captura de redes, RF-27)', () => {
+  it('captura con archivo → se descarga idéntico → al verificar pasa a evidencia', async () => {
+    const token = await login('operador@cruzroja.cl')
+    const bytes = new Uint8Array([137, 80, 78, 71, 13, 10]) // cabecera PNG
+
+    const fd = new FormData()
+    fd.set('channel', 'redes')
+    fd.set('title', 'Captura de post oficial')
+    fd.set('sourceOrg', 'SENAPRED')
+    fd.set('file', new File([bytes], 'captura.png', { type: 'image/png' }))
+    const up = await app.request('/api/indicios/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+    expect(up.status).toBe(201)
+    const { id } = (await up.json()) as { id: string }
+
+    const det = await apiReq('GET', `/indicios/${id}`, { token })
+    expect(det.json.hasAttachment).toBe(true)
+    expect(det.json.isOfficial).toBe(false) // redes
+
+    const dl = await app.request(`/api/indicios/${id}/file`, { headers: { Authorization: `Bearer ${token}` } })
+    expect(dl.status).toBe(200)
+    expect(Array.from(new Uint8Array(await dl.arrayBuffer()))).toEqual(Array.from(bytes))
+
+    // Al dar el visto bueno con incidente, el adjunto pasa a evidencia.
+    const ver = await apiReq('POST', `/indicios/${id}/verify`, { token, body: { incidentId: 'inc-2026-0015', promote: true } })
+    expect(ver.status).toBe(200)
+    const inc = await apiReq('GET', '/incidents/inc-2026-0015', { token })
+    const found = (inc.json.evidence as { hasFile: boolean; caption: string }[]).some(
+      (e) => e.hasFile && e.caption === 'Captura de post oficial',
+    )
+    expect(found).toBe(true)
   })
 })

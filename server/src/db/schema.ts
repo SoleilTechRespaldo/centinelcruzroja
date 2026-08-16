@@ -235,6 +235,9 @@ export const indicios = sqliteTable(
     url: text('url'),
     sender: text('sender'), // remitente del correo o perfil oficial (redes)
     externalRef: text('external_ref'), // Message-ID del correo / hash de la página → dedup
+    attachmentKey: text('attachment_key'), // archivo adjunto (captura de redes, PDF de correo)
+    attachmentName: text('attachment_name'),
+    attachmentMime: text('attachment_mime'),
     isOfficial: integer('is_official', { mode: 'boolean' }).notNull().default(true), // redes = false
     occurredAt: integer('occurred_at'), // cuándo ocurrió/publicó (si se sabe)
     receivedAt: integer('received_at').notNull().default(now), // cuándo lo captó el sistema

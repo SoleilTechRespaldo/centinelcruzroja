@@ -30,6 +30,8 @@ interface Indicio {
 interface IndicioDetail extends Indicio {
   content: string | null
   occurredAt: string | null
+  hasAttachment: boolean
+  attachmentName: string | null
 }
 interface IncidentOpt {
   id: string
@@ -133,7 +135,15 @@ async function revisarWebs() {
 
 // --- Capturar de redes (RF-27: captura humana legal) ---
 const showCapture = ref(false)
-const cap = reactive({ title: '', url: '', sender: '', content: '', sourceOrg: '', incidentId: '' as string | null })
+const cap = reactive({
+  title: '',
+  url: '',
+  sender: '',
+  content: '',
+  sourceOrg: '',
+  incidentId: '' as string | null,
+  file: null as File | null,
+})
 function openCapture() {
   cap.title = ''
   cap.url = ''
@@ -141,20 +151,35 @@ function openCapture() {
   cap.content = ''
   cap.sourceOrg = ''
   cap.incidentId = null
+  cap.file = null
   showCapture.value = true
 }
 async function capturar() {
   saving.value = true
   try {
-    await api.post('/indicios', {
-      channel: 'redes',
-      title: cap.title,
-      url: cap.url || undefined,
-      sender: cap.sender || undefined,
-      content: cap.content || undefined,
-      sourceOrg: cap.sourceOrg || undefined,
-      incidentId: cap.incidentId || undefined,
-    })
+    if (cap.file) {
+      // Con captura de pantalla: multipart (el archivo se guarda local o en R2).
+      const fd = new FormData()
+      fd.set('channel', 'redes')
+      fd.set('title', cap.title)
+      if (cap.url) fd.set('url', cap.url)
+      if (cap.sender) fd.set('sender', cap.sender)
+      if (cap.content) fd.set('content', cap.content)
+      if (cap.sourceOrg) fd.set('sourceOrg', cap.sourceOrg)
+      if (cap.incidentId) fd.set('incidentId', cap.incidentId)
+      fd.set('file', cap.file)
+      await api.postForm('/indicios/upload', fd)
+    } else {
+      await api.post('/indicios', {
+        channel: 'redes',
+        title: cap.title,
+        url: cap.url || undefined,
+        sender: cap.sender || undefined,
+        content: cap.content || undefined,
+        sourceOrg: cap.sourceOrg || undefined,
+        incidentId: cap.incidentId || undefined,
+      })
+    }
     $q.notify({ type: 'positive', message: 'Indicio capturado', caption: 'Queda «por verificar», fuera del BIE.', icon: 'share' })
     showCapture.value = false
     if (tab.value === 'por_verificar') await load()
@@ -162,6 +187,23 @@ async function capturar() {
     $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo capturar' })
   } finally {
     saving.value = false
+  }
+}
+
+// Descarga el adjunto de un indicio (con autenticación).
+async function descargarAdjunto(id: string, name: string | null) {
+  try {
+    const blob = await api.getBlob(`/indicios/${id}/file`)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name || 'adjunto'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo descargar el adjunto' })
   }
 }
 
@@ -365,6 +407,9 @@ async function openDetail(it: Indicio) {
             <q-input v-model="cap.sender" label="Perfil oficial (ej. @Senapred)" outlined dense />
             <q-input v-model="cap.sourceOrg" label="Organismo" outlined dense />
             <q-input v-model="cap.content" label="Detalle / cita" outlined dense type="textarea" autogrow />
+            <q-file v-model="cap.file" label="Captura de pantalla (opcional)" outlined dense clearable accept="image/*,.pdf">
+              <template #prepend><q-icon name="attach_file" /></template>
+            </q-file>
             <q-select
               v-model="cap.incidentId"
               :options="incidentOptions"
@@ -456,6 +501,11 @@ async function openDetail(it: Indicio) {
           </div>
           <a v-if="detail.url" :href="detail.url" target="_blank" rel="noopener noreferrer" class="link">Abrir enlace ↗</a>
           <p v-if="detail.content" class="ind-content">{{ detail.content }}</p>
+          <div v-if="detail.hasAttachment">
+            <button type="button" class="link" @click="descargarAdjunto(detail.id, detail.attachmentName)">
+              descargar adjunto<span v-if="detail.attachmentName"> ({{ detail.attachmentName }})</span>
+            </button>
+          </div>
           <div v-if="detail.reviewer" class="text-caption text-muted">
             Revisado por {{ detail.reviewer }}<span v-if="detail.reviewedAt"> · {{ detail.reviewedAt }}</span>
             <span v-if="detail.reviewNote"> — “{{ detail.reviewNote }}”</span>

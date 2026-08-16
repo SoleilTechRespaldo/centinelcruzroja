@@ -1,6 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
+import { putObject, getObject } from '../lib/storage'
 import { fmtDateTime } from '../lib/format'
 import type { CreateIndicioInput, VerifyIndicioInput, DiscardIndicioInput } from '../types'
 
@@ -8,12 +9,18 @@ import type { CreateIndicioInput, VerifyIndicioInput, DiscardIndicioInput } from
 // revisión humana. Nada entra al BIE sin visto bueno; al verificar con un
 // incidente se puede "promover" a fuente (procedencia) de ese incidente.
 
-const { indicios, incidents, sources, sourceOrgs, users, auditLog } = schema
+const { indicios, incidents, sources, sourceOrgs, evidence, users, auditLog } = schema
 
 type Channel = 'correo' | 'web' | 'redes' | 'manual'
 type Status = 'por_verificar' | 'verificado' | 'descartado'
+export interface IndicioAttachment {
+  bytes: Uint8Array
+  fileName: string
+  mimeType: string
+}
 
 const nowSec = () => Math.floor(Date.now() / 1000)
+const safeName = (s: string): string => (s || 'archivo').replace(/[^\w.-]+/g, '_').slice(-80)
 const parseDate = (s?: string): number | null => {
   if (!s) return null
   const t = Date.parse(s)
@@ -85,6 +92,8 @@ export async function getIndicio(id: string) {
       title: indicios.title,
       summary: indicios.summary,
       content: indicios.content,
+      attachmentKey: indicios.attachmentKey,
+      attachmentName: indicios.attachmentName,
       url: indicios.url,
       sender: indicios.sender,
       isOfficial: indicios.isOfficial,
@@ -112,6 +121,8 @@ export async function getIndicio(id: string) {
     title: r.title,
     summary: r.summary ?? null,
     content: r.content ?? null,
+    hasAttachment: !!r.attachmentKey,
+    attachmentName: r.attachmentName ?? null,
     url: r.url ?? null,
     sender: r.sender ?? null,
     isOfficial: r.isOfficial,
@@ -139,6 +150,7 @@ export async function ingestIndicio(data: {
   externalRef?: string | null
   occurredAt?: number | null
   incidentId?: string | null
+  attachment?: IndicioAttachment | null
 }): Promise<{ id: string; deduped: boolean }> {
   if (data.externalRef) {
     const existing = await db
@@ -146,9 +158,15 @@ export async function ingestIndicio(data: {
       .from(indicios)
       .where(and(eq(indicios.channel, data.channel), eq(indicios.externalRef, data.externalRef)))
       .limit(1)
-    if (existing[0]) return { id: existing[0].id, deduped: true }
+    if (existing[0]) return { id: existing[0].id, deduped: true } // sin guardar el adjunto de nuevo
   }
   const id = randomUUID()
+  let att: { key: string; name: string; mime: string } | null = null
+  if (data.attachment) {
+    const key = `indicios/${id}-${safeName(data.attachment.fileName)}`
+    await putObject(key, data.attachment.bytes, data.attachment.mimeType)
+    att = { key, name: data.attachment.fileName, mime: data.attachment.mimeType }
+  }
   await db.insert(indicios).values({
     id,
     channel: data.channel,
@@ -162,8 +180,67 @@ export async function ingestIndicio(data: {
     externalRef: data.externalRef ?? null,
     occurredAt: data.occurredAt ?? null,
     incidentId: data.incidentId ?? null,
+    attachmentKey: att?.key ?? null,
+    attachmentName: att?.name ?? null,
+    attachmentMime: att?.mime ?? null,
   })
   return { id, deduped: false }
+}
+
+// Captura manual con archivo (redes: enlace + captura de pantalla). Reusa ingestIndicio.
+export async function createIndicioWithFile(
+  input: {
+    channel: Channel
+    title: string
+    content?: string
+    url?: string
+    sender?: string
+    sourceOrg?: string
+    isOfficial?: boolean
+    incidentId?: string
+  },
+  file: IndicioAttachment | null,
+  userId: string,
+): Promise<{ id: string }> {
+  const sourceOrgId = await resolveOrgId(input.sourceOrg)
+  const isOfficial = input.isOfficial ?? input.channel !== 'redes'
+  const { id } = await ingestIndicio({
+    channel: input.channel,
+    title: input.title,
+    content: input.content ?? null,
+    url: input.url ?? null,
+    sender: input.sender ?? null,
+    sourceOrgId,
+    isOfficial,
+    incidentId: input.incidentId ?? null,
+    attachment: file,
+  })
+  await db
+    .insert(auditLog)
+    .values({
+      id: randomUUID(),
+      userId,
+      action: 'indicio.create',
+      entityType: 'indicio',
+      entityId: id,
+      details: { channel: input.channel, conArchivo: !!file },
+    })
+    .catch(() => {})
+  return { id }
+}
+
+// Descarga del archivo adjunto de un indicio.
+export async function getIndicioFile(indicioId: string): Promise<{ fileName: string; mimeType: string; bytes: Uint8Array } | null> {
+  const rows = await db
+    .select({ key: indicios.attachmentKey, name: indicios.attachmentName, mime: indicios.attachmentMime })
+    .from(indicios)
+    .where(eq(indicios.id, indicioId))
+    .limit(1)
+  const r = rows[0]
+  if (!r || !r.key) return null
+  const bytes = await getObject(r.key)
+  if (!bytes) return null
+  return { fileName: r.name ?? 'adjunto', mimeType: r.mime ?? 'application/octet-stream', bytes }
 }
 
 // Alta manual (captura legal de redes o indicio a mano).
@@ -227,6 +304,22 @@ export async function verifyIndicio(
       capturedAt: ind.occurredAt ?? ind.receivedAt,
       createdBy: userId,
     })
+    // Si el indicio traía un adjunto (captura de redes, PDF de correo), pasa a evidencia.
+    if (ind.attachmentKey) {
+      const kind = ind.attachmentMime?.startsWith('image/') ? 'image' : ind.attachmentMime === 'application/pdf' ? 'pdf' : 'doc'
+      await db.insert(evidence).values({
+        id: randomUUID(),
+        incidentId,
+        sourceId,
+        kind,
+        fileKey: ind.attachmentKey,
+        fileName: ind.attachmentName,
+        mimeType: ind.attachmentMime,
+        caption: ind.title,
+        sourceText: input.sourceOrg ?? ind.sender ?? 'Indicio verificado',
+        createdBy: userId,
+      })
+    }
   }
   await db
     .update(indicios)
