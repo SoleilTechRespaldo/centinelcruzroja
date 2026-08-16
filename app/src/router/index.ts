@@ -16,6 +16,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'incidents', name: 'incidents', component: () => import('@/features/incidents/IncidentsPage.vue') },
       { path: 'incidents/new', name: 'incident-new', component: () => import('@/features/incidents/NewIncidentPage.vue') },
       { path: 'incidents/:id', name: 'incident-detail', component: () => import('@/features/incidents/IncidentDetailPage.vue') },
+      { path: 'bandeja', name: 'bandeja', component: () => import('@/features/indicios/BandejaPage.vue') },
       { path: 'bie', name: 'bie', component: () => import('@/features/bie/GenerateBiePage.vue') },
       { path: 'bie/preview', name: 'bie-preview', component: () => import('@/features/bie/BiePreviewPage.vue') },
       { path: 'expediente', name: 'expediente', component: () => import('@/features/expediente/ExpedientePage.vue') },

@@ -13,6 +13,7 @@ const session = useSessionStore()
 const nav: NavItem[] = [
   { section: 'Monitoreo' },
   { label: 'Incidentes', to: '/incidents', icon: 'warning_amber' },
+  { label: 'Bandeja', to: '/bandeja', icon: 'inbox' },
   { label: 'Generar BIE', to: '/bie', icon: 'description' },
   { label: 'Expediente', to: '/expediente', icon: 'folder_open' },
   { section: 'Análisis' },

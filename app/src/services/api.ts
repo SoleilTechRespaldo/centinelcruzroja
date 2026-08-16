@@ -33,6 +33,8 @@ const MESSAGES: Record<string, string> = {
   no_puedes_cambiar_tu_propio_rol_o_estado: 'No puedes cambiar tu propio rol o estado.',
   sin_conexion: 'No se pudo conectar con el servidor. ¿Está corriendo el backend?',
   pdf_no_disponible: 'El servidor no puede generar PDF (falta LibreOffice o Word). Descarga el Word y conviértelo tú.',
+  incidente_requerido: 'Para agregarlo como fuente, elige un incidente.',
+  incidente_no_encontrado: 'El incidente elegido no existe.',
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
