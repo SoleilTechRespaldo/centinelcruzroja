@@ -2,7 +2,7 @@
 // Refleja el ERD (docs/05-BASE-DE-DATOS.md). La creación real de la BD Turso
 // (provisión + migraciones) se deja para el final; aquí va solo el "molde".
 
-import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 const now = sql`(unixepoch())`
@@ -17,6 +17,18 @@ const timelineTypeEnum = ['alert_change', 'source', 'note', 'action'] as const
 const bieStatusEnum = ['draft', 'approved', 'exported'] as const
 const indicioChannelEnum = ['correo', 'web', 'redes', 'manual'] as const
 const indicioStatusEnum = ['por_verificar', 'verificado', 'descartado'] as const
+const markerTypeEnum = [
+  'deslizamiento',
+  'socavon',
+  'corte_agua',
+  'corte_luz',
+  'corte_redes',
+  'incendio',
+  'inundacion',
+  'ruta_cortada',
+  'albergue',
+  'otro',
+] as const
 
 // --- Usuarios (auth/roles; sesiones las gestiona la librería de auth) ---
 export const users = sqliteTable('users', {
@@ -254,6 +266,24 @@ export const indicios = sqliteTable(
     // Dedup por canal: dos capturas del mismo correo/página no se duplican.
     uniqueIndex('idx_indicios_dedup').on(t.channel, t.externalRef),
   ],
+)
+
+// --- Afectaciones georreferenciadas (capa del mapa operativo) ---
+export const mapMarkers = sqliteTable(
+  'map_markers',
+  {
+    id: text('id').primaryKey(),
+    incidentId: text('incident_id').references(() => incidents.id),
+    type: text('type', { enum: markerTypeEnum }).notNull(),
+    title: text('title').notNull(),
+    description: text('description'),
+    lat: real('lat').notNull(),
+    lng: real('lng').notNull(),
+    createdBy: text('created_by').references(() => users.id),
+    createdAt: integer('created_at').notNull().default(now),
+    deletedAt: integer('deleted_at'),
+  },
+  (t) => [index('idx_markers_incident').on(t.incidentId), index('idx_markers_type').on(t.type)],
 )
 
 // --- Bitácora (append-only; el backend solo inserta) ---

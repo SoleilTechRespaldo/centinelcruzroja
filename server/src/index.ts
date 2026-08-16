@@ -11,6 +11,7 @@ import dashboard from './routes/dashboard'
 import catalogs from './routes/catalogs'
 import indicios from './routes/indicios'
 import evidence from './routes/evidence'
+import mapMarkers from './routes/map'
 import { storageBackend } from './lib/storage'
 
 // App Hono. Middlewares transversales + manejo de errores. Autorización por rol
@@ -40,6 +41,7 @@ api.route('/dashboard', dashboard)
 api.route('/catalogs', catalogs)
 api.route('/indicios', indicios)
 api.route('/evidence', evidence)
+api.route('/markers', mapMarkers)
 app.route('/api', api)
 
 app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))

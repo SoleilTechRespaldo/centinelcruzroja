@@ -118,3 +118,28 @@ export const discardIndicioSchema = z.object({
   note: z.string().optional(),
 })
 export type DiscardIndicioInput = z.infer<typeof discardIndicioSchema>
+
+// --- Afectaciones del mapa operativo (RF-28a) ---
+export const markerTypeSchema = z.enum([
+  'deslizamiento',
+  'socavon',
+  'corte_agua',
+  'corte_luz',
+  'corte_redes',
+  'incendio',
+  'inundacion',
+  'ruta_cortada',
+  'albergue',
+  'otro',
+])
+export type MarkerType = z.infer<typeof markerTypeSchema>
+
+export const createMarkerSchema = z.object({
+  type: markerTypeSchema,
+  title: z.string().trim().min(1, 'Falta el título'),
+  description: z.string().optional(),
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  incidentId: z.string().optional(),
+})
+export type CreateMarkerInput = z.infer<typeof createMarkerSchema>
