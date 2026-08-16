@@ -73,7 +73,10 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   y **aviso de fuente caída** si un feed cambia; botón "Revisar webs" (admin).
 - **2.4 Adjuntos (RF-27)** — captura de redes con **captura de pantalla** y adjunto de los
   correos (PDF oficial); al **verificar** con incidente, el adjunto pasa a **evidencia**.
-- **Sigue:** 2.5 mapa operativo por capas → 2.6 IA (RF-18).
+- **2.5 Mapa operativo** — capa de **afectaciones georreferenciadas** por tipo (deslizamiento,
+  socavón, cortes de agua/luz/redes, incendio, inundación, ruta cortada, albergue), con
+  íconos, **filtro de capas** y agregar/eliminar por clic. Verificado en navegador.
+- **Sigue:** 2.6 IA (RF-18) — último de la Etapa 2, opcional (pago por uso).
 
 ### ▶ Pendiente (orden sugerido)
 9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).

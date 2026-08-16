@@ -153,10 +153,11 @@ emitir alertas hacia afuera; inventar datos.
 
 > **Estado al 2026-08-16:** ✅ **2.0 (bandeja)**, ✅ **2.1 (correo IMAP)**, ✅ **2.2
 > (almacenamiento local/R2 + evidencia real, RF-09)**, ✅ **2.3 (webs oficiales RSS/Atom,
-> RF-20)** y ✅ **2.4 (adjuntos: captura legal de redes + PDF de correo, RF-27)**
-> construidas y probadas (32 pruebas); 2.0 verificada en navegador. Los canales quedan
-> **desactivados** hasta cargar credenciales/feeds en el `.env` (`IMAP_MAILBOXES`,
-> `WEB_SOURCES`, `R2_*`); mientras, todo funciona local. **Sigue: 2.5 mapa operativo.**
+> RF-20)**, ✅ **2.4 (adjuntos: captura legal de redes + PDF de correo, RF-27)** y
+> ✅ **2.5 (mapa operativo por capas de afectaciones)** construidas y probadas (35 pruebas);
+> 2.0 y 2.5 verificadas en navegador. Los canales quedan **desactivados** hasta cargar
+> credenciales/feeds en el `.env` (`IMAP_MAILBOXES`, `WEB_SOURCES`, `R2_*`); mientras, todo
+> funciona local. **Sigue: 2.6 IA (RF-18) — último de la Etapa 2, opcional (pago por uso).**
 
 Esfuerzo relativo (S = chico, M = medio, L = grande). Son **estimaciones**, no fechas.
 
