@@ -111,6 +111,26 @@ async function revisarCorreo() {
   }
 }
 
+const checkingWeb = ref(false)
+// Sondear las webs oficiales ahora (admin). Requiere WEB_SOURCES en el servidor.
+async function revisarWebs() {
+  checkingWeb.value = true
+  try {
+    const r = await api.post<{ created: number; deduped: number; sources: number; fallos: number }>('/indicios/ingest/web', {})
+    $q.notify({
+      type: 'positive',
+      message: `Webs revisadas: ${r.created} nuevo(s)`,
+      caption: `${r.sources} fuente(s) · ${r.fallos} con problemas`,
+      icon: 'public',
+    })
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'warning', message: e instanceof ApiError ? e.message : 'No se pudo revisar las webs' })
+  } finally {
+    checkingWeb.value = false
+  }
+}
+
 // --- Capturar de redes (RF-27: captura humana legal) ---
 const showCapture = ref(false)
 const cap = reactive({ title: '', url: '', sender: '', content: '', sourceOrg: '', incidentId: '' as string | null })
@@ -234,6 +254,16 @@ async function openDetail(it: Indicio) {
         :loading="checking"
         class="q-mr-sm"
         @click="revisarCorreo"
+      />
+      <q-btn
+        v-if="session.isAdmin"
+        outline
+        size="sm"
+        icon="public"
+        label="Revisar webs"
+        :loading="checkingWeb"
+        class="q-mr-sm"
+        @click="revisarWebs"
       />
       <q-btn v-if="canEdit" color="primary" unelevated size="sm" icon="share" label="Capturar de redes" @click="openCapture" />
     </div>

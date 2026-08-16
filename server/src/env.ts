@@ -14,6 +14,10 @@ const schema = z.object({
   // Ej: [{"host":"imap.gmail.com","user":"x@gmail.com","password":"app-pass","label":"SENAPRED"}]
   IMAP_MAILBOXES: z.string().default(''),
   IMAP_POLL_SECONDS: z.coerce.number().int().positive().default(300),
+  // Monitoreo de webs oficiales (RF-20). JSON con feeds RSS/Atom; vacío = desactivado.
+  // Ej: [{"url":"https://www.meteochile.gob.cl/rss/avisos.xml","label":"DMC Avisos","org":"DMC"}]
+  WEB_SOURCES: z.string().default(''),
+  WEB_POLL_SECONDS: z.coerce.number().int().positive().default(900),
   // Almacenamiento de archivos (evidencias/adjuntos). Carpeta local por defecto;
   // si se definen las 4 variables R2, se usa Cloudflare R2 (mismo código).
   STORAGE_DIR: z.string().default('./storage'),

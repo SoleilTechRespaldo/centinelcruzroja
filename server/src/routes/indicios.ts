@@ -5,6 +5,7 @@ import { createIndicioSchema, verifyIndicioSchema, discardIndicioSchema } from '
 import { authMiddleware, requireRole, type HonoEnv } from '../lib/auth'
 import { listIndicios, getIndicio, createIndicio, verifyIndicio, discardIndicio } from '../services/indicios'
 import { runEmailIngestionOnce } from '../lib/emailIngest'
+import { runWebIngestionOnce } from '../lib/webIngest'
 
 // Bandeja de indicios. Leer: cualquier autenticado. Crear/verificar/descartar: operator+.
 const EDITORES = ['operator', 'coordinator', 'admin'] as const
@@ -24,6 +25,13 @@ r.get('/', zValidator('query', listQuery), async (c) => c.json({ items: await li
 r.post('/ingest/email', requireRole('admin'), async (c) => {
   const res = await runEmailIngestionOnce()
   if (res.mailboxes === 0) return c.json({ error: 'correo_no_configurado' }, 400)
+  return c.json(res)
+})
+
+// Sondear las webs oficiales ahora (RF-20). Solo admin.
+r.post('/ingest/web', requireRole('admin'), async (c) => {
+  const res = await runWebIngestionOnce()
+  if (res.sources === 0) return c.json({ error: 'webs_no_configuradas' }, 400)
   return c.json(res)
 })
 
