@@ -69,7 +69,11 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - **2.2 Almacenamiento + evidencia real (RF-09)** — abstracción `storage` (carpeta local
   por defecto, **Cloudflare R2** con las 4 variables `R2_*`); subir/descargar el archivo
   real de evidencia (`/incidents/:id/evidence/upload`, `/evidence/:id/file`).
-- **Sigue:** 2.3 webs oficiales (RF-20) → 2.4 redes → 2.5 mapa → 2.6 IA.
+- **2.3 Webs oficiales (RF-20)** — conectores **RSS/Atom** (`WEB_SOURCES`), dedup por guid,
+  y **aviso de fuente caída** si un feed cambia; botón "Revisar webs" (admin).
+- **2.4 Adjuntos (RF-27)** — captura de redes con **captura de pantalla** y adjunto de los
+  correos (PDF oficial); al **verificar** con incidente, el adjunto pasa a **evidencia**.
+- **Sigue:** 2.5 mapa operativo por capas → 2.6 IA (RF-18).
 
 ### ▶ Pendiente (orden sugerido)
 9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).
