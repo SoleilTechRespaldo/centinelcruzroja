@@ -172,15 +172,33 @@ topable) y **hosting** si quieres 24/7 real (hay capas gratis con límites; a co
 
 ---
 
-## 10. Decisiones que necesito de ti
+## 10. Decisiones
 
-1. ¿Confirmas el **orden** de arriba (Correo → Webs → Redes → Mapa → IA)?
-2. **Hosting:** ¿lo quieres **24/7** (busca solo aunque tu PC esté apagado) o basta
-   con que **revise cuando el equipo lo tiene abierto**? Esto define si buscamos host.
-3. **Buzón de correo:** ¿creamos un Gmail dedicado para el sistema, o usas uno que ya
-   recibe SENAPRED y lo reenvía ahí?
-4. **Aviso interno** al equipo cuando entra un indicio importante: ¿sí o no?
-5. **IA:** ¿la dejamos para el final (recomendado) y decides con el volumen real?
+**Resueltas (2026-08-15):**
+- **Hosting:** el servicio vivirá **siempre encendido en la nube** (SaaS), con la BD
+  en **Turso** — **no** depende del PC de nadie; el equipo entra por internet cuando
+  quiera. Nicolás gestiona **hosting + dominio + Turso** al concretar la empresa.
+  ⇒ El diseño de ingesta asume **24/7** (sin la salvedad de “solo cuando el PC está
+  encendido”).
+- **Orden:** Correo → Webs → Redes (legal) → Mapa → IA. Confirmado.
+- **Buzón:** ya existen **2 correos** que reciben SENAPRED; se conectan por **IMAP**
+  (solo lectura) y el sistema **corrobora** las cifras, **no las duplica**.
+
+**Pendientes:**
+- **Aviso interno** al equipo cuando entra un indicio importante: ¿sí o no?
+- **IA (RF-18):** dejarla para el final (recomendado) y decidir con el volumen real.
+
+## 11. Dos vías en paralelo (no se bloquean)
+
+- **Vía A — desarrollo (Claude, ahora):** construir la ingesta. **No depende** de que
+  la empresa esté lista: se construye y prueba **local**, y al haber hosting + Turso,
+  **se despliega igual** (mismo código — ese fue el diseño desde el inicio).
+- **Vía B — empresa (Nicolás, cuando pueda):** constituir la empresa y contratar
+  **hosting + dominio + Turso** (+ servicios). Al estar, se **despliega** la Vía A.
+
+> Credenciales: las **direcciones** de correo se pueden compartir; las **claves**
+> (contraseñas de aplicación de Gmail) van directo al archivo `.env` del servidor
+> (que **no** se sube al repo), **nunca por chat**.
 
 > Relacionado: [`01-REQUERIMIENTOS.md`](01-REQUERIMIENTOS.md) (RF-06/18/20/26/27),
 > [`DECISIONES.md`](DECISIONES.md) (ingesta y redes, 2026-08-06) y
