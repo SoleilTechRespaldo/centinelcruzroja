@@ -35,6 +35,7 @@ const MESSAGES: Record<string, string> = {
   pdf_no_disponible: 'El servidor no puede generar PDF (falta LibreOffice o Word). Descarga el Word y conviértelo tú.',
   incidente_requerido: 'Para agregarlo como fuente, elige un incidente.',
   incidente_no_encontrado: 'El incidente elegido no existe.',
+  correo_no_configurado: 'El correo aún no está configurado (IMAP_MAILBOXES en el servidor).',
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {

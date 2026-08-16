@@ -90,6 +90,26 @@ function changeTab(s: Status) {
 
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
 const saving = ref(false)
+const checking = ref(false)
+
+// Revisar los buzones de correo ahora (admin). Requiere IMAP_MAILBOXES en el servidor.
+async function revisarCorreo() {
+  checking.value = true
+  try {
+    const r = await api.post<{ created: number; deduped: number; mailboxes: number }>('/indicios/ingest/email', {})
+    $q.notify({
+      type: 'positive',
+      message: `Correo revisado: ${r.created} nuevo(s)`,
+      caption: `${r.mailboxes} buzón(es) · ${r.deduped} repetido(s)`,
+      icon: 'mail',
+    })
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'warning', message: e instanceof ApiError ? e.message : 'No se pudo revisar el correo' })
+  } finally {
+    checking.value = false
+  }
+}
 
 // --- Capturar de redes (RF-27: captura humana legal) ---
 const showCapture = ref(false)
@@ -205,6 +225,16 @@ async function openDetail(it: Indicio) {
     <div class="row items-center q-mb-xs">
       <h1 class="text-h6">Bandeja de indicios</h1>
       <q-space />
+      <q-btn
+        v-if="session.isAdmin"
+        outline
+        size="sm"
+        icon="mail"
+        label="Revisar correo"
+        :loading="checking"
+        class="q-mr-sm"
+        @click="revisarCorreo"
+      />
       <q-btn v-if="canEdit" color="primary" unelevated size="sm" icon="share" label="Capturar de redes" @click="openCapture" />
     </div>
     <div class="text-caption text-muted q-mb-md">

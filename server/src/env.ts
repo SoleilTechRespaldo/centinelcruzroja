@@ -10,6 +10,10 @@ const schema = z.object({
   TURSO_AUTH_TOKEN: z.string().optional(),
   // Secreto para firmar los JWT. En producción DEBE definirse uno propio.
   AUTH_SECRET: z.string().default('dev-secret-cambiar-en-produccion'),
+  // Ingesta por correo (RF-26). JSON con los buzones IMAP a vigilar; vacío = desactivado.
+  // Ej: [{"host":"imap.gmail.com","user":"x@gmail.com","password":"app-pass","label":"SENAPRED"}]
+  IMAP_MAILBOXES: z.string().default(''),
+  IMAP_POLL_SECONDS: z.coerce.number().int().positive().default(300),
 })
 
 export const env = schema.parse(process.env)
