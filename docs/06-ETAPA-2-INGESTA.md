@@ -151,13 +151,14 @@ emitir alertas hacia afuera; inventar datos.
 
 ## 9. Fases, esfuerzo y costos
 
-> **Estado al 2026-08-16:** ✅ **2.0 (bandeja)**, ✅ **2.1 (correo IMAP)**, ✅ **2.2
-> (almacenamiento local/R2 + evidencia real, RF-09)**, ✅ **2.3 (webs oficiales RSS/Atom,
-> RF-20)**, ✅ **2.4 (adjuntos: captura legal de redes + PDF de correo, RF-27)** y
-> ✅ **2.5 (mapa operativo por capas de afectaciones)** construidas y probadas (35 pruebas);
-> 2.0 y 2.5 verificadas en navegador. Los canales quedan **desactivados** hasta cargar
-> credenciales/feeds en el `.env` (`IMAP_MAILBOXES`, `WEB_SOURCES`, `R2_*`); mientras, todo
-> funciona local. **Sigue: 2.6 IA (RF-18) — último de la Etapa 2, opcional (pago por uso).**
+> **Estado al 2026-09-15: ETAPA 2 COMPLETA (2.0–2.6).** ✅ 2.0 bandeja · 2.1 correo IMAP ·
+> 2.2 almacenamiento local/R2 + evidencia (RF-09) · 2.3 webs oficiales RSS/Atom (RF-20) ·
+> 2.4 adjuntos redes/correo (RF-27) · 2.5 mapa operativo · **2.6 IA de apoyo intercambiable
+> (RF-18)**. **40 pruebas verdes**; 2.0 y 2.5 verificadas en navegador. Todo funciona local;
+> los canales y la IA quedan **apagados** hasta cargar `.env` (`IMAP_MAILBOXES`,
+> `WEB_SOURCES`, `R2_*`, `AI_PROVIDER`). La **IA es US$0 por defecto** (apagada; con Ollama
+> local sigue en $0; opción hosteada/pago se enciende con una variable).
+> **Sigue: producción — GitHub → Turso → R2 → hosting Node + dominio.**
 
 Esfuerzo relativo (S = chico, M = medio, L = grande). Son **estimaciones**, no fechas.
 

@@ -76,7 +76,10 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 - **2.5 Mapa operativo** — capa de **afectaciones georreferenciadas** por tipo (deslizamiento,
   socavón, cortes de agua/luz/redes, incendio, inundación, ruta cortada, albergue), con
   íconos, **filtro de capas** y agregar/eliminar por clic. Verificado en navegador.
-- **Sigue:** 2.6 IA (RF-18) — último de la Etapa 2, opcional (pago por uso).
+- **2.6 IA de apoyo (RF-18)** — resume/clasifica indicios como **sugerencia** (revisión
+  humana); **intercambiable** por env (`AI_PROVIDER`): **apagada = US$0**, **Ollama local
+  gratis**, o API hosteada (Groq/…). Botón "Analizar con IA" en la bandeja.
+- **✅ ETAPA 2 COMPLETA (40 pruebas).** Sigue: **producción** (GitHub → Turso → R2 → hosting).
 
 ### ▶ Pendiente (orden sugerido)
 9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).
