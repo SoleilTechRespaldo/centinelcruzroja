@@ -13,6 +13,7 @@ import indicios from './routes/indicios'
 import evidence from './routes/evidence'
 import mapMarkers from './routes/map'
 import { storageBackend } from './lib/storage'
+import { aiProvider } from './lib/ai'
 
 // App Hono. Middlewares transversales + manejo de errores. Autorización por rol
 // en cada ruta (en el backend, porque SQLite no tiene RLS).
@@ -28,6 +29,7 @@ app.get('/health', (c) =>
     service: 'centinela-api',
     db: env.TURSO_DATABASE_URL.startsWith('file:') ? 'local (SQLite)' : 'turso',
     storage: storageBackend(),
+    ai: aiProvider(),
     ts: new Date().toISOString(),
   }),
 )

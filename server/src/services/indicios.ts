@@ -2,6 +2,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { putObject, getObject } from '../lib/storage'
+import { analyzeText, isAiEnabled } from '../lib/ai'
 import { fmtDateTime } from '../lib/format'
 import type { CreateIndicioInput, VerifyIndicioInput, DiscardIndicioInput } from '../types'
 
@@ -365,4 +366,36 @@ export async function discardIndicio(id: string, input: DiscardIndicioInput, use
     })
     .catch(() => {})
   return { id }
+}
+
+// IA de apoyo (RF-18): resume/clasifica un indicio. Guarda el resumen y devuelve la
+// SUGERENCIA (tipo/comunas) para revisión humana; nunca la aplica ni publica sola.
+export async function analyzeIndicio(
+  id: string,
+  userId: string,
+): Promise<{ summary: string; tipo: string | null; comunas: string[] } | { error: string } | undefined> {
+  const rows = await db
+    .select({ id: indicios.id, title: indicios.title, content: indicios.content })
+    .from(indicios)
+    .where(eq(indicios.id, id))
+    .limit(1)
+  const ind = rows[0]
+  if (!ind) return undefined
+  if (!isAiEnabled()) return { error: 'ia_no_configurada' }
+  let res: Awaited<ReturnType<typeof analyzeText>>
+  try {
+    res = await analyzeText({ title: ind.title, content: ind.content ?? '' })
+  } catch {
+    return { error: 'ia_sin_respuesta' }
+  }
+  if (!res) return { error: 'ia_sin_respuesta' }
+  await db
+    .update(indicios)
+    .set({ summary: res.resumen || null })
+    .where(eq(indicios.id, id))
+  await db
+    .insert(auditLog)
+    .values({ id: randomUUID(), userId, action: 'indicio.analyze', entityType: 'indicio', entityId: id })
+    .catch(() => {})
+  return { summary: res.resumen, tipo: res.tipo, comunas: res.comunas }
 }

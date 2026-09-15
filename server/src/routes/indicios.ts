@@ -11,6 +11,7 @@ import {
   getIndicioFile,
   verifyIndicio,
   discardIndicio,
+  analyzeIndicio,
 } from '../services/indicios'
 import { runEmailIngestionOnce } from '../lib/emailIngest'
 import { runWebIngestionOnce } from '../lib/webIngest'
@@ -105,6 +106,14 @@ r.post('/:id/verify', requireRole(...EDITORES), zValidator('json', verifyIndicio
 r.post('/:id/discard', requireRole(...EDITORES), zValidator('json', discardIndicioSchema), async (c) => {
   const res = await discardIndicio(c.req.param('id'), c.req.valid('json'), c.get('user').id)
   if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  return c.json(res)
+})
+
+// IA de apoyo: resume/clasifica el indicio (sugerencia para revisión humana).
+r.post('/:id/analyze', requireRole(...EDITORES), async (c) => {
+  const res = await analyzeIndicio(c.req.param('id'), c.get('user').id)
+  if (!res) return c.json({ error: 'no_encontrado' }, 404)
+  if ('error' in res) return c.json({ error: res.error }, res.error === 'ia_no_configurada' ? 400 : 502)
   return c.json(res)
 })
 

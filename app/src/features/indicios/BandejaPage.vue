@@ -270,14 +270,32 @@ async function descartar() {
 // --- Ver detalle ---
 const showDetail = ref(false)
 const detail = ref<IndicioDetail | null>(null)
+const analyzing = ref(false)
+const analysis = ref<{ summary: string; tipo: string | null; comunas: string[] } | null>(null)
 async function openDetail(it: Indicio) {
   showDetail.value = true
   detail.value = null
+  analysis.value = null
   try {
     detail.value = await api.get<IndicioDetail>(`/indicios/${it.id}`)
   } catch (e) {
     $q.notify({ type: 'negative', message: e instanceof ApiError ? e.message : 'No se pudo cargar el detalle' })
     showDetail.value = false
+  }
+}
+// IA de apoyo: resume/clasifica el indicio (sugerencia, no se aplica sola).
+async function analizar() {
+  if (!detail.value) return
+  analyzing.value = true
+  try {
+    const r = await api.post<{ summary: string; tipo: string | null; comunas: string[] }>(`/indicios/${detail.value.id}/analyze`, {})
+    analysis.value = r
+    detail.value.summary = r.summary
+    await load()
+  } catch (e) {
+    $q.notify({ type: 'warning', message: e instanceof ApiError ? e.message : 'No se pudo analizar', timeout: 6000 })
+  } finally {
+    analyzing.value = false
   }
 }
 </script>
@@ -506,6 +524,31 @@ async function openDetail(it: Indicio) {
               descargar adjunto<span v-if="detail.attachmentName"> ({{ detail.attachmentName }})</span>
             </button>
           </div>
+          <q-separator class="q-my-sm" />
+          <div class="row items-center">
+            <div class="text-caption text-weight-medium">Apoyo IA</div>
+            <q-space />
+            <q-btn
+              v-if="canEdit"
+              dense
+              flat
+              size="sm"
+              color="primary"
+              icon="auto_awesome"
+              :label="analysis || detail.summary ? 'Reanalizar' : 'Analizar con IA'"
+              :loading="analyzing"
+              @click="analizar"
+            />
+          </div>
+          <div v-if="analysis || detail.summary" class="ai-box">
+            <div class="text-body2">{{ analysis?.summary || detail.summary }}</div>
+            <div v-if="analysis && (analysis.tipo || analysis.comunas.length)" class="q-mt-xs">
+              <q-chip v-if="analysis.tipo" dense size="sm" color="blue-1" text-color="blue-9" icon="category">{{ analysis.tipo }}</q-chip>
+              <q-chip v-for="c in analysis.comunas" :key="c" dense size="sm" color="grey-3" icon="place">{{ c }}</q-chip>
+            </div>
+            <div class="text-caption text-muted q-mt-xs">Sugerencia de IA — revísala antes de usarla.</div>
+          </div>
+
           <div v-if="detail.reviewer" class="text-caption text-muted">
             Revisado por {{ detail.reviewer }}<span v-if="detail.reviewedAt"> · {{ detail.reviewedAt }}</span>
             <span v-if="detail.reviewNote"> — “{{ detail.reviewNote }}”</span>
@@ -530,6 +573,13 @@ async function openDetail(it: Indicio) {
   white-space: pre-wrap;
   margin: 8px 0 0;
   color: var(--c-text2);
+}
+.ai-box {
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-red);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--c-bg2, #f7f8fa);
 }
 .sep {
   color: var(--c-muted);

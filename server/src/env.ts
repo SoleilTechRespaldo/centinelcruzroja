@@ -25,6 +25,14 @@ const schema = z.object({
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
+  // IA de apoyo (RF-18). Vacío = APAGADA (US$0, no llama a nada). 'ollama' = local
+  // gratis; 'openai' = cualquier API compatible OpenAI (Groq/OpenRouter/etc.).
+  AI_PROVIDER: z.string().default(''),
+  OLLAMA_URL: z.string().default('http://localhost:11434'),
+  OLLAMA_MODEL: z.string().default('llama3.2'),
+  AI_BASE_URL: z.string().optional(), // ej. https://api.groq.com/openai/v1
+  AI_API_KEY: z.string().optional(),
+  AI_MODEL: z.string().optional(), // ej. llama-3.1-8b-instant
 })
 
 export const env = schema.parse(process.env)

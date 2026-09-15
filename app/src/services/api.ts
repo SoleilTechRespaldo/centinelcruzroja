@@ -37,6 +37,8 @@ const MESSAGES: Record<string, string> = {
   incidente_no_encontrado: 'El incidente elegido no existe.',
   correo_no_configurado: 'El correo aún no está configurado (IMAP_MAILBOXES en el servidor).',
   webs_no_configuradas: 'Las webs oficiales aún no están configuradas (WEB_SOURCES en el servidor).',
+  ia_no_configurada: 'La IA no está activada. Se enciende con Ollama (gratis) o una API (AI_PROVIDER).',
+  ia_sin_respuesta: 'La IA no devolvió un resultado utilizable. Inténtalo de nuevo.',
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
