@@ -35,8 +35,13 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+// La sesión vive en una cookie HttpOnly: hay que validarla contra /auth/me (async).
+// El guard espera ese restore UNA vez, para no decidir antes de saber si hay sesión.
+let restored: Promise<void> | null = null
+router.beforeEach(async (to) => {
   const session = useSessionStore()
+  if (!restored) restored = session.restore()
+  await restored
   if (to.path !== '/login' && !session.isAuthenticated) return { path: '/login' }
   if (to.path === '/login' && session.isAuthenticated) return { path: '/estadisticas' }
 })

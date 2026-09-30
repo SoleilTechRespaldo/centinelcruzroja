@@ -22,7 +22,8 @@ const app = new Hono<HonoEnv>()
 
 app.use('*', logger())
 app.use('*', secureHeaders())
-app.use('*', cors({ origin: env.CORS_ORIGIN }))
+// credentials: true permite enviar la cookie de sesión (requiere CORS_ORIGIN ≠ '*').
+app.use('*', cors({ origin: env.CORS_ORIGIN, credentials: true }))
 // Rate limit global (lenient); el login tiene uno estricto aparte (default #11).
 app.use('*', rateLimit({ windowMs: 60_000, max: 600 }))
 

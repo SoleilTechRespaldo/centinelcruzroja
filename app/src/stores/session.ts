@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Role } from '@/types'
-import { api, setToken, getToken } from '@/services/api'
+import { api } from '@/services/api'
 
 interface SessionUser {
   id: string
@@ -9,8 +9,6 @@ interface SessionUser {
   role: Role
   displayName: string
 }
-
-const USER_KEY = 'centinela.user'
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -26,30 +24,29 @@ export const useSessionStore = defineStore('session', () => {
   const role = computed<Role | null>(() => user.value?.role ?? null)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
-  // Login real contra el backend (JWT). Lanza ApiError si falla.
+  // Login real: el backend deja una cookie de sesión HttpOnly; aquí solo guardamos
+  // el usuario para la UI. Lanza ApiError si falla.
   async function login(email: string, password: string) {
-    const res = await api.post<{ token: string; user: SessionUser }>('/auth/login', { email, password })
-    setToken(res.token)
+    const res = await api.post<{ user: SessionUser }>('/auth/login', { email, password })
     user.value = res.user
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user))
   }
 
-  function logout() {
-    setToken(null)
-    localStorage.removeItem(USER_KEY)
-    user.value = null
+  async function logout() {
+    user.value = null // limpia el estado de inmediato (el guard ve la sesión cerrada)
+    try {
+      await api.post('/auth/logout') // borra la cookie en el servidor
+    } catch {
+      /* si el servidor no responde, la cookie caduca sola */
+    }
   }
 
-  // Restaura la sesión desde localStorage al recargar la página.
-  function restore() {
-    const token = getToken()
-    const raw = localStorage.getItem(USER_KEY)
-    if (token && raw) {
-      try {
-        user.value = JSON.parse(raw)
-      } catch {
-        logout()
-      }
+  // Restaura la sesión al recargar: valida la cookie contra /auth/me.
+  async function restore() {
+    try {
+      const res = await api.get<{ user: SessionUser }>('/auth/me')
+      user.value = res.user
+    } catch {
+      user.value = null
     }
   }
 

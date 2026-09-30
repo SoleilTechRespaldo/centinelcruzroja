@@ -1,15 +1,8 @@
-// Cliente HTTP del backend Centinela. Guarda el JWT en localStorage y lo envía
-// como Bearer. Traduce los códigos de error del API a mensajes en español.
+// Cliente HTTP del backend Centinela. La sesión viaja en una cookie HttpOnly que
+// el navegador envía sola (credentials: 'include'); el JS nunca ve el token, así
+// un XSS no puede robar la sesión (default de seguridad #9). Traduce los códigos
+// de error del API a mensajes en español.
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
-const TOKEN_KEY = 'centinela.token'
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
-}
-export function setToken(t: string | null): void {
-  if (t) localStorage.setItem(TOKEN_KEY, t)
-  else localStorage.removeItem(TOKEN_KEY)
-}
 
 export class ApiError extends Error {
   status: number
@@ -43,96 +36,72 @@ const MESSAGES: Record<string, string> = {
   archivo_muy_grande: 'El archivo supera el máximo permitido (15 MB).',
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const token = getToken()
-  if (token) headers.Authorization = `Bearer ${token}`
+function errorFrom(status: number, text: string): ApiError {
+  let code = 'error'
+  try {
+    code = (JSON.parse(text) as { error?: string })?.error ?? 'error'
+  } catch {
+    /* respuesta no-JSON */
+  }
+  return new ApiError(status, code, MESSAGES[code] ?? `Error del servidor (${status}).`)
+}
 
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response
   try {
     res = await fetch(`${API_URL}/api${path}`, {
       method,
-      headers,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
   }
-
   const text = await res.text()
-  const data = text ? JSON.parse(text) : null
-  if (!res.ok) {
-    const code = (data && data.error) || 'error'
-    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
-  }
-  return data as T
+  if (!res.ok) throw errorFrom(res.status, text)
+  return (text ? JSON.parse(text) : null) as T
 }
 
 // Igual que request(), pero devuelve el binario (ej. el .docx del BIE).
 async function requestBlob(method: string, path: string, body?: unknown): Promise<Blob> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const token = getToken()
-  if (token) headers.Authorization = `Bearer ${token}`
   let res: Response
   try {
-    res = await fetch(`${API_URL}/api${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
+    res = await fetch(`${API_URL}/api${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
   } catch {
     throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
   }
-  if (!res.ok) {
-    const text = await res.text()
-    let code = 'error'
-    try {
-      code = (JSON.parse(text) as { error?: string })?.error ?? 'error'
-    } catch {
-      /* respuesta no-JSON */
-    }
-    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
-  }
+  if (!res.ok) throw errorFrom(res.status, await res.text())
   return res.blob()
 }
 
 // Envía multipart/form-data (archivos). NO fija Content-Type: el navegador pone el boundary.
 async function requestForm<T>(path: string, form: FormData): Promise<T> {
-  const headers: Record<string, string> = {}
-  const token = getToken()
-  if (token) headers.Authorization = `Bearer ${token}`
   let res: Response
   try {
-    res = await fetch(`${API_URL}/api${path}`, { method: 'POST', headers, body: form })
+    res = await fetch(`${API_URL}/api${path}`, { method: 'POST', credentials: 'include', body: form })
   } catch {
     throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
   }
   const text = await res.text()
-  const data = text ? JSON.parse(text) : null
-  if (!res.ok) {
-    const code = (data && data.error) || 'error'
-    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
-  }
-  return data as T
+  if (!res.ok) throw errorFrom(res.status, text)
+  return (text ? JSON.parse(text) : null) as T
 }
 
-// Descarga un binario con autenticación (ej. archivo de evidencia).
+// Descarga un binario con la sesión (cookie), ej. archivo de evidencia.
 async function getBlob(path: string): Promise<Blob> {
-  const headers: Record<string, string> = {}
-  const token = getToken()
-  if (token) headers.Authorization = `Bearer ${token}`
   let res: Response
   try {
-    res = await fetch(`${API_URL}/api${path}`, { headers })
+    res = await fetch(`${API_URL}/api${path}`, { credentials: 'include' })
   } catch {
     throw new ApiError(0, 'sin_conexion', MESSAGES.sin_conexion)
   }
-  if (!res.ok) {
-    const text = await res.text()
-    let code = 'error'
-    try {
-      code = (JSON.parse(text) as { error?: string })?.error ?? 'error'
-    } catch {
-      /* respuesta no-JSON */
-    }
-    throw new ApiError(res.status, code, MESSAGES[code] ?? `Error del servidor (${res.status}).`)
-  }
+  if (!res.ok) throw errorFrom(res.status, await res.text())
   return res.blob()
 }
 

@@ -1,9 +1,13 @@
+import 'dotenv/config' // carga server/.env a process.env (no sobrescribe lo ya definido)
 import { z } from 'zod'
 
 // Configuración validada al arrancar.
 const schema = z.object({
   PORT: z.coerce.number().int().positive().default(8787),
   CORS_ORIGIN: z.string().default('*'),
+  // SameSite de la cookie de sesión. 'Lax' sirve si el API es del mismo sitio
+  // (subdominio de soleiltech.cl); usa 'None' (con HTTPS) si es cross-site.
+  COOKIE_SAMESITE: z.enum(['Lax', 'Strict', 'None']).default('Lax'),
   // BD: por defecto un archivo SQLite LOCAL (sin cuenta Turso, $0). En producción
   // se apunta a Turso cambiando estas dos variables — el código no cambia.
   TURSO_DATABASE_URL: z.string().default('file:local.db'),
