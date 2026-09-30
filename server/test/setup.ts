@@ -4,6 +4,7 @@ import { join } from 'node:path'
 
 // IMPORTANTE: fijar el entorno ANTES de importar cualquier módulo que lea `env`
 // (db/client, index). BD en memoria => aislada y efímera por archivo de prueba.
+process.env.NODE_ENV = 'test'
 process.env.TURSO_DATABASE_URL = ':memory:'
 process.env.AUTH_SECRET = 'test-secret'
 process.env.SEED_ADMIN_PASSWORD = 'centinela1234'

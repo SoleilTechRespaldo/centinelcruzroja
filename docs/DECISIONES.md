@@ -3,6 +3,49 @@
 Decisiones tomadas entre puertas de control, para que sean auditables.
 Las más recientes arriba.
 
+## 2026-09-30 — Auditoría de seguridad (14 defaults) y endurecimiento
+
+Revisión completa contra los 14 defaults de la skill `crear-proyecto`
+(`references/seguridad.md`). Estado por control:
+
+**Corregido en esta auditoría:**
+- **#11 Rate limiting** — agregado (`lib/rateLimit.ts`): global 600/min por IP y
+  **login 10 intentos / 15 min** (anti fuerza bruta); responde **429 + Retry-After**.
+  En memoria (una instancia); multi-instancia requeriría Redis.
+- **#4 Subida de archivos** — **límite de 15 MB** validado en el servidor (413) en
+  evidencia e indicios; ya se renombra a UUID aleatorio (sin path traversal). Las
+  descargas pasan a **`Content-Disposition: attachment`** (evita ejecutar un archivo
+  malicioso en el origen del API).
+- **#13 Errores sin fuga** — el handler 500 ya no devuelve `err.message` al cliente
+  (el detalle solo va al log del servidor).
+- **#7/#2 Guardas de producción** — el backend **rechaza arrancar en prod con el
+  AUTH_SECRET de desarrollo** y avisa si `CORS_ORIGIN="*"`.
+- **#14 Dependencias** — `npm audit fix`: **xmldom 0.9.12** y **mailparser 3.9.31**
+  (cierra vulnerabilidades ALTAS de inyección/ReDoS al parsear XML de RSS y correo
+  no confiable). Lockfiles versionados.
+
+**Cumplidos previamente:** #2 token + `requireRole` en cada ruta (401/403);
+#3 default-deny (BD tras el backend, no expuesta; Turso = base aislada); #5 zod +
+Drizzle parametrizado; #6 `hono/secure-headers` + escape en vistas; #7 secretos solo
+en `.env` gitignored; #8 contraseñas con **scrypt**.
+
+**Desviaciones justificadas:**
+- **#9 Token en `localStorage`** (no cookie HttpOnly). Un XSS podría leerlo; mitigado
+  por secure-headers, escape de salida, TTL corto (8 h) y ser herramienta interna.
+  **Para producción se recomienda** migrar a cookie HttpOnly+Secure+SameSite + CSRF
+  (cambio de mayor alcance, pendiente).
+- **#1 IDOR** — no aplica en sentido clásico: los datos son **compartidos por la
+  organización** (todo autenticado ve la info regional); el control es por **rol**,
+  no por pertenencia de fila. Diseño intencional.
+- **#10 2FA** — app: fuera del MVP. Infraestructura (GitHub/hosting/BD/dominio/correo):
+  tarea del usuario en los paneles → checklist de producción.
+- **#12 Webhooks de pago** — N/A (sin pagos).
+- **#14 (parcial)** — quedan 4 moderadas SOLO en `drizzle-kit` (toolchain de dev, no
+  va en el artefacto desplegado); actualizar drizzle-kit a futuro; activar Dependabot.
+
+Verificación: typecheck 0, lint 0, **40 pruebas verdes**, build limpio. Sin cambios
+en el comportamiento visible del usuario.
+
 ## 2026-08-14 — BIE rellena el MAESTRO OFICIAL (fidelidad de estructura y estética)
 - **Cambio:** el `.docx` del BIE se genera **rellenando `server/assets/BIE FORMATO.docx`** (el maestro
   oficial, con logos y formato), no construyéndolo a mano. Se **portó a Node** la lógica del script de

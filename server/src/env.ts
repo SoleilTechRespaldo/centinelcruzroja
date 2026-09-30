@@ -36,3 +36,17 @@ const schema = z.object({
 })
 
 export const env = schema.parse(process.env)
+
+// Guardas de producción: en prod, no arrancar con el secreto de desarrollo, y
+// avisar si CORS quedó abierto (defaults de seguridad #7/#2/#13).
+const DEV_SECRET = 'dev-secret-cambiar-en-produccion'
+if (process.env.NODE_ENV === 'production') {
+  if (env.AUTH_SECRET === DEV_SECRET) {
+    throw new Error('[seguridad] AUTH_SECRET por defecto en producción: define uno propio y largo antes de desplegar.')
+  }
+  if (env.CORS_ORIGIN === '*') {
+    console.warn('[seguridad] CORS_ORIGIN="*" en producción: restríngelo al dominio del frontend.')
+  }
+} else if (env.AUTH_SECRET === DEV_SECRET) {
+  console.warn('[seguridad] Usando AUTH_SECRET de desarrollo. Define uno propio antes de producción.')
+}

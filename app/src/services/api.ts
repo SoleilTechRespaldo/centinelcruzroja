@@ -39,6 +39,8 @@ const MESSAGES: Record<string, string> = {
   webs_no_configuradas: 'Las webs oficiales aún no están configuradas (WEB_SOURCES en el servidor).',
   ia_no_configurada: 'La IA no está activada. Se enciende con Ollama (gratis) o una API (AI_PROVIDER).',
   ia_sin_respuesta: 'La IA no devolvió un resultado utilizable. Inténtalo de nuevo.',
+  demasiadas_solicitudes: 'Demasiados intentos. Espera un momento e inténtalo de nuevo.',
+  archivo_muy_grande: 'El archivo supera el máximo permitido (15 MB).',
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {

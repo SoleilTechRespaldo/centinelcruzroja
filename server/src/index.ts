@@ -14,6 +14,7 @@ import evidence from './routes/evidence'
 import mapMarkers from './routes/map'
 import { storageBackend } from './lib/storage'
 import { aiProvider } from './lib/ai'
+import { rateLimit } from './lib/rateLimit'
 
 // App Hono. Middlewares transversales + manejo de errores. Autorización por rol
 // en cada ruta (en el backend, porque SQLite no tiene RLS).
@@ -22,6 +23,8 @@ const app = new Hono<HonoEnv>()
 app.use('*', logger())
 app.use('*', secureHeaders())
 app.use('*', cors({ origin: env.CORS_ORIGIN }))
+// Rate limit global (lenient); el login tiene uno estricto aparte (default #11).
+app.use('*', rateLimit({ windowMs: 60_000, max: 600 }))
 
 app.get('/health', (c) =>
   c.json({
@@ -48,8 +51,9 @@ app.route('/api', api)
 
 app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))
 app.onError((err, c) => {
+  // El detalle va al log del servidor; al cliente, mensaje genérico (default #13).
   console.error('[api] error no controlado:', err)
-  return c.json({ error: 'internal_error', message: err.message }, 500)
+  return c.json({ error: 'internal_error' }, 500)
 })
 
 export default app

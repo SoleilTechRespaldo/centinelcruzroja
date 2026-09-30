@@ -57,7 +57,7 @@ r.get('/:id/file', async (c) => {
   return new Response(new Uint8Array(f.bytes), {
     headers: {
       'Content-Type': f.mimeType,
-      'Content-Disposition': `inline; filename="${f.fileName.replace(/"/g, '')}"`,
+      'Content-Disposition': `attachment; filename="${f.fileName.replace(/"/g, '')}"`,
     },
   })
 })
@@ -75,6 +75,7 @@ r.post('/upload', requireRole(...EDITORES), async (c) => {
   const channelRaw = String(body['channel'] ?? 'redes')
   const channel = channelRaw === 'manual' ? 'manual' : 'redes'
   const f = body['file']
+  if (f instanceof File && f.size > 15 * 1024 * 1024) return c.json({ error: 'archivo_muy_grande' }, 413)
   const file =
     f instanceof File
       ? { bytes: new Uint8Array(await f.arrayBuffer()), fileName: f.name || 'archivo', mimeType: f.type || 'application/octet-stream' }

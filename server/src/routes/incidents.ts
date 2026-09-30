@@ -76,10 +76,12 @@ r.post('/:id/evidence', requireRole('operator', 'coordinator', 'admin'), zValida
 
 // Subir evidencia con ARCHIVO real (multipart → almacenamiento local o R2).
 const EVIDENCE_KINDS = ['image', 'pdf', 'screenshot', 'doc', 'link'] as const
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024 // 15 MB (default #4: tamaño máximo en el servidor)
 r.post('/:id/evidence/upload', requireRole('operator', 'coordinator', 'admin'), async (c) => {
   const body = await c.req.parseBody()
   const file = body['file']
-  if (!(file instanceof File)) return c.json({ error: 'archivo_requerido' }, 400)
+  if (!(file instanceof File) || file.size === 0) return c.json({ error: 'archivo_requerido' }, 400)
+  if (file.size > MAX_UPLOAD_BYTES) return c.json({ error: 'archivo_muy_grande' }, 413)
   const caption = String(body['caption'] ?? '').trim()
   const source = String(body['source'] ?? '').trim()
   if (!caption || !source) return c.json({ error: 'datos_incompletos' }, 400)

@@ -6,12 +6,16 @@ import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { verifyPassword } from '../lib/password'
 import { signToken, authMiddleware, type HonoEnv, type AuthUser } from '../lib/auth'
+import { rateLimit } from '../lib/rateLimit'
 
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) })
 
 const r = new Hono<HonoEnv>()
 
-r.post('/login', zValidator('json', loginSchema), async (c) => {
+// Anti fuerza bruta: 10 intentos por IP cada 15 min (default #11).
+const loginLimiter = rateLimit({ windowMs: 15 * 60_000, max: 10, key: 'login' })
+
+r.post('/login', loginLimiter, zValidator('json', loginSchema), async (c) => {
   const { email, password } = c.req.valid('json')
   const rows = await db.select().from(schema.users).where(eq(schema.users.email, email.toLowerCase())).limit(1)
   const user = rows[0]

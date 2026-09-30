@@ -12,7 +12,7 @@ r.get('/:id/file', async (c) => {
   return new Response(new Uint8Array(f.bytes), {
     headers: {
       'Content-Type': f.mimeType,
-      'Content-Disposition': `inline; filename="${f.fileName.replace(/"/g, '')}"`,
+      'Content-Disposition': `attachment; filename="${f.fileName.replace(/"/g, '')}"`,
     },
   })
 })
