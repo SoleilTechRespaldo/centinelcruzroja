@@ -1,0 +1,24 @@
+# Fly.io — despliegue del backend Centinela. Ejecuta `fly deploy` desde server/.
+# Ajusta el nombre de la app tras `fly launch --no-deploy`.
+app = "centinela-api"
+primary_region = "scl" # Santiago, Chile
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  # 24/7 para que el sondeo de correo/webs no se detenga (no scale-to-zero).
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb" # LibreOffice necesita RAM al generar PDF
+
+# Secretos/variables: NO van aquí. Cárgalos con:
+#   fly secrets set AUTH_SECRET=... TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... \
+#     R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=... R2_BUCKET=... \
+#     CORS_ORIGIN=https://centinela.soleiltech.cl COOKIE_SAMESITE=None

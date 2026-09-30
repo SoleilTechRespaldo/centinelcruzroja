@@ -29,13 +29,13 @@
     "imapflow": "^1.7.1",
     "mailparser": "^3.9.15",
     "pizzip": "^3.2.0",
+    "tsx": "^4.23.12",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/mailparser": "^3.4.6",
     "@types/node": "^26.2.0",
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }
