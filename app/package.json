@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@quasar/extras": "^2.0.3",
+    "@quasar/extras": "^2.1.0",
     "leaflet": "^1.9.4",
     "pinia": "^4.0.2",
     "quasar": "^2.24.0",
