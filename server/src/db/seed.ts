@@ -62,11 +62,11 @@ const SOURCE_ORGS: { name: string; url: string }[] = [
   { name: 'SUBTEL', url: 'https://www.subtel.gob.cl' },
 ]
 
-const USERS: { email: string; name: string; role: Role }[] = [
-  { email: 'njerez@cruzroja.cl', name: 'Nicolás Jerez', role: 'admin' },
-  { email: 'imanni@cruzroja.cl', name: 'Ive Manni', role: 'coordinator' },
-  { email: 'operador@cruzroja.cl', name: 'Operador Sala', role: 'operator' },
-  { email: 'consulta@cruzroja.cl', name: 'Consulta DEM', role: 'consulta' },
+const USERS: { email: string; username: string; name: string; role: Role }[] = [
+  { email: 'njerez@cruzroja.cl', username: 'jerezn', name: 'Nicolás Jerez', role: 'admin' },
+  { email: 'imanni@cruzroja.cl', username: 'mannii', name: 'Ive Manni', role: 'coordinator' },
+  { email: 'operador@cruzroja.cl', username: 'operador', name: 'Operador Sala', role: 'operator' },
+  { email: 'consulta@cruzroja.cl', username: 'consulta', name: 'Consulta DEM', role: 'consulta' },
 ]
 
 type SeedIncident = {
@@ -224,6 +224,7 @@ export async function seed() {
       .values({
         id: 'usr-' + slug(u.email.split('@')[0]),
         email: u.email.toLowerCase(),
+        username: u.username,
         displayName: u.name,
         role: u.role,
         passwordHash,
@@ -241,6 +242,7 @@ export async function seed() {
       .values({
         id: 'usr-robot',
         email: 'robot@cruzroja.cl',
+        username: 'robot',
         displayName: 'ROBOT',
         role: 'admin',
         passwordHash: await hashPassword(robotPassword),

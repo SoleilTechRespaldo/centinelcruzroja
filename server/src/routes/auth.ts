@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq } from 'drizzle-orm'
+import { eq, or } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { db, schema } from '../db/client'
 import { verifyPassword } from '../lib/password'
@@ -10,7 +10,8 @@ import { signToken, authMiddleware, SESSION_COOKIE, SESSION_MAX_AGE, type HonoEn
 import { rateLimit } from '../lib/rateLimit'
 import { env } from '../env'
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) })
+// Login por "usuario": acepta el nombre de usuario (ej. "jerezn") o el correo.
+const loginSchema = z.object({ usuario: z.string().trim().min(1), password: z.string().min(1) })
 
 const r = new Hono<HonoEnv>()
 
@@ -18,8 +19,13 @@ const r = new Hono<HonoEnv>()
 const loginLimiter = rateLimit({ windowMs: 15 * 60_000, max: 10, key: 'login' })
 
 r.post('/login', loginLimiter, zValidator('json', loginSchema), async (c) => {
-  const { email, password } = c.req.valid('json')
-  const rows = await db.select().from(schema.users).where(eq(schema.users.email, email.toLowerCase())).limit(1)
+  const { usuario, password } = c.req.valid('json')
+  const ident = usuario.toLowerCase()
+  const rows = await db
+    .select()
+    .from(schema.users)
+    .where(or(eq(schema.users.username, ident), eq(schema.users.email, ident)))
+    .limit(1)
   const user = rows[0]
   if (!user || !user.passwordHash || !(await verifyPassword(password, user.passwordHash))) {
     return c.json({ error: 'credenciales_invalidas' }, 401)

@@ -27,7 +27,7 @@ export async function apiReq(method: string, path: string, opts: { token?: strin
   return { status: res.status, json }
 }
 
-export async function login(email: string, password = 'centinela1234'): Promise<string> {
-  const { json } = await apiReq('POST', '/auth/login', { body: { email, password } })
+export async function login(usuario: string, password = 'centinela1234'): Promise<string> {
+  const { json } = await apiReq('POST', '/auth/login', { body: { usuario, password } })
   return json.token as string
 }

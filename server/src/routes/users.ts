@@ -11,7 +11,12 @@ const roleEnum = z.enum(['admin', 'coordinator', 'operator', 'consulta'])
 
 const createSchema = z.object({
   displayName: z.string().trim().min(2),
-  email: z.string().email(),
+  username: z
+    .string()
+    .trim()
+    .min(2)
+    .regex(/^[A-Za-z0-9._-]+$/, 'El usuario solo admite letras, números, punto, guion y guion bajo'),
+  email: z.string().trim().email().optional().or(z.literal('')),
   role: roleEnum,
   password: z.string().min(8, 'La clave inicial debe tener al menos 8 caracteres'),
 })
@@ -24,6 +29,7 @@ type UserRow = typeof schema.users.$inferSelect
 const publicUser = (u: UserRow) => ({
   id: u.id,
   email: u.email,
+  username: u.username,
   displayName: u.displayName,
   role: u.role,
   isActive: u.isActive,
@@ -43,13 +49,20 @@ r.get('/', async (c) => {
 // Agregar usuario por correo + rol + clave inicial (opción a).
 r.post('/', zValidator('json', createSchema), async (c) => {
   const body = c.req.valid('json')
-  const email = body.email.toLowerCase()
-  const exists = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).limit(1)
-  if (exists[0]) return c.json({ error: 'email_ya_registrado' }, 409)
+  const username = body.username.toLowerCase()
+  // El correo es OPCIONAL (solo un dato). Si no se entrega, se sintetiza uno interno.
+  const email = body.email && body.email.trim() ? body.email.toLowerCase() : `${username}@local`
+
+  const dupUser = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.username, username)).limit(1)
+  if (dupUser[0]) return c.json({ error: 'usuario_ya_registrado' }, 409)
+  const dupEmail = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).limit(1)
+  if (dupEmail[0]) return c.json({ error: 'email_ya_registrado' }, 409)
 
   const id = randomUUID()
   const passwordHash = await hashPassword(body.password)
-  await db.insert(schema.users).values({ id, email, displayName: body.displayName, role: body.role, passwordHash, isActive: true })
+  await db
+    .insert(schema.users)
+    .values({ id, email, username, displayName: body.displayName, role: body.role, passwordHash, isActive: true })
 
   const admin = c.get('user')
   await db
@@ -60,7 +73,7 @@ r.post('/', zValidator('json', createSchema), async (c) => {
       action: 'user.create',
       entityType: 'user',
       entityId: id,
-      details: { email, role: body.role },
+      details: { username, role: body.role },
     })
     .catch(() => {})
   const created = (await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1))[0]

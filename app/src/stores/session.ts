@@ -26,8 +26,8 @@ export const useSessionStore = defineStore('session', () => {
 
   // Login real: el backend deja una cookie de sesión HttpOnly; aquí solo guardamos
   // el usuario para la UI. Lanza ApiError si falla.
-  async function login(email: string, password: string) {
-    const res = await api.post<{ user: SessionUser }>('/auth/login', { email, password })
+  async function login(usuario: string, password: string) {
+    const res = await api.post<{ user: SessionUser }>('/auth/login', { usuario, password })
     user.value = res.user
   }
 

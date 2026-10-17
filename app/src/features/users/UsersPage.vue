@@ -9,6 +9,7 @@ import type { AlertTone, Role } from '@/types'
 interface ApiUser {
   id: string
   email: string
+  username: string | null
   displayName: string
   role: Role
   isActive: boolean
@@ -27,6 +28,10 @@ const roleOptions = roles.map((r) => ({ label: roleLabel[r], value: r }))
 function fmtDate(unix: number | null): string {
   if (!unix) return 'nunca'
   return new Date(unix * 1000).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+// El correo puede ser sintético (usuario@local) cuando no se registró uno real.
+function shownEmail(email: string): string {
+  return !email || email.endsWith('@local') ? '—' : email
 }
 
 const users = ref<ApiUser[]>([])
@@ -55,14 +60,16 @@ const saving = ref(false)
 
 // --- Invitar (crear) ---
 const showInvite = ref(false)
-const nuevo = reactive<{ displayName: string; email: string; role: Role | null; password: string }>({
+const nuevo = reactive<{ displayName: string; username: string; email: string; role: Role | null; password: string }>({
   displayName: '',
+  username: '',
   email: '',
   role: null,
   password: '',
 })
 function openInvite() {
   nuevo.displayName = ''
+  nuevo.username = ''
   nuevo.email = ''
   nuevo.role = null
   nuevo.password = ''
@@ -71,8 +78,14 @@ function openInvite() {
 async function invitar() {
   saving.value = true
   try {
-    await api.post('/users', { displayName: nuevo.displayName, email: nuevo.email, role: nuevo.role, password: nuevo.password })
-    $q.notify({ type: 'positive', message: 'Usuario agregado', caption: nuevo.email, icon: 'person_add' })
+    await api.post('/users', {
+      displayName: nuevo.displayName,
+      username: nuevo.username,
+      email: nuevo.email || undefined,
+      role: nuevo.role,
+      password: nuevo.password,
+    })
+    $q.notify({ type: 'positive', message: 'Usuario agregado', caption: nuevo.username, icon: 'person_add' })
     showInvite.value = false
     await load()
   } catch (e) {
@@ -126,7 +139,7 @@ async function guardarEdit() {
   saving.value = true
   try {
     await api.patch(`/users/${editing.value.id}`, { role: editRole.value, isActive: editActive.value })
-    $q.notify({ type: 'positive', message: 'Usuario actualizado', caption: editing.value.email })
+    $q.notify({ type: 'positive', message: 'Usuario actualizado', caption: editing.value.username ?? editing.value.displayName })
     showEdit.value = false
     await load()
   } catch (e) {
@@ -151,7 +164,7 @@ async function guardarEdit() {
     </q-banner>
 
     <div class="text-caption text-muted q-mb-sm">
-      No hay auto-registro: el administrador agrega usuarios por correo y les asigna un rol.
+      No hay auto-registro: el administrador crea cada usuario (usuario + rol) y le entrega la clave.
     </div>
 
     <q-card flat bordered>
@@ -159,6 +172,7 @@ async function guardarEdit() {
         <thead>
           <tr>
             <th class="text-left">Nombre</th>
+            <th class="text-left">Usuario</th>
             <th class="text-left">Correo</th>
             <th class="text-left">Rol</th>
             <th class="text-left">Estado</th>
@@ -169,13 +183,14 @@ async function guardarEdit() {
         <tbody>
           <template v-if="loading">
             <tr v-for="n in 4" :key="n">
-              <td v-for="c in 6" :key="c"><q-skeleton type="text" /></td>
+              <td v-for="c in 7" :key="c"><q-skeleton type="text" /></td>
             </tr>
           </template>
           <template v-else>
             <tr v-for="u in users" :key="u.id">
               <td>{{ u.displayName }}</td>
-              <td>{{ u.email }}</td>
+              <td class="text-weight-medium">{{ u.username ?? '—' }}</td>
+              <td class="text-muted">{{ shownEmail(u.email) }}</td>
               <td><AlertBadge :label="roleLabel[u.role]" :tone="roleTone[u.role]" /></td>
               <td><AlertBadge :label="u.isActive ? 'Activo' : 'Inactivo'" :tone="u.isActive ? 'green' : 'gray'" /></td>
               <td class="tabular text-muted">{{ fmtDate(u.lastLoginAt) }}</td>
@@ -192,7 +207,7 @@ async function guardarEdit() {
               </td>
             </tr>
             <tr v-if="users.length === 0">
-              <td colspan="6" class="text-center text-muted q-pa-lg">Aún no hay usuarios.</td>
+              <td colspan="7" class="text-center text-muted q-pa-lg">Aún no hay usuarios.</td>
             </tr>
           </template>
         </tbody>
@@ -210,7 +225,22 @@ async function guardarEdit() {
         <q-form greedy @submit.prevent="invitar">
           <q-card-section class="q-gutter-sm">
             <q-input v-model="nuevo.displayName" label="Nombre *" outlined dense :rules="[req]" autofocus />
-            <q-input v-model="nuevo.email" label="Correo *" type="email" outlined dense :rules="[req, isEmail]" />
+            <q-input
+              v-model="nuevo.username"
+              label="Usuario *"
+              outlined
+              dense
+              :rules="[req]"
+              hint="Con el que inicia sesión (ej. JerezN). Sin espacios ni @."
+            />
+            <q-input
+              v-model="nuevo.email"
+              label="Correo (opcional)"
+              type="email"
+              outlined
+              dense
+              :rules="[(v: string) => !v || isEmail(v)]"
+            />
             <q-select v-model="nuevo.role" :options="roleOptions" label="Rol *" outlined dense emit-value map-options :rules="[req]" />
             <q-input
               v-model="nuevo.password"
@@ -240,7 +270,7 @@ async function guardarEdit() {
         </q-card-section>
         <q-card-section class="q-gutter-sm">
           <div class="text-body2">
-            {{ editing?.displayName }} <span class="text-muted">· {{ editing?.email }}</span>
+            {{ editing?.displayName }} <span class="text-muted">· {{ editing?.username ?? '—' }}</span>
           </div>
           <q-select v-model="editRole" :options="roleOptions" label="Rol" outlined dense emit-value map-options />
           <q-toggle v-model="editActive" :label="editActive ? 'Activo (puede ingresar)' : 'Inactivo (no puede ingresar)'" />

@@ -7,19 +7,18 @@ import BrandMark from '@/components/ui/BrandMark.vue'
 
 const router = useRouter()
 const session = useSessionStore()
-const email = ref('njerez@cruzroja.cl')
+const usuario = ref('jerezn')
 const password = ref('centinela1234')
 const loading = ref(false)
 const errorMsg = ref('')
 
 const req = (v: unknown) => (!!v && String(v).trim().length > 0) || 'Campo obligatorio'
-const isEmail = (v: string) => /.+@.+\..+/.test(v) || 'Correo inválido'
 
 async function ingresar() {
   loading.value = true
   errorMsg.value = ''
   try {
-    await session.login(email.value, password.value)
+    await session.login(usuario.value, password.value)
     router.push('/estadisticas')
   } catch (e) {
     errorMsg.value = e instanceof ApiError ? e.message : 'No se pudo iniciar sesión.'
@@ -38,7 +37,7 @@ async function ingresar() {
     </div>
     <q-banner v-if="errorMsg" dense rounded class="bg-red-1 text-red-9 q-mb-sm">{{ errorMsg }}</q-banner>
     <q-form greedy @submit.prevent="ingresar">
-      <q-input v-model="email" label="Correo" type="email" outlined dense class="q-mb-sm" :rules="[req, isEmail]" />
+      <q-input v-model="usuario" label="Usuario" outlined dense class="q-mb-sm" :rules="[req]" autocomplete="username" />
       <q-input v-model="password" label="Contraseña" type="password" outlined dense class="q-mb-md" :rules="[req]" />
       <q-btn type="submit" color="primary" unelevated class="full-width" label="Ingresar" :loading="loading" />
     </q-form>

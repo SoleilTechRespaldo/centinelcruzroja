@@ -37,9 +37,21 @@ describe('usuarios (solo admin)', () => {
     expect(reset.status).toBe(200)
 
     // login con la nueva => 200; con la vieja => 401
-    const nueva = await apiReq('POST', '/auth/login', { body: { email: 'operador@cruzroja.cl', password: 'nuevaClave99' } })
+    const nueva = await apiReq('POST', '/auth/login', { body: { usuario: 'operador@cruzroja.cl', password: 'nuevaClave99' } })
     expect(nueva.status).toBe(200)
-    const vieja = await apiReq('POST', '/auth/login', { body: { email: 'operador@cruzroja.cl', password: 'centinela1234' } })
+    const vieja = await apiReq('POST', '/auth/login', { body: { usuario: 'operador@cruzroja.cl', password: 'centinela1234' } })
     expect(vieja.status).toBe(401)
+  })
+
+  it('admin crea un usuario con username (sin correo) y este inicia sesión', async () => {
+    const admin = await login('njerez@cruzroja.cl')
+    const create = await apiReq('POST', '/users', {
+      token: admin,
+      body: { displayName: 'Prueba User', username: 'PruebaU', role: 'operator', password: 'claveprueba1' },
+    })
+    expect(create.status).toBe(201)
+    expect(create.json.user.username).toBe('pruebau')
+    const sesion = await apiReq('POST', '/auth/login', { body: { usuario: 'PruebaU', password: 'claveprueba1' } })
+    expect(sesion.status).toBe(200)
   })
 })

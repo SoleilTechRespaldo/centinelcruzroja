@@ -31,17 +31,22 @@ const markerTypeEnum = [
 ] as const
 
 // --- Usuarios (auth/roles; sesiones las gestiona la librería de auth) ---
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash'),
-  displayName: text('display_name').notNull(),
-  role: text('role', { enum: roleEnum }).notNull().default('operator'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  lastLoginAt: integer('last_login_at'),
-  createdAt: integer('created_at').notNull().default(now),
-  updatedAt: integer('updated_at').notNull().default(now),
-})
+export const users = sqliteTable(
+  'users',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull().unique(), // identificador/dato; puede ser sintético (usuario@local)
+    username: text('username'), // identificador de inicio de sesión (ej. "jerezn")
+    passwordHash: text('password_hash'),
+    displayName: text('display_name').notNull(),
+    role: text('role', { enum: roleEnum }).notNull().default('operator'),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    lastLoginAt: integer('last_login_at'),
+    createdAt: integer('created_at').notNull().default(now),
+    updatedAt: integer('updated_at').notNull().default(now),
+  },
+  (t) => [uniqueIndex('idx_users_username').on(t.username)],
+)
 
 // --- Geografía (país→región→provincia→comuna; escalable) ---
 export const regions = sqliteTable('regions', {
