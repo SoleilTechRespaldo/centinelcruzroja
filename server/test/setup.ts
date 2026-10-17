@@ -9,6 +9,10 @@ process.env.TURSO_DATABASE_URL = ':memory:'
 process.env.AUTH_SECRET = 'test-secret'
 process.env.SEED_ADMIN_PASSWORD = 'centinela1234'
 process.env.STORAGE_DIR = join(tmpdir(), 'centinela-test-storage')
+// Canales/IA APAGADOS en pruebas (hermético: ignora el server/.env del desarrollador).
+process.env.AI_PROVIDER = ''
+process.env.IMAP_MAILBOXES = ''
+process.env.WEB_SOURCES = ''
 
 beforeAll(async () => {
   const { seed } = await import('../src/db/seed')

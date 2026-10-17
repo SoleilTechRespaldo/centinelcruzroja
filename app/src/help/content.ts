@@ -26,7 +26,8 @@ export const helpByRoute: Record<string, HelpTopic> = {
   },
   incidents: {
     title: 'Incidentes',
-    intro: 'El listado de eventos. Un "incidente" es el contenedor de todo lo que pasa en un evento (un incendio, un sistema frontal, un sismo…).',
+    intro:
+      'El listado de eventos. Un "incidente" es el contenedor de todo lo que pasa en un evento (un incendio, un sistema frontal, un sismo…).',
     bullets: [
       'Cada incidente tiene código (ej. 2026-0014), tipo, comunas y nivel de alerta.',
       'Haz clic en uno para ver su detalle, sus fuentes y generar su BIE.',
@@ -36,7 +37,8 @@ export const helpByRoute: Record<string, HelpTopic> = {
   },
   bandeja: {
     title: 'Bandeja de indicios',
-    intro: 'Aquí llega el material a revisar (por correo, webs oficiales, captura de redes o carga manual). Nada entra al BIE sin tu visto bueno.',
+    intro:
+      'Aquí llega el material a revisar (por correo, webs oficiales, captura de redes o carga manual). Nada entra al BIE sin tu visto bueno.',
     bullets: [
       'Pestañas: Por verificar · Verificadas · Descartadas.',
       'La IA es una ayuda: sugiere resumen, tipo y comunas. Siempre la revisas tú.',
@@ -80,10 +82,7 @@ export const helpByRoute: Record<string, HelpTopic> = {
   map: {
     title: 'Mapa operativo',
     intro: 'Mapa de la región para ubicar afectaciones (incendios, inundaciones, cortes de agua/luz, albergues, etc.).',
-    bullets: [
-      'Cada punto es una afectación, con su tipo y color.',
-      'Puedes ligar una afectación a un incidente.',
-    ],
+    bullets: ['Cada punto es una afectación, con su tipo y color.', 'Puedes ligar una afectación a un incidente.'],
     buttons: [
       { label: 'Agregar afectación', desc: 'Actívalo y haz clic en el mapa para ubicar y describir el punto.' },
       { label: 'Capas', desc: 'Muestra u oculta afectaciones por tipo.' },
@@ -134,17 +133,7 @@ export function helpForRoute(routeName: string | null | undefined): HelpTopic | 
 }
 
 // Orden en que se muestran las pantallas en la Guía general.
-export const guideOrder: string[] = [
-  'estadisticas',
-  'incidents',
-  'bandeja',
-  'bie',
-  'expediente',
-  'map',
-  'cameras',
-  'catalogs',
-  'users',
-]
+export const guideOrder: string[] = ['estadisticas', 'incidents', 'bandeja', 'bie', 'expediente', 'map', 'cameras', 'catalogs', 'users']
 
 // Pasos del circuito completo (para la Guía general).
 export const workflowSteps: { n: number; title: string; text: string }[] = [

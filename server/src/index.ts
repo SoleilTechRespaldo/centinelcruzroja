@@ -8,6 +8,7 @@ import auth from './routes/auth'
 import users from './routes/users'
 import incidents from './routes/incidents'
 import dashboard from './routes/dashboard'
+import stats from './routes/stats'
 import catalogs from './routes/catalogs'
 import indicios from './routes/indicios'
 import evidence from './routes/evidence'
@@ -44,6 +45,7 @@ api.route('/auth', auth)
 api.route('/users', users)
 api.route('/incidents', incidents)
 api.route('/dashboard', dashboard)
+api.route('/stats', stats)
 api.route('/catalogs', catalogs)
 api.route('/indicios', indicios)
 api.route('/evidence', evidence)

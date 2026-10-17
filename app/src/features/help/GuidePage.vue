@@ -30,9 +30,9 @@ const reglas = [
   <q-page class="q-pa-lg">
     <h1 class="text-h6 q-mb-xs">Guía de uso</h1>
     <p class="text-body2 text-muted q-mb-lg" style="max-width: 760px">
-      Centinela es una herramienta de <b>apoyo</b> al monitoreo y a la generación del <b>BIE</b> de la Cruz Roja Valparaíso.
-      No es oficial, no emite alertas y no publica sola: <b>siempre decide una persona</b>. En cada pantalla tienes el botón
-      <q-icon name="help_outline" /> <b>“¿Cómo funciona?”</b> arriba a la derecha.
+      Centinela es una herramienta de <b>apoyo</b> al monitoreo y a la generación del <b>BIE</b> de la Cruz Roja Valparaíso. No es oficial,
+      no emite alertas y no publica sola: <b>siempre decide una persona</b>. En cada pantalla tienes el botón <q-icon name="help_outline" />
+      <b>“¿Cómo funciona?”</b> arriba a la derecha.
     </p>
 
     <!-- Circuito -->
