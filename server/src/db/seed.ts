@@ -232,6 +232,23 @@ export async function seed() {
       .onConflictDoNothing()
   }
 
+  // Usuario ROBOT: admin de arranque para el registro INTERNO (sin auto-registro).
+  // Su clave NO va en el repo: se toma de ROBOT_PASSWORD (server/.env o panel del host).
+  const robotPassword = process.env.ROBOT_PASSWORD
+  if (robotPassword) {
+    await db
+      .insert(schema.users)
+      .values({
+        id: 'usr-robot',
+        email: 'robot@cruzroja.cl',
+        displayName: 'ROBOT',
+        role: 'admin',
+        passwordHash: await hashPassword(robotPassword),
+        isActive: true,
+      })
+      .onConflictDoNothing()
+  }
+
   // Incidentes de ejemplo (con comunas, reporte, y cronología/fuentes/evidencias en el principal).
   const DAY = 86400
   const nowSec = Math.floor(Date.now() / 1000)

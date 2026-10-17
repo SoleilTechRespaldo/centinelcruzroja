@@ -13,6 +13,7 @@ process.env.STORAGE_DIR = join(tmpdir(), 'centinela-test-storage')
 process.env.AI_PROVIDER = ''
 process.env.IMAP_MAILBOXES = ''
 process.env.WEB_SOURCES = ''
+process.env.ROBOT_PASSWORD = ''
 
 beforeAll(async () => {
   const { seed } = await import('../src/db/seed')
