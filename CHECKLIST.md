@@ -8,8 +8,8 @@
   BIE para Cruz Roja Chilena — Región de Valparaíso.
 - **Stack:** PWA Quasar (Vue 3 + TS) + **backend Hono sobre Turso** (SQLite/libSQL,
   Drizzle) + R2 (archivos); Dexie offline; docxtemplater; ECharts. Detalle en docs/02-STACK.md.
-- **Inicio:** 2026-08-06 · **Última actualización:** 2026-08-12
-- **Fase actual:** 12 — Frontend (en curso, contra mocks) · **11 backend esqueleto listo** (BD Turso al final)
+- **Inicio:** 2026-08-06 · **Última actualización:** 2026-10-16
+- **Fase actual:** Etapa 2 COMPLETA + mejoras de producto (tutorial, estadísticas). Pendiente: mapa auto / expediente / cámaras + **despliegue a producción**.
 
 Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
 
@@ -81,16 +81,27 @@ Estados: ☐ pendiente · 🔄 en desarrollo · ✅ terminado · ➖ no aplica
   gratis**, o API hosteada (Groq/…). Botón "Analizar con IA" en la bandeja.
 - **✅ ETAPA 2 COMPLETA (40 pruebas).** Sigue: **producción** (GitHub → Turso → R2 → hosting).
 
-### ▶ Pendiente (orden sugerido)
-9. **(Cuando autorices) F6/F7:** repo privado en GitHub (README ya está).
-10. **Etapa final — Base de datos:** crear BD **Turso** y apuntar las 2 variables
-    (`TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN`); el código no cambia. Migrar + sembrar allí.
-11. **Evidencia real (Cloudflare R2)** — subir/servir el archivo, no solo la procedencia.
-12. **RF-18 (IA de apoyo)** — al final del todo.
-13. *(opcional)* pruebas E2E del frontend (Playwright) y prueba con lector de pantalla.
+### ✔ Hecho (sep–oct 2026)
+- **GitHub:** repo privado `SoleilTechRespaldo/centinelcruzroja` (push verificado).
+- **Seguridad:** auditoría de los 14 defaults → rate limiting, subida validada, errores sin
+  fuga, **sesión en cookie HttpOnly**, `npm audit fix`. Detalle en `docs/DECISIONES.md`.
+- **Despliegue PREPARADO:** `server/Dockerfile` (+ LibreOffice), `fly.toml`, `docs/07-DESPLIEGUE.md`.
+- **IA activada y probada en vivo** (Groq, plan gratis, modelo `openai/gpt-oss-20b`).
+- **Tutorial/ayuda en la app** (botón "¿Cómo funciona?" + pestaña Guía) + `docs/GUIA-DE-USO.md`.
+- **Estadísticas por incidente y por monitoreo** (`/api/stats`, histórico real). **44 pruebas.**
 
-**Ruta prevista:** GitHub → crear BD Turso (2 variables) + migrar/sembrar
-→ R2 (evidencia) → **RF-18 IA**.
+### ▶ Pendiente (orden sugerido)
+1. **Mapa que se actualiza solo** — marcadores automáticos desde los incidentes, filtro por
+   incidente y clic = fecha + resumen (hoy los marcadores son manuales).
+2. **Expediente real** — conectar la pantalla a los datos reales del evento (hoy es maqueta).
+3. **Cámaras reales** — proyecto *Ojos de Águila* vía YouTube Data API (hoy es maqueta).
+4. **Producción** (requiere cuentas oficiales): dominio `soleiltech.cl` → **Turso** (2 variables)
+   → **R2** → **hosting Node** (Fly/Koyeb/VPS) → **Cloudflare Pages** → encender canales + 2FA.
+   Guía: `docs/07-DESPLIEGUE.md`.
+5. *(opcional)* E2E Playwright · prueba con lector de pantalla · actualizar `drizzle-kit` ·
+   conector JSON para CSN/SEC.
+
+**Antes del uso real:** reemplazar los usuarios de demo por personas reales + cambiar la clave inicial.
 
 ---
 
