@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'cameras', name: 'cameras', component: () => import('@/features/cameras/CamerasPage.vue') },
       { path: 'catalogs', name: 'catalogs', component: () => import('@/features/catalogs/CatalogsPage.vue') },
       { path: 'users', name: 'users', component: () => import('@/features/users/UsersPage.vue') },
+      { path: 'ayuda', name: 'ayuda', component: () => import('@/features/help/GuidePage.vue') },
       { path: 'states', name: 'states', component: () => import('@/features/misc/StatesPage.vue') },
     ],
   },

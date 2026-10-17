@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import BrandMark from '@/components/ui/BrandMark.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 
 type NavItem = { section?: string; label?: string; to?: string; icon?: string; adminOnly?: boolean }
 
@@ -23,6 +24,8 @@ const nav: NavItem[] = [
   { section: 'Configuración' },
   { label: 'Catálogos', to: '/catalogs', icon: 'category' },
   { label: 'Usuarios', to: '/users', icon: 'group', adminOnly: true },
+  { section: 'Ayuda' },
+  { label: 'Guía / Ayuda', to: '/ayuda', icon: 'menu_book' },
 ]
 
 const roleLabels: Record<string, string> = {
@@ -91,6 +94,8 @@ function logout() {
             @click="bumpZoom(1)"
           />
         </div>
+
+        <HelpButton class="q-ml-xs" />
 
         <span class="region q-mx-md gt-md">Región de Valparaíso</span>
         <div class="userbox gt-xs q-mr-sm">
